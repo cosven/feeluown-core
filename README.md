@@ -7,9 +7,9 @@
 
 ## Install
 
+```sh
 sudo apt-get install mpg123  # Debian or Ubuntu
 brew install mpg123  # mac osx
 
 pip3 install fuocore
-
-## Usage
+```
