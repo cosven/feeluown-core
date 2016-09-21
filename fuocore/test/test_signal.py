@@ -1,6 +1,7 @@
 from unittest import TestCase, mock
 
 from fuocore.dispatch import Signal
+from fuocore.dispatch import receiver
 
 
 class A(object):
@@ -49,3 +50,12 @@ class SignalTest(TestCase):
         s.disconnect(f)
         s.emit(arg1=1, arg2='hello')
         self.assertEqual(mock_func.call_count, 0)
+
+    @mock.patch.object(Signal, 'connect')
+    def test_receiver(self, mock_connect):
+        s = Signal()
+
+        @receiver(s)
+        def f():
+            pass
+        self.assertTrue(mock_connect.called)
