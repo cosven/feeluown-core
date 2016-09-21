@@ -28,7 +28,7 @@ setup(
         'beautifulsoup4',
         ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest>=3.0.2'],
     entry_points={
         'console_scripts': []
         },
