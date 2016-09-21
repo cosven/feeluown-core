@@ -11,7 +11,7 @@ setup(
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
-    packages=['fuocore'],
+    packages=['fuocore', 'fuocore.tests'],
     package_data={
         '': []
         },
