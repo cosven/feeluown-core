@@ -34,12 +34,12 @@ class Signal(object):
         return False
 
 
-def receiver(signal, **kwargs):
+def receiver(signal):
     def _decorator(func):
         if isinstance(signal, (list, tuple)):
             for s in signal:
-                s.connect(func, **kwargs)
+                s.connect(func)
         else:
-            signal.connect(func, **kwargs)
+            signal.connect(func)
         return func
     return _decorator

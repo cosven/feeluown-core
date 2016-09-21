@@ -8,7 +8,7 @@ from fuocore.models import NSongModel, NAlbumModel, NArtistModel, \
 
 @pytest.fixture
 def song_data():
-    f_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+    f_path = os.path.join(os.path.dirname(__file__),
                           'fixtures', 'song.json')
     with open(f_path, 'r') as f:
         data = json.load(f)
@@ -17,7 +17,7 @@ def song_data():
 
 @pytest.fixture
 def album_data():
-    f_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+    f_path = os.path.join(os.path.dirname(__file__),
                           'fixtures', 'album.json')
     with open(f_path, 'r') as f:
         data = json.load(f)
@@ -26,7 +26,7 @@ def album_data():
 
 @pytest.fixture
 def artist_data():
-    f_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+    f_path = os.path.join(os.path.dirname(__file__),
                           'fixtures', 'artist.json')
     with open(f_path, 'r') as f:
         data = json.load(f)
@@ -35,7 +35,7 @@ def artist_data():
 
 @pytest.fixture
 def playlist_data():
-    f_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+    f_path = os.path.join(os.path.dirname(__file__),
                           'fixtures', 'playlist.json')
     with open(f_path, 'r') as f:
         data = json.load(f)

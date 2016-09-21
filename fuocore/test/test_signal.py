@@ -34,7 +34,7 @@ class SignalTest(TestCase):
             s.emit(arg1=1, arg2='hello')
             mock_method_f.assert_called_once_with(arg1=1, arg2='hello')
 
-    @mock.patch('fuocore.tests.test_signal.f', return_value=None)
+    @mock.patch('test_signal.f', return_value=None)
     def test_connect2(self, mock_func):
         s = Signal()
         s.connect(f)
@@ -42,7 +42,7 @@ class SignalTest(TestCase):
         s.emit(arg1=1, arg2='hello')
         self.assertEqual(mock_func.call_count, 2)
 
-    @mock.patch('fuocore.tests.test_signal.f', return_value=None)
+    @mock.patch('test_signal.f', return_value=None)
     def test_disconnect(self, mock_func):
         s = Signal()
         s.connect(f)
