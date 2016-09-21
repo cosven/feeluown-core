@@ -11,7 +11,7 @@ setup(
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
-    packages=['fuocore', 'fuocore.tests'],
+    packages=['fuocore'],
     package_data={
         '': []
         },
@@ -28,7 +28,7 @@ setup(
         'beautifulsoup4',
         ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest>=3.0.2'],
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': []
         },
