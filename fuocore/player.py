@@ -71,7 +71,6 @@ class Player(object):
                     self._duration = 0
                     self._position = 0
                     self.finished.emit()
-                    self.destroy()
                     break
                 elif a == '1':
                     logging.info('Player paused.')
@@ -85,11 +84,14 @@ class Player(object):
 
     def destroy(self):
         if self._handler is not None:
-            self.handler.stdin.write(b'q\n')
-            self.handler.stdin.flush()
-            self.handler.stdin.close()
-            self.handler.stdout.close()
-            self.handler.stderr.close()
+            try:
+                self.handler.stdin.write(b'q\n')
+                self.handler.stdin.flush()
+                self.handler.stdin.close()
+                self.handler.stdout.close()
+                self.handler.stderr.close()
+            except ValueError:
+                pass
             self._stdout_cap_thread.join()
             self._stdout_cap_thread = None
             self.handler.wait()
@@ -124,6 +126,9 @@ class Player(object):
             self.toggle()
             return True
         return False
+
+    def stop(self):
+        self.destroy()
 
     def play_song(self, url):
         if self.state == State.playing:

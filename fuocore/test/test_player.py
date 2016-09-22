@@ -1,6 +1,10 @@
+import os
 from unittest import TestCase
 
-from fuocore.player import Player
+from fuocore.player import Player, State
+
+
+MP3_URL = os.path.join(os.path.dirname(__file__), 'fixtures', 'ybwm-ts.mp3') 
 
 
 class PlayerTest(TestCase):
@@ -17,6 +21,7 @@ class PlayerTest(TestCase):
         self.player.play()
 
     def test_pause(self):
+        self.player.play_song(MP3_URL)
         self.player.pause()
 
     def test_play_song(self):
