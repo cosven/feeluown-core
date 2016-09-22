@@ -22,12 +22,6 @@ class PlayerTest(TestCase):
     def test_play_song(self):
         self.player.play_song('...')
 
-    def test_next(self):
-        self.player.next()
-
-    def test_last(self):
-        self.player.last()
-
     def test_toggle(self):
         self.player.toggle()
 
