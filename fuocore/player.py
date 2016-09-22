@@ -131,8 +131,7 @@ class Player(object):
         self.destroy()
 
     def play_song(self, url):
-        if self.state == State.playing:
-            self.destroy()
+        self.destroy()
         cmd = 'L {0}\n'.format(url)
         self.handler.stdin.write(cmd.encode('utf8'))
         self.handler.stdin.flush()
