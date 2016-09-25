@@ -62,7 +62,7 @@ class Player(object):
         self.position_changed = Signal()
         self.state_changed = Signal()
 
-        self.finished.connect(self.__play_next)
+        self.finished.connect(self.play_next)
 
     @property
     def handler(self):
@@ -158,6 +158,17 @@ class Player(object):
             return True
         return False
 
+    def play_next(self):
+        print('play next..........')
+        song = self.get_next_song()
+        if song is not None:
+            self.play_song(song)
+
+    def play_last(self):
+        song = self.get_previous_song()
+        if song is not None:
+            self.play_song(song)
+
     def toggle(self):
         self.handler.stdin.write(b'p\n')
         self.handler.stdin.flush()
@@ -252,9 +263,3 @@ class Player(object):
             return None
         else:
             return random.choice(self._songs)
-
-    def __play_next(self):
-        '''on song finished callback'''
-        song = self.get_next_song()
-        if song is not None:
-            self.play_song(song)
