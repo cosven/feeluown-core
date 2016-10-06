@@ -2,6 +2,7 @@
 
 from enum import Enum
 import logging
+from queue import Queue
 import random
 import subprocess
 import threading
@@ -23,15 +24,6 @@ class PlaybackMode(Enum):
     random = 3
 
 
-class _SimpleSongModel(SongModel):
-    def __init__(self, url):
-        self._url = url
-
-    @property
-    def url(self):
-        return self._url
-
-
 class Player(object):
     '''mpg123 wrapper
 
@@ -44,7 +36,18 @@ class Player(object):
         super().__init__()
 
         self._handler = None
+
+        self._signal_queue = Queue()
+
+        # parse mpg123 output and put signal into queue
+        # this thread will be terminated when player is destroyed
         self._stdout_cap_thread = None
+
+        # get signal from queue and emit them
+        # this thread play a role like a Worker
+        self._signal_access_thread = None
+
+        self._ready_to_exit_flag = False
 
         self._position = 0
         self._state = State.stopped
@@ -61,8 +64,16 @@ class Player(object):
         self.finished = Signal()
         self.position_changed = Signal()
         self.state_changed = Signal()
+        # emit `exit_signal` if player is ready to exit so that all
+        # resource can be released properly, such as stoping threads and killing
+        # subprocess.
+        self.ready_to_exit = Signal()
 
         self.finished.connect(self.play_next)
+        self.ready_to_exit.connect(self._ready_to_exit)
+        self._signal_access_thread = threading.Thread(
+                        target=self._watch_queue, args=())
+        self._signal_access_thread.start()
 
     @property
     def handler(self):
@@ -92,7 +103,7 @@ class Player(object):
                 if int(framecount) == 0:
                     self._duration = float(sec_left)
                 self.set_state(State.playing)
-                self.position_changed.emit()
+                self._signal_queue.put(self.position_changed)
             elif flag == '@P':
                 a = line[3:4]
                 if a == '0':
@@ -100,7 +111,7 @@ class Player(object):
                     self.set_state(State.stopped)
                     self._duration = 0
                     self._position = 0
-                    self.finished.emit()
+                    self._signal_queue.put(self.finished)
                     break
                 elif a == '1':
                     logging.info('Player paused.')
@@ -110,6 +121,21 @@ class Player(object):
                     self.set_state(State.playing)
             elif flag == '@E':
                 logging.warning('Player error occured.')
+
+    def _watch_queue(self):
+        while True:
+            if self._ready_to_exit_flag:
+                break
+            signal = self._signal_queue.get()
+            signal.emit()
+
+    def _ready_to_exit(self):
+        self._ready_to_exit_flag = True
+
+    def shutdown(self):
+        '''stop signal-watch thread(worker)'''
+        self.destroy()
+        self._signal_queue.put(self.ready_to_exit)
 
     def destroy(self):
         if self._handler is not None:
@@ -159,7 +185,6 @@ class Player(object):
         return False
 
     def play_next(self):
-        print('play next..........')
         song = self.get_next_song()
         if song is not None:
             self.play_song(song)

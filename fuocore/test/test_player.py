@@ -33,7 +33,7 @@ class PlayerTest(TestCase):
         self.assertIsNotNone(self.player.handler)
 
     def tearDown(self):
-        self.player.destroy()
+        self.player.shutdown()
 
     def test_play(self):
         self.player.play()
@@ -55,6 +55,9 @@ class PlayerTest(TestCase):
         song2 = FakeSongModel()
         self.player.play_songs([song1, song2])
         self.assertTrue(mock_play_song.called)
+
+    def test_watch_thread(self):
+        self.assertIsNotNone(self.player._signal_access_thread)
 
     def test_toggle(self):
         self.player.toggle()
