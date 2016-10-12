@@ -1,0 +1,7 @@
+## 2016-10-08 v0.0.3a
+
+- refactor Player class, expose `run` interface
+
+## 2016-10-07 v0.0.2b
+
+- player can play next song automaticly

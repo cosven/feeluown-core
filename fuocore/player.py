@@ -43,10 +43,6 @@ class Player(object):
         # this thread will be terminated when player is destroyed
         self._stdout_cap_thread = None
 
-        # get signal from queue and emit them
-        # this thread play a role like a Worker
-        self._signal_access_thread = None
-
         self._ready_to_exit_flag = False
 
         self._position = 0
@@ -71,9 +67,6 @@ class Player(object):
 
         self.finished.connect(self.play_next)
         self.ready_to_exit.connect(self._ready_to_exit)
-        self._signal_access_thread = threading.Thread(
-                        target=self._watch_queue, args=())
-        self._signal_access_thread.start()
 
     @property
     def handler(self):
@@ -122,7 +115,7 @@ class Player(object):
             elif flag == '@E':
                 logging.warning('Player error occured.')
 
-    def _watch_queue(self):
+    def run(self):
         while True:
             if self._ready_to_exit_flag:
                 break
@@ -210,7 +203,7 @@ class Player(object):
     def set_state(self, state):
         self._state = state
         if self._last_state != state:
-            self.state_changed.emit()
+            self._signal_queue.put(self.state_changed)
             self._last_state = state
 
     def _play(self, url):
@@ -284,7 +277,7 @@ class Player(object):
             else:
                 return self._songs[self._songs.index(self._current_song) + 1]
         elif self.playback_mode == PlaybackMode.sequential:
-            self.signal_playlist_finished.emit()
+            self._signal_queue.put(self.signal_playlist_finished)
             return None
         else:
             return random.choice(self._songs)
