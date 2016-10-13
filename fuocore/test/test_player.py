@@ -56,9 +56,6 @@ class PlayerTest(TestCase):
         self.player.play_songs([song1, song2])
         self.assertTrue(mock_play_song.called)
 
-    def test_watch_thread(self):
-        self.assertIsNotNone(self.player._signal_access_thread)
-
     def test_toggle(self):
         self.player.toggle()
 
