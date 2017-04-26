@@ -1,0 +1,3 @@
+pycrypto
+requests
+beautifulsoup4
