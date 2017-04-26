@@ -37,6 +37,13 @@ class Player(object):
 
     Each time the player play a song or switch a song, it will kill the
     old process and open a new subprocess.
+
+    Simple usage::
+
+        from fuocore import Player
+        player = Player()
+        url = 'test.mp3'  # can be a http url
+        player.play(url)
     """
     def __init__(self):
         super().__init__()
