@@ -25,13 +25,19 @@ class PlaybackMode(Enum):
 
 
 class Player(object):
-    '''mpg123 wrapper
+    """music player backend
 
-    Each time the player play a song, it will kill the old process and open
-    a new subprocess.
+    `mpg123 <https://www.mpg123.de/>`_ can read and execute commands from stdin
+    when mpg123 activates its generic control interface by run ``mpg123 -R``.
 
-    TODO: maybe we need a `Playlist` class
-    '''
+    this music player backend do not implement a audio player itself. It use
+    mpg123 as its actual audio player. It start mpg123 within a subprocess.
+    send commands to mpg123's stdin to control mpg123 and get player state
+    and extra info from mpg123's stdout through pipes.
+
+    Each time the player play a song or switch a song, it will kill the
+    old process and open a new subprocess.
+    """
     def __init__(self):
         super().__init__()
 
@@ -126,11 +132,14 @@ class Player(object):
         self._ready_to_exit_flag = True
 
     def shutdown(self):
-        '''stop signal-watch thread(worker)'''
+        """stop signal-watch thread(worker)"""
+
         self.destroy()
         self._signal_queue.put(self.ready_to_exit)
 
     def destroy(self):
+        """stop mpg123 and kill subprocess"""
+
         if self._handler is not None:
             try:
                 self.handler.stdin.write(b'q\n')

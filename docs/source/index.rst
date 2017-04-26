@@ -3,9 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-fuocore 文档
-============
+feeluown core
+=============
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   api

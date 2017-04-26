@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 # encoding: UTF-8
 
-"""
-网易云音乐 Api
-https://github.com/bluetomlee/NetEase-MusicBox
-The MIT License (MIT)
-CopyRight (c) 2014 vellow <i@vellow.net>
-
-modified by cosven
-"""
-
 import base64
 import binascii
 import os
@@ -63,7 +54,6 @@ class Xiami(object):
         return []
 
 
-
 class Api(object):
     def __init__(self):
         super().__init__()
@@ -71,7 +61,7 @@ class Api(object):
             'Host': 'music.163.com',
             'Connection': 'keep-alive',
             'Referer': 'http://music.163.com/',
-            "User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2)'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2)'
                           ' AppleWebKit/537.36 (KHTML, like Gecko)'
                           ' Chrome/33.0.1750.152 Safari/537.36'
         }

@@ -7,7 +7,7 @@ import os
 
 from .base_model import SongModel, PlaylistModel
 
-from .api import api
+from .netease import api
 from .consts import USERS_INFO_FILE, NE_SOURCE, SONG_DIR
 
 logger = logging.getLogger(__name__)
