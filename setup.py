@@ -23,9 +23,10 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         ),
     install_requires=[
-        'pycrypto',
-        'requests',
-        'beautifulsoup4',
+        'pycrypto==2.6.1',
+        'requests==2.13.0',
+        'beautifulsoup4==4.5.3',
+        'marshmallow==2.13.5',
         ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],

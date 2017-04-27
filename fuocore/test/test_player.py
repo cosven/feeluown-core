@@ -3,12 +3,12 @@ import time
 from unittest import TestCase, mock
 
 from fuocore.player import Player, State
-from fuocore.base_model import SongModel
+from fuocore.base_schema import SongSchema
 
 MP3_URL = os.path.join(os.path.dirname(__file__), 'fixtures', 'ybwm-ts.mp3') 
 
 
-class FakeSongModel(SongModel):
+class FakeSongSchema(SongSchema):
     def __init__(self):
         pass
 
@@ -43,7 +43,7 @@ class PlayerTest(TestCase):
         self.player.pause()
 
     def test_play_song(self):
-        song = FakeSongModel()
+        song = FakeSongSchema()
         self.player.play_song(song)
         self.assertTrue(self.player.current_song == song)
         # time.sleep(1)
@@ -51,8 +51,8 @@ class PlayerTest(TestCase):
 
     @mock.patch.object(Player, 'play_song')
     def test_play_songs(self, mock_play_song):
-        song1 = FakeSongModel()
-        song2 = FakeSongModel()
+        song1 = FakeSongSchema()
+        song2 = FakeSongSchema()
         self.player.play_songs([song1, song2])
         self.assertTrue(mock_play_song.called)
 
@@ -63,13 +63,13 @@ class PlayerTest(TestCase):
         self.player.position
 
     def test_add_song(self):
-        song = FakeSongModel()
+        song = FakeSongSchema()
         self.player.add_song(song)
         self.assertTrue(len(self.player.songs), 1)
 
     def test_get_next_song(self):
-        song1 = FakeSongModel()
-        song2 = FakeSongModel()
+        song1 = FakeSongSchema()
+        song2 = FakeSongSchema()
         self.player.play_songs([song1, song2])
         self.assertTrue(self.player.get_next_song() == song2)
 

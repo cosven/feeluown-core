@@ -6,7 +6,7 @@ docs:
 	cd docs && make html
 
 unittest:
-	py.test -s
+	pytest -s
 
 clean:
 	find . -name "*.pyc" -exec rm -f {} \;

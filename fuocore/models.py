@@ -5,7 +5,9 @@ import json
 import logging
 import os
 
-from .base_model import SongModel, PlaylistModel
+from marshmallow import fields
+
+from .base_schema import SongSchema, PlaylistSchema
 
 from .netease import api
 from .consts import USERS_INFO_FILE, NE_SOURCE, SONG_DIR
@@ -13,59 +15,13 @@ from .consts import USERS_INFO_FILE, NE_SOURCE, SONG_DIR
 logger = logging.getLogger(__name__)
 
 
-class NSongModel(SongModel):
-    _api = api
-
-    def __init__(self, mid, title, length, artists_model, album_model,
-                 mvid=0, url=None):
-        self._mid = mid
-        self._title = title
-        self._url = None
-        self._candidate_url = url
-        self._length = length
-        self.artists = artists_model
-        self.album = album_model
-        self.mvid = mid
-
-        self._start_time = datetime.datetime.now()
-
-    @property
-    def mid(self):
-        return self._mid
-
-    @property
-    def title(self):
-        return self._title
-
-    @property
-    def artists_name(self):
-        name = []
-        for artist in self.artists:
-            name.append(artist.name)
-        return ', '.join(name)
-
-    @property
-    def album_name(self):
-        return self.album.name
-
-    @property
-    def album_img(self):
-        if not self.album._img:
-            logger.debug('songs has no album img, so get detail')
-            self.get_detail()
-        return self.album.img
-
-    @property
-    def length(self):
-        return self._length
-
-    @property
-    def source(self):
-        return NE_SOURCE
+class NSongSchema(SongSchema):
+    id = fields.Integer()
+    mvid = fields.Integer()
 
     @property
     def url(self):
-        f_path = NSongModel.local_exists(self)
+        f_path = NSongSchema.local_exists(self)
         if f_path is not None:
             logger.info('use local mp3 file for song: %s' % self.title)
             return f_path
@@ -115,7 +71,7 @@ class NSongModel(SongModel):
         if data is None:
             return []
         if data['code'] == 200:
-            return [NSongModel.pure_create(data['songs'][0])]
+            return [NSongSchema.pure_create(data['songs'][0])]
         else:
             return []
 
@@ -239,7 +195,7 @@ class NAlbumModel(object):
         data = self._api.album_infos(self.bid)
         if data is not None:
             data = data['album']
-            self._songs = NSongModel.batch_create(data['songs'])
+            self._songs = NSongSchema.batch_create(data['songs'])
             self._img = data['picUrl']
             self._desc = data['description']
 
@@ -256,7 +212,7 @@ class NAlbumModel(object):
         bid = album_data['id']
         name = album_data['name']
         artists_name = album_data['artist']['name']
-        songs = NSongModel.batch_create(album_data['songs'])
+        songs = NSongSchema.batch_create(album_data['songs'])
         img = album_data['picUrl']
         desc = album_data['briefDesc']
         return NAlbumModel(bid, name, artists_name, songs, img, desc)
@@ -306,7 +262,7 @@ class NArtistModel(object):
         if data is not None:
             self._img = data['artist']['picUrl']
             self._description = data['description']
-            self._songs = NSongModel.batch_create(data['hotSongs'])
+            self._songs = NSongSchema.batch_create(data['hotSongs'])
 
     @classmethod
     def get(cls, aid):
@@ -322,7 +278,7 @@ class NArtistModel(object):
         name = data['artist']['name']
         img = data['artist']['picUrl']
 
-        songs = NSongModel.batch_create(data['hotSongs'])
+        songs = NSongSchema.batch_create(data['hotSongs'])
         return cls(aid, name, img, songs)
 
 
@@ -359,9 +315,9 @@ class NUserModel(object):
         playlists = data['playlist']
         playlists_model = []
         for p in playlists:
-            model = NPlaylistModel(p['id'], p['name'], p['specialType'],
-                                   p['userId'], p['coverImgUrl'],
-                                   p['updateTime'], p['description'])
+            model = NPlaylistSchema(p['id'], p['name'], p['specialType'],
+                                    p['userId'], p['coverImgUrl'],
+                                    p['updateTime'], p['description'])
             playlists_model.append(model)
         self._playlists = playlists_model
         return playlists_model
@@ -443,7 +399,7 @@ class NUserModel(object):
             return []
         data = cls._api.get_recommend_songs()
         if data.get('code') == 200:
-            return NSongModel.batch_create(data['recommend'])
+            return NSongSchema.batch_create(data['recommend'])
         return []
 
     @classmethod
@@ -455,12 +411,12 @@ class NUserModel(object):
             return []
         if data['code'] == 200:
             songs = data['data']
-            return NSongModel.batch_create(songs)
+            return NSongSchema.batch_create(songs)
         else:
             return []
 
 
-class NPlaylistModel(PlaylistModel):
+class NPlaylistSchema(PlaylistSchema):
     instances = []
     _api = api
 
@@ -476,7 +432,7 @@ class NPlaylistModel(PlaylistModel):
         self._description = description
         self.last_update_ts = update_ts
 
-        NPlaylistModel.instances.append(self)
+        NPlaylistSchema.instances.append(self)
 
     @property
     def name(self):
@@ -497,7 +453,7 @@ class NPlaylistModel(PlaylistModel):
         data = self._api.playlist_detail(self.pid)
         if data is None:
             return None
-        songs_model = NSongModel.batch_create(data['result']['tracks'])
+        songs_model = NSongSchema.batch_create(data['result']['tracks'])
         self._songs = songs_model
         return self._songs
 
