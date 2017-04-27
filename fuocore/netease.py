@@ -54,7 +54,16 @@ class Xiami(object):
         return []
 
 
-class Api(object):
+class Netease(object):
+    """netease music api
+
+    Simple usage::
+
+        from fuocore import netease
+        data = netease.search(u'sugar')
+        songs = data['result']['songs']
+    """
+
     def __init__(self):
         super().__init__()
         self.headers = {
@@ -152,6 +161,7 @@ class Api(object):
 
     # 搜索单曲(1)，歌手(100)，专辑(10)，歌单(1000)，用户(1002) *(type)*
     def search(self, s, stype=1, offset=0, total='true', limit=60):
+        # TODO: this should return a list
         action = uri + '/search/get'
         data = {
             's': s,
@@ -405,4 +415,4 @@ class Api(object):
         return None
 
 
-api = Api()
+netease = Netease()

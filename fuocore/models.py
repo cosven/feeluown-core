@@ -9,7 +9,7 @@ from marshmallow import fields
 
 from .base_schema import SongSchema, PlaylistSchema
 
-from .netease import api
+from .netease import netease
 from .consts import USERS_INFO_FILE, NE_SOURCE, SONG_DIR
 
 logger = logging.getLogger(__name__)
@@ -136,7 +136,7 @@ class NSongSchema(SongSchema):
 
 
 class NAlbumModel(object):
-    _api = api
+    _api = netease
 
     def __init__(self, bid, name, artists_name, songs=[], img='', desc=''):
         super().__init__()
@@ -219,7 +219,7 @@ class NAlbumModel(object):
 
 
 class NArtistModel(object):
-    _api = api
+    _api = netease
 
     def __init__(self, aid, name, img='', songs=[]):
         self.aid = aid
@@ -283,7 +283,7 @@ class NArtistModel(object):
 
 
 class NUserModel(object):
-    _api = api
+    _api = netease
     current_user = None
 
     def __init__(self, username, uid, name, img, playlists=[]):
@@ -418,7 +418,7 @@ class NUserModel(object):
 
 class NPlaylistSchema(PlaylistSchema):
     instances = []
-    _api = api
+    _api = netease
 
     def __init__(self, pid, name, ptype, uid, cover_img, update_ts,
                  description, songs=[]):
