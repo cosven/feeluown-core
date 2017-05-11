@@ -1,9 +1,15 @@
-__version__ = '0.0.3a'
-
-
 from .player import Player  # noqa
-from .netease import Netease  # noqa
-from .netease import netease  # noqa
+from .provider import providers
 
 
-__all__ = ['Player', 'netease', 'Netease']
+__version__ = '0.0.4a'
+
+__all__ = ['Player', 'search']
+
+
+def search(name=''):
+
+    songs = []
+    for provider in providers:
+        songs.append(provider.search(name=name))
+    return songs

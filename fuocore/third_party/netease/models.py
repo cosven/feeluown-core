@@ -7,9 +7,9 @@ import os
 
 from marshmallow import fields
 
-from .base_schema import SongSchema, PlaylistSchema
+from fuocore.models import BriefSongModel
 
-from .netease import netease
+from .api import api
 from .consts import USERS_INFO_FILE, NE_SOURCE, SONG_DIR
 
 logger = logging.getLogger(__name__)

@@ -4,25 +4,26 @@ from april import Model
 from april.tipes import listof
 
 
-class BriefArtistModel(Model):
+class BaseModel(Model):
+    source = str
+
+
+class BriefArtistModel(BaseModel):
     name = str
     img = str
 
     _optional_fields = ['img']
 
 
-class BriefAlbumModel(Model):
+class BriefAlbumModel(BaseModel):
     name = str
-    artists = listof(BriefArtistModel)
-    img = str
 
 
-class BriefSongModel(Model):
+class BriefSongModel(BaseModel):
     name = str
     duration = int
-    album = BriefAlbumModel
-    artists = BriefArtistModel
-    source = str
+    brief_album = BriefAlbumModel
+    brief_artists = listof(BriefArtistModel)
 
     @classmethod
     def search(cls, name):
@@ -33,14 +34,16 @@ class ArtistModel(BriefArtistModel):
     hot_songs = listof(BriefSongModel)
     desc = str
 
-    _optional_fields = ('desc')
+    _optional_fields = ('desc', )
 
 
 class AlbumModel(BriefAlbumModel):
+    img = str
     songs = listof(BriefSongModel)
+    artists = listof(BriefArtistModel)
     desc = str
 
-    _optional_fields = ('desc')
+    _optional_fields = ('desc', )
 
 
 class LyricModel(Model):
@@ -48,7 +51,7 @@ class LyricModel(Model):
     content = str
     trans_content = str
 
-    _optional_fields = ('trans_content')
+    _optional_fields = ('trans_content', )
 
 
 class SongModel(BriefSongModel):

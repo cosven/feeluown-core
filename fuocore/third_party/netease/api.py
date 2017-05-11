@@ -54,7 +54,7 @@ class Xiami(object):
         return []
 
 
-class Netease(object):
+class API(object):
     """netease music api
 
     Simple usage::
@@ -161,7 +161,7 @@ class Netease(object):
 
     # 搜索单曲(1)，歌手(100)，专辑(10)，歌单(1000)，用户(1002) *(type)*
     def search(self, s, stype=1, offset=0, total='true', limit=60):
-        # TODO: this should return a list
+        """get songs list from search keywords"""
         action = uri + '/search/get'
         data = {
             's': s,
@@ -170,7 +170,10 @@ class Netease(object):
             'total': total,
             'limit': 60
         }
-        return self.request('POST', action, data)
+        resp = self.request('POST', action, data)
+        if resp['code'] == 200:
+            return resp['result']['songs']
+        return []
 
     def playlist_detail(self, playlist_id):
         action = uri + '/playlist/detail?id=' + str(playlist_id) +\
@@ -415,4 +418,4 @@ class Netease(object):
         return None
 
 
-netease = Netease()
+api = API()
