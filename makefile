@@ -6,7 +6,9 @@ docs:
 	cd docs && make html
 
 unittest:
-	pytest -s
+	coverage run --source=fuocore setup.py test && coverage report -m
+
+test: unittest
 
 clean:
 	find . -name "*.pyc" -exec rm -f {} \;

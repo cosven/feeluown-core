@@ -8,7 +8,6 @@ import subprocess
 import threading
 
 from .dispatch import Signal
-from .base_schema import SongSchema
 
 
 class State(Enum):
