@@ -6,6 +6,24 @@
 feeluown core
 =============
 
+mp3 player with multi-source
+
+Usage
+-----
+
+
+
+搜索歌曲
+''''''''
+
+.. sourcecode:: python
+
+    from fuocore import Source
+
+    source = Source()
+    # source.list_provider()
+    source.add_provider()
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

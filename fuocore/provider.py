@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from abc import ABCMeta, abstractclassmethod, abstractproperty
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 
 providers = set()
@@ -14,6 +14,7 @@ class AbstractProvider(metaclass=ABCMeta):
     def name(self):
         """provider name"""
 
+    @abstractmethod
     def search(self, name=None, artist=None, album=None, lyrics=None):
         """search songs by name, artist name, album name
 
@@ -21,8 +22,12 @@ class AbstractProvider(metaclass=ABCMeta):
         """
 
 
+class LocalProvider(AbstractProvider):
+    pass
+
+
 def register(provider):
-    providers.add(providers)
+    providers.add(provider)
 
 
 def deregister(provider):

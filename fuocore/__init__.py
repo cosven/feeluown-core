@@ -1,15 +1,7 @@
 from .player import Player  # noqa
-from .provider import providers
+from .source import Source  # noqa
 
 
 __version__ = '0.0.4a'
 
-__all__ = ['Player', 'search']
-
-
-def search(name=''):
-
-    songs = []
-    for provider in providers:
-        songs.append(provider.search(name=name))
-    return songs
+__all__ = ['Player', 'Source']
