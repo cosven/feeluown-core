@@ -11,18 +11,19 @@ mp3 player with multi-source
 Usage
 -----
 
-
-
 搜索歌曲
 ''''''''
 
 .. sourcecode:: python
 
     from fuocore import Source
+    from fuocore.third_party.netease import NeteaseProvider
 
     source = Source()
     # source.list_provider()
-    source.add_provider()
+    netease_provider = NeteaseProvider()
+    source.add_provider(netease_provider)
+    source.search(u'Luv Letter')
 
 .. toctree::
    :maxdepth: 2

@@ -12,13 +12,20 @@ class AbstractProvider(metaclass=ABCMeta):
 
     @abstractproperty
     def name(self):
-        """provider name"""
+        """provider name, used to identify"""
 
     @abstractmethod
-    def search(self, name=None, artist=None, album=None, lyrics=None):
+    def search(self, keyword, **kwargs):
         """search songs by name, artist name, album name
 
         :return: list of brief songs.
+        """
+
+    @abstractmethod
+    def get_song(self, identifier):
+        """get song by identifier
+
+        :return: song model: :class:`fuocore.models.SongModel`
         """
 
 

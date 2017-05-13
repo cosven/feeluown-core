@@ -10,8 +10,15 @@ class Source(object):
         register(provider)
         self._providers.add(provider)
 
-    def search(self, name=''):
+    def search(self, keyword):
+        """search song by keyword
+
+        :returns: list of :class:`fuocore.models.BriefSongModel`
+        """
         songs = []
         for provider in self._providers:
-            songs.extend(provider.search(name=name))
+            songs.extend(provider.search(keyword=keyword))
         return songs
+
+    def get_song(self, identifier):
+        """get song from identifier"""

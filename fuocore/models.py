@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import uuid
+
 from april import Model
 from april.tipes import listof
 
 
 class BaseModel(Model):
+    #: mark this model's provider
     source = str
+
+    @property
+    def identifier(self):
+        """the model indentifier (unique)"""
+        raise NotImplementedError
 
 
 class BriefArtistModel(BaseModel):
@@ -14,24 +22,35 @@ class BriefArtistModel(BaseModel):
 
     _optional_fields = ['img']
 
+    @property
+    def identifier(self):
+        return uuid.uuid1().hex
+
 
 class BriefAlbumModel(BaseModel):
     name = str
 
+    @property
+    def identifier(self):
+        return uuid.uuid1().hex
+
 
 class BriefSongModel(BaseModel):
     name = str
+    url = str
     duration = int
     brief_album = BriefAlbumModel
     brief_artists = listof(BriefArtistModel)
 
-    @classmethod
-    def search(cls, name):
-        pass
+    _optional_fields = ['url', 'duration', 'brief_album', 'brief_artists']
+
+    @property
+    def identifier(self):
+        return uuid.uuid1().hex
 
 
 class ArtistModel(BriefArtistModel):
-    hot_songs = listof(BriefSongModel)
+    songs = listof(BriefSongModel)
     desc = str
 
     _optional_fields = ('desc', )
@@ -39,8 +58,8 @@ class ArtistModel(BriefArtistModel):
 
 class AlbumModel(BriefAlbumModel):
     img = str
-    songs = listof(BriefSongModel)
-    artists = listof(BriefArtistModel)
+    brief_songs = listof(BriefSongModel)
+    brief_artists = listof(BriefArtistModel)
     desc = str
 
     _optional_fields = ('desc', )
@@ -56,3 +75,6 @@ class LyricModel(Model):
 
 class SongModel(BriefSongModel):
     url = str
+
+    _optional_fields = ['duration', 'brief_album', 'brief_artists',
+                        'album', 'artists']

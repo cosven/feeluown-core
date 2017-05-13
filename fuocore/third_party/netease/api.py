@@ -263,7 +263,9 @@ class API(object):
         action = uri + '/song/detail/?id=' + str(music_id) + '&ids=[' +\
             str(music_id) + ']'
         data = self.request('GET', action)
-        return data
+        if data['songs']:
+            return data['songs'][0]
+        return
 
     def weapi_songs_url(self, music_ids, bitrate=320000):
         url = uri_we + '/song/enhance/player/url'
@@ -273,7 +275,8 @@ class API(object):
             'csrf_token': self._cookies.get('__csrf')
         }
         payload = self.encrypt_request(data)
-        return self.request('POST', url, payload)
+        data = self.request('POST', url, payload)
+        return data['data']
 
     def songs_detail(self, music_ids):
         music_ids = [str(music_id) for music_id in music_ids]

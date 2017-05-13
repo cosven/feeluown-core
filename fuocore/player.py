@@ -240,7 +240,7 @@ class Player(object):
     def _get_song(self, song):
         '''get song instance in `_songs` list'''
         for i, m in enumerate(self._songs):
-            if song.mid == m.mid:
+            if song.identifier == m.identifier:
                 return song
         return None
 
