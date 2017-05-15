@@ -85,20 +85,23 @@ class Playlist(object):
         """advance to next song"""
         if not self._songs:
             return
+
         if self.current_song is None:
             self._current_index = 0
+            self.song_changed.emit()
+            return
 
         if self.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop):
             if self._current_index == len(self._songs) - 1:
                 self._current_index = 0
             self._current_index += 1
-
         elif self.playback_mode == PlaybackMode.sequential:
             if self._current_index == len(self._songs) - 1:
                 self._current_index = None
             self._current_index += 1
+        else:
+            self._current_index = random.choice(range(0, len(self._songs)))
 
-        self._current_index = random.choice(range(0, len(self._songs)))
         self.song_changed.emit()
 
     def previous(self):
@@ -107,13 +110,22 @@ class Playlist(object):
         """
         if not self._songs:
             return None
+
         if self._last_index is not None:
             self._current_index = self._last_index
-        if self.current_song is None:
+            self.song_changed.emit()
+            return
+
+        if self._current_index is None:
             self._current_index = 0
-        if self.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop):
+            self.song_changed.emit()
+            return
+
+        if self.playback_mode == PlaybackMode.random:
+            self._current_index = random.choice(range(0, len(self._songs)))
+        else:
             self._current_index -= 1
-        self._current_index = random.choice(range(0, len(self._songs)))
+
         self.song_changed.emit()
 
 
