@@ -1,4 +1,4 @@
-from .player import Player  # noqa
+from .engine import Player  # noqa
 from .source import Source  # noqa
 
 

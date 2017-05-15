@@ -1,10 +1,12 @@
+import copy
 import os
 from unittest import TestCase
 
 import mock
 
-from fuocore.player import Player
+from fuocore.engine import Player, Playlist
 from fuocore.models import SongModel
+from fuocore.dispatch import Signal
 
 MP3_URL = os.path.join(os.path.dirname(__file__), 'fixtures', 'ybwm-ts.mp3')
 
@@ -22,6 +24,35 @@ fake_song = SongModel(**{
         }
     ]
 })
+fake_song_1 = copy.deepcopy(fake_song)
+fake_song_1.id = 2
+
+
+class TestPlaylist(TestCase):
+    def setUp(self):
+        self.playlist = Playlist([fake_song, fake_song_1])
+
+    def test_set_current_song(self):
+        self.playlist.current_song = fake_song
+        self.assertEqual(self.playlist.current_song, fake_song)
+
+    def test_next_when_no_current_song(self):
+        self.playlist.next()
+        self.assertEqual(self.playlist.current_song, fake_song)
+
+    def test_next_when_in_loop_mode(self):
+        self.playlist.current_song = fake_song
+        self.playlist.next()
+        self.assertEqual(self.playlist.current_song, fake_song_1)
+
+    def test_previous_when_no_current_song_and_no_last_song(self):
+        self.playlist.previous()
+        self.assertEqual(self.playlist.current_song, fake_song)
+
+    @mock.patch.object(Signal, 'emit')
+    def test_set_current_song_should_emit_signal(self, mock_emit):
+        self.playlist.previous()
+        self.assertTrue(mock_emit.called)
 
 
 class TestPlayer(TestCase):
