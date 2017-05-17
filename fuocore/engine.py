@@ -7,7 +7,7 @@
     fuocore media player engine.
 """
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from enum import Enum
 import logging
 from queue import Queue
@@ -19,6 +19,8 @@ from .dispatch import Signal
 
 
 class State(Enum):
+    """Player state"""
+
     stopped = 0
     paused = 1
     playing = 2
@@ -130,7 +132,74 @@ class Playlist(object):
 
 
 class AbstractPlayer(object, metaclass=ABCMeta):
-    pass
+
+    def __init__(self , *args, **kwargs):
+        self._position = 0
+        self._playlist = None
+        self._song = None
+
+    @abstractproperty
+    def state(self):
+        """player state
+
+        :return: :class:`fuocore.engine.State`
+        """
+
+    @property
+    def current_song(self):
+        return self._song
+
+    @property
+    def playlist(self):
+        """player playlist
+
+        :return: :class:`fuocore.engine.Playlist`
+        """
+        return self._playlist
+
+    @playlist.setter
+    def playlist(self, playlist):
+        self._playlist = playlist
+
+    @property
+    def position(self):
+        """player position, the units is mileseconds"""
+        return self._position
+
+    @position.setter
+    def position(self, position):
+        self._position = position
+
+    @abstractproperty
+    def duration(self):
+        """player media duration, the units is mileseconds"""
+
+    @abstractmethod
+    def play(self, url):
+        """play media
+
+        :param url: a local file absolute path, or a http url that refers to a
+            media file
+        """
+
+    @abstractmethod
+    def play_song(self, song):
+        """play media by song model
+
+        :param song: :class:`fuocore.models.SongModel`
+        """
+
+    @abstractmethod
+    def pause(self):
+        """pause player"""
+
+    @abstractmethod
+    def toggle(self):
+        """toggle player state"""
+
+    @abstractmethod
+    def stop(self):
+        """stop player"""
 
 
 class Player(object):
