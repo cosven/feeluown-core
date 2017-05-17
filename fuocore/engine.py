@@ -137,13 +137,16 @@ class AbstractPlayer(object, metaclass=ABCMeta):
         self._position = 0
         self._playlist = None
         self._song = None
+        self._state = State.stopped
+        self._duration = None
 
-    @abstractproperty
+    @property
     def state(self):
         """player state
 
         :return: :class:`fuocore.engine.State`
         """
+        return self._state
 
     @property
     def current_song(self):
@@ -170,9 +173,10 @@ class AbstractPlayer(object, metaclass=ABCMeta):
     def position(self, position):
         self._position = position
 
-    @abstractproperty
+    @property
     def duration(self):
         """player media duration, the units is mileseconds"""
+        return self._duration
 
     @abstractmethod
     def play(self, url):
@@ -190,6 +194,10 @@ class AbstractPlayer(object, metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def resume(self):
+        """play playback"""
+
+    @abstractmethod
     def pause(self):
         """pause player"""
 
@@ -200,6 +208,14 @@ class AbstractPlayer(object, metaclass=ABCMeta):
     @abstractmethod
     def stop(self):
         """stop player"""
+
+    @abstractmethod
+    def initialize(self):
+        """"initialize player"""
+
+    @abstractmethod
+    def quit(self):
+        """quit player, do some clean up here"""
 
 
 class Player(object):
