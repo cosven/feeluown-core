@@ -140,6 +140,10 @@ class AbstractPlayer(object, metaclass=ABCMeta):
         self._state = State.stopped
         self._duration = None
 
+        self.position_changed = Signal()
+        self.state_changed = Signal()
+        self.song_changed = Signal()
+
     @property
     def state(self):
         """player state
