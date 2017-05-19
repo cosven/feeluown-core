@@ -2,13 +2,14 @@
 import logging
 
 from .engine import AbstractPlayer, State
-from .mpv import MPV
+from mpv import MPV
 
 logger = logging.getLogger(__name__)
 
 
 class MpvPlayer(AbstractPlayer):
     def __init__(self):
+        super().__init__()
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True)
@@ -23,25 +24,31 @@ class MpvPlayer(AbstractPlayer):
 
     def play(self, url):
         self._mpv.play(url)
-        self._state = State.playing
+        self.state = State.playing
 
     def play_song(self, song):
         if self._song == song:
             logger.warning('the song to be played is same as current song')
             return
 
-
     def resume(self):
         self._mpv.pause = False
+        self.state = State.playing
 
     def pause(self):
         self._mpv.pause = True
+        self.state = State.paused
 
     def toggle(self):
         self._mpv.pause = not self._mpv.pause
+        if self._mpv.pause:
+            self.state = State.paused
+        else:
+            self.state = State.playing
 
     def stop(self):
-        pass
+        self._mpv.stop()
+        self.state = State.stopped
 
     def _on_position_changed(self, position):
         self._position = position

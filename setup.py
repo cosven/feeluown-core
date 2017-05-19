@@ -11,6 +11,7 @@ setup(
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
+    py_modules=['mpv'],
     packages=['fuocore'],
     package_data={
         '': []
@@ -28,10 +29,12 @@ setup(
         'beautifulsoup4==4.5.3',
         'marshmallow==2.13.5',
         'april>=0.0.1a2',
-        'mock',
         ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=[
+        'pytest',
+        'mock'
+    ],
     entry_points={
         'console_scripts': []
         },
