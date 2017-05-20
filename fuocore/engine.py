@@ -132,7 +132,6 @@ class AbstractPlayer(object, metaclass=ABCMeta):
     def __init__(self , *args, **kwargs):
         self._position = 0
         self._playlist = None
-        self._song = None
         self.__state = State.stopped
         self._duration = None
 
@@ -155,7 +154,7 @@ class AbstractPlayer(object, metaclass=ABCMeta):
 
     @property
     def current_song(self):
-        return self._song
+        return self._playlist.current_song
 
     @property
     def playlist(self):

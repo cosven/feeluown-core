@@ -13,7 +13,16 @@ class BaseModel(Model):
     @property
     def identifier(self):
         """the model indentifier (unique)"""
-        raise NotImplementedError
+        if hasattr(self, '_identifier'):
+            return self._identifier
+        self._identifier = uuid.uuid1().hex
+        return self._identifier
+
+    def __eq__(self, other):
+        return self.identifier == other.identifier
+
+    def __ne__(self, other):
+        return self != other
 
 
 class BriefArtistModel(BaseModel):
@@ -22,20 +31,13 @@ class BriefArtistModel(BaseModel):
 
     _optional_fields = ['img']
 
-    @property
-    def identifier(self):
-        return uuid.uuid1().hex
-
 
 class BriefAlbumModel(BaseModel):
     name = str
 
-    @property
-    def identifier(self):
-        return uuid.uuid1().hex
-
 
 class BriefSongModel(BaseModel):
+
     name = str
     url = str
     duration = int
@@ -43,10 +45,6 @@ class BriefSongModel(BaseModel):
     brief_artists = listof(BriefArtistModel)
 
     _optional_fields = ['url', 'duration', 'brief_album', 'brief_artists']
-
-    @property
-    def identifier(self):
-        return uuid.uuid1().hex
 
 
 class ArtistModel(BriefArtistModel):
@@ -74,7 +72,6 @@ class LyricModel(Model):
 
 
 class SongModel(BriefSongModel):
-    url = str
 
     _optional_fields = ['duration', 'brief_album', 'brief_artists',
                         'album', 'artists']
