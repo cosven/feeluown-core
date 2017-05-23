@@ -46,6 +46,10 @@ class BriefSongModel(BaseModel):
 
     _optional_fields = ['url', 'duration', 'brief_album', 'brief_artists']
 
+    def __str__(self):
+        return self.name + ' - ' + \
+                ', '.join([artist.name for artist in self.brief_artists])
+
 
 class ArtistModel(BriefArtistModel):
     songs = listof(BriefSongModel)

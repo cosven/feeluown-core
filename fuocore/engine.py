@@ -47,6 +47,26 @@ class Playlist(object):
         self.playback_mode_changed = Signal()
         self.song_changed = Signal()
 
+    def __len__(self):
+        return len(self._songs)
+
+    def __getitem__(self, index):
+        """overload [] operator"""
+        return self._songs[index]
+
+    def add(self, song):
+        """insert a song after current song"""
+        if song in self._songs:
+            return
+
+        if self._current_index is None:
+            self._songs.append(song)
+        else:
+            self._songs.insert(self._current_index + 1, song)
+
+    def remove(self, song):
+        self._songs.remove(song)
+
     @property
     def current_song(self):
         if self._current_index is None:
@@ -129,15 +149,16 @@ class Playlist(object):
 
 class AbstractPlayer(object, metaclass=ABCMeta):
 
-    def __init__(self , *args, **kwargs):
+    def __init__(self, playlist=Playlist(), **kwargs):
         self._position = 0
-        self._playlist = None
-        self.__state = State.stopped
+        self._playlist = playlist
+        self._state = State.stopped
         self._duration = None
 
         self.position_changed = Signal()
         self.state_changed = Signal()
         self.song_changed = Signal()
+        self.song_finished = Signal()
 
     @property
     def state(self):
@@ -145,11 +166,11 @@ class AbstractPlayer(object, metaclass=ABCMeta):
 
         :return: :class:`fuocore.engine.State`
         """
-        return self.__state
+        return self._state
 
     @state.setter
     def state(self, value):
-        self.__state = value
+        self._state = value
         self.state_changed.emit()
 
     @property

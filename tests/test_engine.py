@@ -57,3 +57,11 @@ class TestPlaylist(TestCase):
     def test_set_current_song_should_emit_signal(self, mock_emit):
         self.playlist.previous()
         self.assertTrue(mock_emit.called)
+
+    def test_add_usage(self):
+        song = SongModel(**data)
+        self.playlist.add(song)
+        self.assertEquals(len(self.playlist), 3)
+
+    def test_getitem_overload(self):
+        self.assertEqual(self.playlist[0], self.fake_song)
