@@ -12,7 +12,11 @@ setup(
     author='Cosven',
     author_email='cosven.yin@gmail.com',
     py_modules=['mpv'],
-    packages=['fuocore'],
+    packages=[
+        'fuocore',
+        'fuocore.third_party',
+        'fuocore.third_party.netease'
+        ],
     package_data={
         '': []
         },

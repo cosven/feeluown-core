@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from .engine import AbstractPlayer, State
+from .engine import AbstractPlayer, State, Playlist
 from mpv import MPV
 
 logger = logging.getLogger(__name__)
@@ -13,6 +13,7 @@ class MpvPlayer(AbstractPlayer):
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True)
+        self._playlist = Playlist()
 
     def initialize(self):
         self._mpv.observe_property(
@@ -27,9 +28,10 @@ class MpvPlayer(AbstractPlayer):
         self.state = State.playing
 
     def play_song(self, song):
-        if self._song == song:
+        if self.playlist.current_song == song:
             logger.warning('the song to be played is same as current song')
             return
+        self.play(song.url)
 
     def resume(self):
         self._mpv.pause = False

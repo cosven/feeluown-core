@@ -4,7 +4,9 @@ from .provider import register
 
 
 class Source(object):
-    _providers = set()
+
+    def __init__(self):
+        self._providers = set()
 
     def add_provider(self, provider):
         register(provider)
