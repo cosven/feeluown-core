@@ -5,9 +5,9 @@ python:
   - "3.4"
   - "3.5"
 install:
-  - sudo add-apt-repository ppa:mc3man/mpv-tests
+  - sudo add-apt-repository ppa:mc3man/mpv-tests -y
   - sudo apt-get update
-  - sudo apt-get install mpv libmpv1
+  - sudo apt-get install mpv libmpv1 -y
   - pip install coveralls
   - python setup.py install
 script:
