@@ -21,7 +21,7 @@ for song in songs:
     try:
         song_ = netease_pvd.get_song(song.identifier)
         player.playlist.add(song_)
-        if len(player.playlist) > 4:
+        if len(player.playlist) > 1:
             break
     except:
         print()
