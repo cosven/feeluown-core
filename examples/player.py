@@ -16,13 +16,18 @@ source = Source()
 netease_pvd = NeteaseProvider()
 source.add_provider(netease_pvd)
 
-songs = source.search(u'张震岳 - OK')
+songs = source.search(u'张震岳')
 for song in songs:
     try:
         song_ = netease_pvd.get_song(song.identifier)
         player.playlist.add(song_)
+        if len(player.playlist) > 4:
+            break
     except:
         print()
 
 player.play_song(player.playlist[0])
-player._mpv.wait_for_playback()
+time.sleep(1)
+player._mpv.seek(250)
+while True:
+    player._mpv.wait_for_playback()

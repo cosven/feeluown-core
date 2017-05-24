@@ -76,6 +76,7 @@ class MpvPlayer(AbstractPlayer):
         self.position_changed.emit()
 
     def _on_song_changed(self):
+        logger.info('player received song changed signal')
         if self._playlist.current_song is not None:
             logger.info('will play song: %s' % self._playlist.current_song)
             self.play(self._playlist.current_song.url)

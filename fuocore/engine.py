@@ -77,6 +77,12 @@ class Playlist(object):
     def current_song(self, song):
         """change current song, emit song changed singal"""
 
+        self._last_song = self.current_song
+
+        if song is None:
+            self._current_index = None
+            return
+
         # add it to playlist if song not in playlist
         if song in self._songs:
             index = self._songs.index(song)
@@ -86,7 +92,6 @@ class Playlist(object):
             else:
                 index = self._current_index + 1
             self._songs.insert(index, song)
-        self._last_song = self.current_song
         self._current_index = index
         self.song_changed.emit()
 
@@ -105,24 +110,24 @@ class Playlist(object):
             return
 
         if self.current_song is None:
-            self._current_index = 0
-            self.song_changed.emit()
+            self.current_song = self._songs[0]
+            return
+
+        if self.playback_mode == PlaybackMode.random:
+            self.current_song =  random.choice(range(0, len(self._songs)))
             return
 
         if self.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop):
             if self._current_index == len(self._songs) - 1:
-                self._current_index = 0
-            else:
-                self._current_index += 1
-        elif self.playback_mode == PlaybackMode.sequential:
-            if self._current_index == len(self._songs) - 1:
-                self._current_index = None
-            else:
-                self._current_index += 1
-        else:
-            self._current_index = random.choice(range(0, len(self._songs)))
+                self.current_song = self._songs[0]
+                return
 
-        self.song_changed.emit()
+        if self.playback_mode == PlaybackMode.sequential:
+            if self._current_index == len(self._songs) - 1:
+                self.current_song = None
+                return
+
+        self.current_song = self._songs[self._current_index + 1]
 
     def previous(self):
         """return to previous played song, if previous played song not exists, get the song
@@ -132,21 +137,19 @@ class Playlist(object):
             return None
 
         if self._last_index is not None:
-            self._current_index = self._last_index
-            self.song_changed.emit()
+            self.current_song = self._songs[self._last_index]
             return
 
         if self._current_index is None:
-            self._current_index = 0
-            self.song_changed.emit()
+            self.current_song = self._songs[0]
             return
 
         if self.playback_mode == PlaybackMode.random:
-            self._current_index = random.choice(range(0, len(self._songs)))
+            index = random.choice(range(0, len(self._songs)))
         else:
-            self._current_index -= 1
+            index = self._current_index - 1
 
-        self.song_changed.emit()
+        self.current_song = self._songs[index]
 
 
 class AbstractPlayer(object, metaclass=ABCMeta):
