@@ -17,7 +17,9 @@ class NeteaseProvider(AbstractProvider):
         brief_song_schema = BriefSongSchema()
         for song in songs:
             result = brief_song_schema.load(song)
-            model = NBriefSongModel.deserialize(result.data)
+            data = result.data
+            data['source'] = self.name
+            model = NBriefSongModel.deserialize(data)
             models.append(model)
         return models
 

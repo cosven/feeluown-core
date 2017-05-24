@@ -12,6 +12,10 @@ class NBriefSongModel(BriefSongModel):
     def identifier(self):
         return self.id
 
+    @property
+    def source(self):
+        return 'netease'
+
 
 class NSongModel(SongModel):
     id = int
@@ -19,6 +23,10 @@ class NSongModel(SongModel):
     @property
     def identifier(self):
         return self.id
+
+    @property
+    def source(self):
+        return 'netease'
 
 
 class NMediaModel(Model):

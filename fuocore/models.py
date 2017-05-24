@@ -8,7 +8,6 @@ from april.tipes import listof
 
 class BaseModel(Model):
     #: mark this model's provider
-    source = str
 
     @property
     def identifier(self):
@@ -17,6 +16,10 @@ class BaseModel(Model):
             return self._identifier
         self._identifier = uuid.uuid1().hex
         return self._identifier
+
+    @property
+    def source(self):
+        raise NotImplementedError()
 
     def __eq__(self, other):
         return self.identifier == other.identifier

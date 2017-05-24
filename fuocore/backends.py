@@ -1,31 +1,38 @@
 # -*- coding: utf-8 -*-
-from functools import wraps
 import logging
 
 from .engine import AbstractPlayer, State, Playlist
-from mpv import MPV
+from mpv import MPV, MpvEventID
 
 logger = logging.getLogger(__name__)
 
 
 class MpvPlayer(AbstractPlayer):
+    """
+
+    player will always play playlist current song. player will listening to
+    playlist ``song_changed`` signal and change the current playback.
+    """
     def __init__(self):
         super().__init__()
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True)
         self._playlist = Playlist()
+        self._playlist.song_changed.connect(self._on_song_changed)
 
     def initialize(self):
         self._mpv.observe_property(
             'time-pos',
             lambda name, position: self._on_position_changed(position))
-        self._mpv.register_event_callback(lambda event: self._on_song_finished(event))
+        self._mpv.register_event_callback(lambda event: self._on_event(event))
+        self.song_finished.connect(self._playlist.next)
 
     def quit(self):
         del self._mpv
 
     def play(self, url):
+        logger.info('start play url:%s' % url)
         self._mpv.play(url)
         self.state = State.playing
 
@@ -34,8 +41,7 @@ class MpvPlayer(AbstractPlayer):
                 self.playlist.current_song == song:
             logger.warning('the song to be played is same as current song')
             return
-        self._playlist.add(song)
-        self.play(song.url)
+        self._playlist.current_song = song
 
     def resume(self):
         self._mpv.pause = False
@@ -69,6 +75,14 @@ class MpvPlayer(AbstractPlayer):
         self._position = position
         self.position_changed.emit()
 
-    def _on_song_finished(self, event):
-        print(event)
-        print('end_file')
+    def _on_song_changed(self):
+        if self._playlist.current_song is not None:
+            logger.info('will play song: %s' % self._playlist.current_song)
+            self.play(self._playlist.current_song.url)
+        else:
+            logger.info('playlist provide no song anymore.')
+
+    def _on_event(self, event):
+        if event['event_id'] == MpvEventID.END_FILE:
+            logger.info('current song finished.')
+            self.song_finished.emit()

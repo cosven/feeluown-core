@@ -112,11 +112,13 @@ class Playlist(object):
         if self.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop):
             if self._current_index == len(self._songs) - 1:
                 self._current_index = 0
-            self._current_index += 1
+            else:
+                self._current_index += 1
         elif self.playback_mode == PlaybackMode.sequential:
             if self._current_index == len(self._songs) - 1:
                 self._current_index = None
-            self._current_index += 1
+            else:
+                self._current_index += 1
         else:
             self._current_index = random.choice(range(0, len(self._songs)))
 
@@ -157,7 +159,6 @@ class AbstractPlayer(object, metaclass=ABCMeta):
 
         self.position_changed = Signal()
         self.state_changed = Signal()
-        self.song_changed = Signal()
         self.song_finished = Signal()
 
     @property
