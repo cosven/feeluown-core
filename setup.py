@@ -32,7 +32,7 @@ setup(
         'requests==2.13.0',
         'beautifulsoup4==4.5.3',
         'marshmallow==2.13.5',
-        'april>=0.0.1a2',
+        'april>=0.0.1a3',
         ],
     setup_requires=['pytest-runner'],
     tests_require=[
