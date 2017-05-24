@@ -1,11 +1,9 @@
-dist: trusty
-sudo: required
 language: python
 python:
   - "3.4"
   - "3.5"
 install:
-  - sudo apt-get install mpv libmpv1
+  - sudo apt-get install libmpv1
   - pip install coveralls
   - python setup.py install
 script:
