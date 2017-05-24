@@ -1,9 +1,13 @@
+dist: trusty
+sudo: required
 language: python
 python:
   - "3.4"
   - "3.5"
 install:
-  - sudo apt-get install libmpv1
+  - sudo add-apt-repository ppa:mc3man/mpv-tests
+  - sudo apt-get update
+  - sudo apt-get install mpv libmpv1
   - pip install coveralls
   - python setup.py install
 script:
