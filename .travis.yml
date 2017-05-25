@@ -5,13 +5,16 @@ env:
 
 arch:
   packages:
-    - python
     - python3
     - mpv
-  script:
-    - pip install coveralls
+
+install:
+  - pip install coveralls
+  - python setup.py install
+  - python --version
 
 script:
   coverage run --source=fuocore setup.py test
+
 after_success:
   coveralls
