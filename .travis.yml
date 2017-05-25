@@ -7,6 +7,7 @@ python:
 install:
   - sudo add-apt-repository ppa:mc3man/mpv-tests -y
   - sudo apt-get update
+  - sudo apt-cache search mpv
   - sudo apt-get install mpv libmpv -y
   - pip install coveralls
   - python setup.py install

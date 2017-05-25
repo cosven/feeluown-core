@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import asyncio
 import time
 import random
 
@@ -16,18 +17,17 @@ source = Source()
 netease_pvd = NeteaseProvider()
 source.add_provider(netease_pvd)
 
-songs = source.search(u'张震岳')
+songs = source.search(u'奥华子')
 for song in songs:
     try:
         song_ = netease_pvd.get_song(song.identifier)
         player.playlist.add(song_)
-        if len(player.playlist) > 1:
+        if len(player.playlist) > 5:
             break
     except:
         print()
 
 player.play_song(player.playlist[0])
-time.sleep(1)
-player._mpv.seek(250)
-while True:
-    player._mpv.wait_for_playback()
+
+event_loop = asyncio.get_event_loop()
+event_loop.run_forever()
