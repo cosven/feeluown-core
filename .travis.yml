@@ -10,7 +10,7 @@ arch:
     - mpv
   script:
     - python --version
-    - pip install coveralls
+    - sudo pip install coveralls
     - coverage run --source=fuocore setup.py test
 
 script:
