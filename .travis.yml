@@ -12,9 +12,7 @@ arch:
     - python --version
     - sudo pip install coveralls
     - coverage run --source=fuocore setup.py test
+    - coveralls
 
 script:
   - curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash
-
-after_success:
-  coveralls
