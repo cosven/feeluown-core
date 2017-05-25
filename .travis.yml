@@ -6,6 +6,7 @@ env:
 arch:
   packages:
     - python3
+    - python3-pip
     - mpv
   script:
     - python --version
