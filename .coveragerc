@@ -1,0 +1,5 @@
+[run]
+omit =
+  fuocore/third_party/netease/api.py
+
+

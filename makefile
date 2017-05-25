@@ -6,7 +6,7 @@ docs:
 	cd docs && make html
 
 unittest:
-	coverage run --omit fuocore/third_party/netease/api.py --source=fuocore setup.py test && coverage report -m
+	coverage run --source=fuocore setup.py test && coverage report -m
 
 test: unittest
 
