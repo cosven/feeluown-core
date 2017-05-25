@@ -7,14 +7,13 @@ arch:
   packages:
     - python3
     - mpv
-
-install:
-  - pip install coveralls
-  - python setup.py install
-  - python --version
+  script:
+    python --version
+    pip install coveralls
+    coverage run --source=fuocore setup.py test
 
 script:
-  coverage run --source=fuocore setup.py test
+  curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash
 
 after_success:
   coveralls
