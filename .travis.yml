@@ -1,14 +1,15 @@
-dist: trusty
 sudo: required
 language: python
 python:
   - "3.4"
   - "3.5"
+
+arch:
+  packages:
+    - mpv
+    - youtube-dl
+
 install:
-  - sudo add-apt-repository ppa:mc3man/mpv-tests -y
-  - sudo apt-get update
-  - sudo apt-cache search mpv
-  - sudo apt-get install mpv libmpv -y
   - pip install coveralls
   - python setup.py install
 script:
