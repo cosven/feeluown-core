@@ -8,12 +8,12 @@ arch:
     - python3
     - mpv
   script:
-    python --version
-    pip install coveralls
-    coverage run --source=fuocore setup.py test
+    - python --version
+    - pip install coveralls
+    - coverage run --source=fuocore setup.py test
 
 script:
-  curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash
+  - curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash
 
 after_success:
   coveralls
