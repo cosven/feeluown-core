@@ -8,6 +8,8 @@ arch:
   packages:
     - mpv
     - youtube-dl
+    - mpv-libs
+    - mpv-devel
 
 install:
   - pip install coveralls
