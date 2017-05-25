@@ -33,6 +33,10 @@ class MpvPlayer(AbstractPlayer):
 
     def play(self, url):
         logger.info('start play url:%s' % url)
+        # clear playlist before play next song.
+        # otherwise, mpv will seek to the last position and play
+        self._mpv.playlist_clear()
+
         self._mpv.play(url)
         self.state = State.playing
 

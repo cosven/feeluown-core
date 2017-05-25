@@ -33,6 +33,8 @@ setup(
         'beautifulsoup4>=4.5.3',
         'marshmallow>=2.13.5',
         'april>=0.0.1a4',
+        'aiozmq',
+        'msgpack-python',
         ],
     setup_requires=['pytest-runner'],
     tests_require=[

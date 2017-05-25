@@ -4,11 +4,13 @@ import asyncio
 import time
 import random
 
+from aiozmq import rpc
+
 from fuocore.backends import MpvPlayer
 from fuocore.engine import set_backend, get_backend
 from fuocore.source import Source
-
 from fuocore.third_party.netease import NeteaseProvider
+from fuocore.rpcs.player import PlayerHandler
 
 
 player = MpvPlayer()
@@ -32,5 +34,13 @@ for song in songs:
 
 player.play_song(player.playlist[1])
 
+
+@asyncio.coroutine
+def go():
+    yield from rpc.serve_rpc(PlayerHandler(),
+                             bind='tcp://127.0.0.1:7777')
+
+
 event_loop = asyncio.get_event_loop()
+event_loop.create_task(go())
 event_loop.run_forever()

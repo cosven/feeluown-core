@@ -14,6 +14,19 @@ import random
 from .dispatch import Signal
 
 
+_backend = None
+
+
+def set_backend(player):
+    global _backend
+    _backend = player
+
+
+def get_backend():
+    global _backend
+    return _backend
+
+
 class State(Enum):
     """Player state"""
 
