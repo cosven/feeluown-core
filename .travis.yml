@@ -1,19 +1,16 @@
 sudo: required
-language: python
-python:
-  - "3.4"
-  - "3.5"
+
+env:
+  - ARCH_TRAVIS_VERBOSE=1
 
 arch:
   packages:
+    - python
+    - python3
     - mpv
-    - youtube-dl
-    - mpv-libs
-    - mpv-devel
+  script:
+    - pip install coveralls
 
-install:
-  - pip install coveralls
-  - python setup.py install
 script:
   coverage run --source=fuocore setup.py test
 after_success:
