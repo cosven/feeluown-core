@@ -94,3 +94,6 @@ pyvenv.cfg
 .idea
 
 .DS_Store
+
+# redis rdb file
+dump.rdb

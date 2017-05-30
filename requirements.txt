@@ -7,3 +7,5 @@ aiozmq==0.7.1
 msgpack-python==0.4.8
 mock
 pytest
+mutagen==1.37
+python-Levenshtein==0.12.0

@@ -4,10 +4,12 @@ import uuid
 
 from april import Model
 from april.tipes import listof
+from april.utils import is_nested_type
 
 
 class BaseModel(Model):
-    #: mark this model's provider
+
+    _source = None
 
     @property
     def identifier(self):
@@ -19,13 +21,31 @@ class BaseModel(Model):
 
     @property
     def source(self):
-        raise NotImplementedError()
+        if self._source is None:
+            raise NotImplementedError()
+        return self._source
+
+    @source.setter
+    def source(self, value):
+        """set source for model and model's field recursively"""
+        self._source = value
+        for name, ftype in self._fields:
+            if issubclass(ftype, BaseModel):
+                setattr(getattr(self, name), 'source', value)
+            if is_nested_type(ftype):
+                # FIXME: wait for ``april`` redesigning nested type interface
+                for each in getattr(self, name):
+                    setattr(each, 'source', value)
 
     def __eq__(self, other):
-        return self.identifier == other.identifier
+        if hasattr(other, 'identifier'):
+            return self.identifier == other.identifier
+        return False
 
     def __ne__(self, other):
-        return self != other
+        if hasattr(other, 'identifier'):
+            return self != other
+        return True
 
 
 class BriefArtistModel(BaseModel):
@@ -50,8 +70,13 @@ class BriefSongModel(BaseModel):
     _optional_fields = ['url', 'duration', 'brief_album', 'brief_artists']
 
     def __str__(self):
-        return self.name + ' - ' + \
-                ', '.join([artist.name for artist in self.brief_artists])
+        if not hasattr(self, 'brief_artists'):
+            return self.name + ' - unknown'
+        module = type(self).__module__
+        class_name = type(self).__name__
+        song_name = self.name + ' - ' + \
+            ', '.join([artist.name for artist in self.brief_artists])
+        return '<{module}.{class_name} {song_name}>'.format(**locals())
 
 
 class ArtistModel(BriefArtistModel):

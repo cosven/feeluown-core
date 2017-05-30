@@ -35,6 +35,8 @@ setup(
         'april>=0.0.1a4',
         'aiozmq',
         'msgpack-python',
+        'mutagen>=1.37',
+        'python-Levenshtein>=0.12.0',
         ],
     setup_requires=['pytest-runner'],
     tests_require=[
