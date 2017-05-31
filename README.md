@@ -7,14 +7,14 @@
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
 
-- netease music api with xiami music api as its `source` `provider`
-- players `engine` wrapped other meida player as its `backend`
+- netease/xiami music api as its `source` `provider`
+- `player` with replacable `backends`. Note: mpv is the default backend
 
 ## Install
 
 ```sh
-sudo apt-get install mpg123  # Debian or Ubuntu
-brew install mpg123  # mac osx
+sudo apt-get install mpv  # Debian or Ubuntu
+brew install mpv  # mac osx
 
 pip3 install fuocore
 ```
