@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.org/cosven/feeluown-core.svg?branch=master)](https://travis-ci.org/cosven/feeluown-core)
 [![Coverage Status](https://coveralls.io/repos/github/cosven/feeluown-core/badge.svg?branch=master)](https://coveralls.io/github/cosven/feeluown-core?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
+[![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
 
 - netease music api with xiami music source as its backup
@@ -20,9 +21,9 @@ pip3 install fuocore
 
 ## Usage
 
-```
-from fuocore import Player
+```python
+>>> from fuocore.backends import MpvPlayer
 
-player = Player()
-player.play_song('url')
+>>> player = MpvPlayer()
+>>> player.play('data/test_music/one_tree.mp3')
 ```
