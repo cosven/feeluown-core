@@ -8,10 +8,10 @@ docs:
 lint:
 	flake8 fuocore/
 
-unittest: lint
+unittest:
 	coverage run --source=fuocore setup.py test && coverage report -m
 
-test: unittest
+test: lint unittest
 
 clean:
 	find . -name "*.pyc" -exec rm -f {} \;

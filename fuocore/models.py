@@ -76,7 +76,8 @@ class BriefSongModel(BaseModel):
         class_name = type(self).__name__
         song_name = self.name + ' - ' + \
             ', '.join([artist.name for artist in self.brief_artists])
-        return '<{module}.{class_name} {song_name}>'.format(**locals())
+        source = self.source
+        return '<{module}.{class_name} {song_name} {source}>'.format(**locals())
 
 
 class ArtistModel(BriefArtistModel):
