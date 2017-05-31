@@ -7,8 +7,8 @@
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
 
-- netease music api with xiami music source as its backup
-- a mp3 player (using mpg123 as its backend)
+- netease music api with xiami music api as its `source` `provider`
+- players `engine` wrapped other meida player as its `backend`
 
 ## Install
 
