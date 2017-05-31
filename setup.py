@@ -37,6 +37,7 @@ setup(
         'msgpack-python',
         'mutagen>=1.37',
         'python-Levenshtein>=0.12.0',
+        'fuzzywuzzy'
         ],
     setup_requires=['pytest-runner'],
     tests_require=[
