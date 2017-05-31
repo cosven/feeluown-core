@@ -5,7 +5,10 @@ all: unittest
 docs:
 	cd docs && make html
 
-unittest:
+lint:
+	flake8 fuocore/
+
+unittest: lint
 	coverage run --source=fuocore setup.py test && coverage report -m
 
 test: unittest

@@ -34,8 +34,8 @@ class Xiami(object):
             'Content-Type': 'application/x-www-form-urlencoded',
             'Host': 'api.xiami.com',
             'Referer': 'http://m.xiami.com/',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2)'\
-                          ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome'\
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2)'
+                          ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome'
                           '/33.0.1750.152 Safari/537.36',
         }
         pass
@@ -368,7 +368,7 @@ class API(object):
         return self.request('POST', url, payload)
 
     def accumulate_pl_count(self, mid):
-        data = {"ids":"[%d]" % mid, "br":128000,
+        data = {"ids": "[%d]" % mid, "br": 128000,
                 "csrf_token": self._cookies.get('__scrf')}
         url = uri_we + '/pl/count'
         payload = self.encrypt_request(data)

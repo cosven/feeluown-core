@@ -127,7 +127,7 @@ class Playlist(object):
             return
 
         if self.playback_mode == PlaybackMode.random:
-            self.current_song =  random.choice(range(0, len(self._songs)))
+            self.current_song = random.choice(range(0, len(self._songs)))
             return
 
         if self.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop):

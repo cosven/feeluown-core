@@ -12,4 +12,3 @@ class PlayerHandler(rpc.AttrHandler):
             return None
 
         return player.playlist.current_song.serialize()
-

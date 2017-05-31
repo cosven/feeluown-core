@@ -1,9 +1,6 @@
-import os
 from unittest import TestCase
 
-import mock
 
-from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.provider import LocalProvider
 
 
