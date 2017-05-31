@@ -39,7 +39,7 @@ setup(
         'python-Levenshtein>=0.12.0',
         'fuzzywuzzy'
         ],
-    setup_requires=['pytest-runner'],
+    setup_requires=install_requires,
     tests_require=[
         'pytest',
         'mock'
