@@ -2,7 +2,7 @@
 import logging
 
 from .engine import AbstractPlayer, State, Playlist
-from mpv import MPV, MpvEventID
+from mpv import MPV, MpvEventID, MpvEventEndFile
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,12 @@ class MpvPlayer(AbstractPlayer):
     def initialize(self):
         self._mpv.observe_property(
             'time-pos',
-            lambda name, position: self._on_position_changed(position))
+            lambda name, position: self._on_position_changed(position)
+        )
+        self._mpv.observe_property(
+            'duration',
+            lambda name, duration: self._on_duration_changed(duration)
+        )
         self._mpv.register_event_callback(lambda event: self._on_event(event))
         self.song_finished.connect(self._playlist.next)
 
@@ -39,6 +44,7 @@ class MpvPlayer(AbstractPlayer):
 
         self._mpv.play(url)
         self.state = State.playing
+        self.media_changed.emit()
 
     def play_song(self, song):
         if self.playlist.current_song is not None and \
@@ -79,6 +85,11 @@ class MpvPlayer(AbstractPlayer):
         self._position = position
         self.position_changed.emit()
 
+    def _on_duration_changed(self, duration):
+        """listening to mpv duration change event"""
+        logger.info('player receive duration changed signal')
+        self.duration = duration
+
     def _on_song_changed(self):
         logger.info('player received song changed signal')
         if self._playlist.current_song is not None:
@@ -89,5 +100,7 @@ class MpvPlayer(AbstractPlayer):
 
     def _on_event(self, event):
         if event['event_id'] == MpvEventID.END_FILE:
-            logger.info('current song finished.')
-            self.song_finished.emit()
+            reason = event['event']['reason']
+            logger.info('current song finished. reason: %d' % reason)
+            if reason != MpvEventEndFile.ABORTED:
+                self.song_finished.emit()

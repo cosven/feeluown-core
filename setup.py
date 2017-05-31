@@ -41,10 +41,11 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         ),
     install_requires=requires,
-    setup_requires=requires,
+    setup_requires=['pytest-runner'],
     tests_require=[
         'pytest',
-        'mock'
+        'mock',
+        'flake8'
     ],
     entry_points={
         'console_scripts': []

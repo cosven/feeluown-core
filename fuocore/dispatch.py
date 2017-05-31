@@ -14,7 +14,7 @@ class Signal(object):
         for receiver in self.receivers:
             try:
                 receiver()(**kwargs)
-            except Exception as err:
+            except Exception:
                 logging.exception('receiver %s run error' % receiver())
 
     def _ref(self, receiver):

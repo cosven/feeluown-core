@@ -176,6 +176,8 @@ class AbstractPlayer(object, metaclass=ABCMeta):
         self.position_changed = Signal()
         self.state_changed = Signal()
         self.song_finished = Signal()
+        self.duration_changed = Signal()
+        self.media_changed = Signal()
 
     @property
     def state(self):
@@ -208,7 +210,7 @@ class AbstractPlayer(object, metaclass=ABCMeta):
 
     @property
     def position(self):
-        """player position, the units is mileseconds"""
+        """player position, the units is seconds"""
         return self._position
 
     @position.setter
@@ -217,8 +219,14 @@ class AbstractPlayer(object, metaclass=ABCMeta):
 
     @property
     def duration(self):
-        """player media duration, the units is mileseconds"""
+        """player media duration, the units is seconds"""
         return self._duration
+
+    @duration.setter
+    def duration(self, value):
+        if value is not None and value != self._duration:
+            self._duration = value
+            self.duration_changed.emit()
 
     @abstractmethod
     def play(self, url):

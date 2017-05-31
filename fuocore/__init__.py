@@ -1,4 +1,5 @@
 import logging
+from logging import NullHandler
 
 from .source import Source  # noqa
 
@@ -6,4 +7,4 @@ from .source import Source  # noqa
 __all__ = ['Source']
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.getLogger(__name__).addHandler(NullHandler())
