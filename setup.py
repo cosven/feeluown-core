@@ -2,12 +2,25 @@
 
 from setuptools import setup
 
-import fuocore
+
+requires = [
+    'pycrypto>=2.6.1',
+    'requests>=2.13.0',
+    'beautifulsoup4>=4.5.3',
+    'marshmallow>=2.13.5',
+    'april>=0.0.1a4',
+    'aiozmq',
+    'msgpack-python',
+    'mutagen>=1.37',
+    'python-Levenshtein>=0.12.0',
+    'fuzzywuzzy',
+
+]
 
 
 setup(
     name='fuocore',
-    version=fuocore.__version__,
+    version='0.0.5a2',
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
@@ -27,19 +40,8 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3 :: Only',
         ),
-    install_requires=[
-        'pycrypto>=2.6.1',
-        'requests>=2.13.0',
-        'beautifulsoup4>=4.5.3',
-        'marshmallow>=2.13.5',
-        'april>=0.0.1a4',
-        'aiozmq',
-        'msgpack-python',
-        'mutagen>=1.37',
-        'python-Levenshtein>=0.12.0',
-        'fuzzywuzzy'
-        ],
-    setup_requires=install_requires,
+    install_requires=requires,
+    setup_requires=requires,
     tests_require=[
         'pytest',
         'mock'
@@ -47,4 +49,4 @@ setup(
     entry_points={
         'console_scripts': []
         },
-    )
+)
