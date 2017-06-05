@@ -12,6 +12,7 @@ from enum import Enum
 import random
 
 from .dispatch import Signal
+from .exceptions import NoBackendError
 
 
 _backend = None
@@ -24,6 +25,8 @@ def set_backend(player):
 
 def get_backend():
     global _backend
+    if _backend is None:
+        raise NoBackendError
     return _backend
 
 
