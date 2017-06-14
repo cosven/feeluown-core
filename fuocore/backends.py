@@ -81,6 +81,11 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.seek(position)
         self._position = position
 
+    @AbstractPlayer.volume.setter
+    def volume(self, value):
+        super(MpvPlayer, MpvPlayer).volume.__set__(self, value)
+        self._mpv.volume = self.volume
+
     def _on_position_changed(self, position):
         self._position = position
         self.position_changed.emit()

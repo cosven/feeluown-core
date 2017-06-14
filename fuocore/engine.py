@@ -169,6 +169,7 @@ class AbstractPlayer(object, metaclass=ABCMeta):
 
     def __init__(self, playlist=Playlist(), **kwargs):
         self._position = 0
+        self._volume = 100  # (0, 100)
         self._playlist = playlist
         self._state = State.stopped
         self._duration = None
@@ -216,6 +217,17 @@ class AbstractPlayer(object, metaclass=ABCMeta):
     @position.setter
     def position(self, position):
         self._position = position
+
+    @property
+    def volume(self):
+        return self._volume
+
+    @volume.setter
+    def volume(self, value):
+        print('change volume')
+        value = 0 if value < 0 else value
+        value = 100 if value > 100 else value
+        self._volume = value
 
     @property
     def duration(self):
