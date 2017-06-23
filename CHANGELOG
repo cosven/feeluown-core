@@ -1,3 +1,7 @@
+## v0.0.5a5
+
+- support seek absolute position
+
 ## 2016-10-08 v0.0.3a
 
 - refactor Player class, expose `run` interface
