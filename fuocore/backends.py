@@ -78,7 +78,7 @@ class MpvPlayer(AbstractPlayer):
 
     @position.setter
     def position(self, position):
-        self._mpv.seek(position)
+        self._mpv.seek(position, reference='absolute')
         self._position = position
 
     @AbstractPlayer.volume.setter
