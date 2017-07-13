@@ -20,7 +20,7 @@ requires = [
 
 setup(
     name='fuocore',
-    version='0.0.5a5',
+    version='0.0.5',
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
@@ -46,7 +46,6 @@ setup(
     tests_require=[
         'pytest',
         'mock',
-        'flake8'
     ],
     entry_points={
         'console_scripts': []
