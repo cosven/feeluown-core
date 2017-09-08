@@ -8,7 +8,7 @@ requires = [
     'requests>=2.13.0',
     'beautifulsoup4>=4.5.3',
     'marshmallow>=2.13.5',
-    'april>=0.0.1a4',
+    'april==0.0.1a4',
     'aiozmq',
     'msgpack-python',
     'mutagen>=1.37',
@@ -20,7 +20,7 @@ requires = [
 
 setup(
     name='fuocore',
-    version='0.0.5',
+    version='0.0.6',
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
