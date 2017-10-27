@@ -8,19 +8,16 @@ requires = [
     'requests>=2.13.0',
     'beautifulsoup4>=4.5.3',
     'marshmallow>=2.13.5',
-    'april==0.0.1a4',
-    'aiozmq',
-    'msgpack-python',
+    'april==2.0.0',
     'mutagen>=1.37',
     'python-Levenshtein>=0.12.0',
     'fuzzywuzzy',
-
 ]
 
 
 setup(
     name='fuocore',
-    version='0.0.6',
+    version='1.0.0a0',
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
@@ -48,6 +45,9 @@ setup(
         'mock',
     ],
     entry_points={
-        'console_scripts': []
+        'console_scripts': [],
+        'fuo.provider': [
+            'local = fuocore.local.provider:LocalProvider',
+        ],
         },
 )

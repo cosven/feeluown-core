@@ -2,9 +2,7 @@ beautifulsoup4>=4.5.3
 marshmallow>=2.13.5
 pycrypto>=2.6.1
 requests>=2.13.0
-april>=0.0.1a4
-aiozmq==0.7.1
-msgpack-python==0.4.8
+april>=2.0.0
 mock
 pytest
 mutagen==1.37

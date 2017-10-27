@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
-from fuocore.provider import LocalProvider
+from fuocore import setup_logger
+from fuocore.local.provider import LocalProvider
 
+setup_logger()
 
 lp = LocalProvider()
 songs = lp.search('张震岳')

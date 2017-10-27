@@ -36,3 +36,6 @@ class NeteaseProvider(AbstractProvider):
         data = result.data
         data['url'] = media.url
         return NSongModel.deserialize(data)
+
+
+provider = NeteaseProvider()
