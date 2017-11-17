@@ -2,7 +2,7 @@
 
 from marshmallow import Schema, fields, post_load
 
-from fuocore.models import SongModel
+from fuocore.models import SongModel, AlbumModel, ArtistModel
 
 
 class BaseSchema(Schema):
@@ -16,12 +16,20 @@ class ArtistSchema(BaseSchema):
     img = fields.Str()  # NOTE: 可能需要单独一个 Schema
     songs = fields.List(fields.Nested('SongSchema'))
 
+    @post_load
+    def create_model(self, data):
+        return ArtistModel(**data)
+
 
 class AlbumSchema(BaseSchema):
     name = fields.Str(required=True)
     img = fields.Str()  # NOTE: 可能需要单独一个 Schema
     songs = fields.List(fields.Nested('SongSchema'))
     artists = fields.List(fields.Nested(ArtistSchema))
+
+    @post_load
+    def create_model(self, data):
+        return AlbumModel(**data)
 
 
 class SongSchema(BaseSchema):
@@ -34,6 +42,7 @@ class SongSchema(BaseSchema):
     @post_load
     def create_model(self, data):
         return SongModel(**data)
+
 
 class LyricSchema(BaseSchema):
     content = fields.Str(required=True)

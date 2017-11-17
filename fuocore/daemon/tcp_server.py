@@ -17,7 +17,7 @@ class TcpServer(object):
     def __init__(self, handle_func):
         self.handle_func = handle_func
 
-    async def run(self):
+    async def run(self, app):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((HOST, PORT))
         sock.listen()
@@ -28,23 +28,4 @@ class TcpServer(object):
         event_loop = asyncio.get_event_loop()
         while True:
             conn, addr = await event_loop.sock_accept(sock)
-            event_loop.create_task(self.handle_func(conn, addr))
-
-
-if __name__ == '__main__':
-    async def handle(conn, addr):
-        event_loop = asyncio.get_event_loop()
-        event_loop.sock_sendall(conn, b'OK feeluown 1.0.0a0')
-
-        while True:
-            command = await event_loop.sock_recv(conn, 1024)
-            command = command.decode()
-            if command.strip() in ('exit', 'quit'):
-                conn.close()
-                break
-
-
-    server = TcpServer(handle_func=handle)
-    event_loop = asyncio.get_event_loop()
-    event_loop.run_until_complete(server.run())
-    event_loop.run_forever()
+            event_loop.create_task(self.handle_func(app, conn, addr))

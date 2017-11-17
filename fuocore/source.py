@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .provider import register
-
+from fuocore.provider import register, get_provider
+from fuocore.utils import parse_indentifier
 
 class Source(object):
 
@@ -24,3 +24,8 @@ class Source(object):
 
     def get_song(self, identifier):
         """get song from identifier"""
+        result = parse_indentifier(identifier)
+        provider_name = result.provider
+        song_identifier = result.identifier
+        provider = get_provider(provider_name)
+        return provider.get_song(song_identifier)

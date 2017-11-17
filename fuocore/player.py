@@ -332,6 +332,7 @@ class MpvPlayer(AbstractPlayer):
             logger.warning('the song to be played is same as current song')
             return
         self._playlist.current_song = song
+        self.play(song.url)
 
     def resume(self):
         self._mpv.pause = False

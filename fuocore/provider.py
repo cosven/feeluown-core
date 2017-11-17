@@ -42,3 +42,10 @@ def register(provider):
 def deregister(provider):
     if provider in providers:
         providers.remove(provider)
+
+
+def get_provider(name):
+    for provider in providers:
+        if provider.name == name:
+            return provider
+    return None

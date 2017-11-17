@@ -1,6 +1,10 @@
 class Cmd(object):
     def __init__(self, action, *args, **kwargs):
         self.action = action
+        self.args = args
+
+    def __str__(self):
+        return 'action:{} args:{}'.format(self.action, self.args)
 
 
 class CmdParser(object):
