@@ -97,3 +97,6 @@ pyvenv.cfg
 
 # redis rdb file
 dump.rdb
+
+# emacs
+\#*\#
