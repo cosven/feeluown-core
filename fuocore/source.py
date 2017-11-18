@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from fuocore.provider import register, get_provider
-from fuocore.utils import parse_indentifier
+from fuocore.furi import parse_furi
+
 
 class Source(object):
 
@@ -22,10 +23,8 @@ class Source(object):
             songs.extend(provider.search(keyword=keyword))
         return songs
 
-    def get_song(self, identifier):
+    def get_song(self, song_furi_str):
         """get song from identifier"""
-        result = parse_indentifier(identifier)
-        provider_name = result.provider
-        song_identifier = result.identifier
-        provider = get_provider(provider_name)
-        return provider.get_song(song_identifier)
+        furi = parse_furi(song_furi_str)
+        provider = get_provider(furi.provider)
+        return provider.get_song(furi.identifier)

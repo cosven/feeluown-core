@@ -16,5 +16,3 @@ class CmdParser(object):
         if not cmd_parts:
             return None
         return Cmd(*cmd_parts)
-
-

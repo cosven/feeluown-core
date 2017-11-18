@@ -19,17 +19,17 @@ async def handle(app, conn, addr):
         if command in ('exit', 'quit'):
             conn.close()
             break
-        logger.warn('recv:' + command)
+        logger.info('RECV: ' + command)
         cmd = CmdParser.parse(command)
         msg = exec_cmd(app, cmd)
-        event_loop.sock_sendall(conn, bytes(msg + '\n\n', 'utf-8'))
+        event_loop.sock_sendall(conn, bytes(msg + '\n', 'utf-8'))
 
 
 async def run(app, *args, **kwargs):
     event_loop = asyncio.get_event_loop()
     event_loop.create_task(TcpServer(handle_func=handle).run(app))
 
-    
+
 def main():
     event_loop = asyncio.get_event_loop()
     event_loop.create_task(run())
