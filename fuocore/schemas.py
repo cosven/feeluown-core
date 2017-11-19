@@ -35,7 +35,7 @@ class AlbumSchema(BaseSchema):
 class SongSchema(BaseSchema):
     title = fields.Str(required=True)
     url = fields.Str(required=True)
-    duration = fields.Float(required=True)
+    duration = fields.Float(required=True)  # mileseconds
     album = fields.Nested(AlbumSchema)
     artists = fields.List(fields.Nested(ArtistSchema))
 

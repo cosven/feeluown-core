@@ -25,6 +25,9 @@ def exec_cmd(app, cmd):
     if cmd.action in ('show', ):
         handler = ShowHandler(app)
 
+    elif cmd.action in ('search', ):
+        handler = SearchHandler(app)
+
     # 播放器相关操作
     elif cmd.action in (
         'play', 'pause', 'resume', 'stop',
@@ -62,6 +65,15 @@ class AbstractHandler(ABC):
     @abstractmethod
     def handle(self, cmd):
         pass
+
+
+class SearchHandler(AbstractHandler):
+    def handle(self, cmd):
+        return self.search_songs(cmd.args[0])
+
+    def search_songs(self, query):
+        songs = self.app.source.search(query)
+        return '\n'.join((str(song) for song in songs))
 
 
 class ShowHandler(AbstractHandler):

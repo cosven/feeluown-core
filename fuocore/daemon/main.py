@@ -14,7 +14,11 @@ async def handle(app, conn, addr):
     event_loop.sock_sendall(conn, b'OK feeluown 1.0.0a0\n')
 
     while True:
-        command = await event_loop.sock_recv(conn, 1024)
+        try:
+            command = await event_loop.sock_recv(conn, 1024)
+        except ConnectionResetError:
+            logger.debug('客户端断开连接')
+            break
         command = command.decode().strip()
         if command in ('exit', 'quit'):
             conn.close()
