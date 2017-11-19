@@ -45,9 +45,11 @@ setup(
         'mock',
     ],
     entry_points={
-        'console_scripts': [],
+        'console_scripts': [
+            'fuo=fuocore.__main__:main',
+        ],
         'fuo.provider': [
             'local = fuocore.local.provider:LocalProvider',
         ],
-        },
+    },
 )

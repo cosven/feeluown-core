@@ -22,7 +22,7 @@ async def handle(app, conn, addr):
         logger.info('RECV: ' + command)
         cmd = CmdParser.parse(command)
         msg = exec_cmd(app, cmd)
-        event_loop.sock_sendall(conn, bytes(msg + '\n', 'utf-8'))
+        event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
 
 
 async def run(app, *args, **kwargs):

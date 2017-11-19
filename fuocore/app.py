@@ -1,9 +1,5 @@
-import asyncio
-
-from fuocore.daemon import run
-from fuocore.local.provider import LocalProvider
 from fuocore.player import MpvPlayer
-from fuocore.provider import providers, register
+from fuocore.provider import providers
 from fuocore.source import Source
 
 
@@ -25,17 +21,3 @@ class App(object):
     def play(self, song_identifier):
         song = self.source.get_song(song_identifier)
         self.player.play_song(song)
-
-
-def main():
-    app = App()
-    app.player.initialize()
-    local_provider = LocalProvider()
-    register(local_provider)
-    event_loop = asyncio.get_event_loop()
-    event_loop.create_task(run(app))
-    event_loop.run_forever()
-
-
-if __name__ == '__main__':
-    main()

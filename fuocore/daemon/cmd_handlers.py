@@ -21,10 +21,27 @@ class InvalidFUri(CmdHandleException):
 def exec_cmd(app, cmd):
     logger.info('EXEC_CMD: ' + str(cmd))
 
+    # 一些
     if cmd.action in ('show', ):
         handler = ShowHandler(app)
-    elif cmd.action in ('play', 'pause', 'resume', 'stop'):
+
+    # 播放器相关操作
+    elif cmd.action in (
+        'play', 'pause', 'resume', 'stop',
+        'next', 'previous',
+    ):
         handler = PlayerHandler(app)
+
+    # 播放列表相关命令
+    elif cmd.action in ('add', 'remove'):
+        """
+        add/remove fuo://local:song:xxx
+        create xxx
+
+        set playback_mode=random
+        set volume=100
+        """
+        handler = None
     else:
         return 'Oops\nCommand not found!'
 
@@ -35,7 +52,7 @@ def exec_cmd(app, cmd):
         return 'Oops'
     else:
         rv = rv or ''
-        return 'OK\n' + rv
+        return rv + '\nOK\n'
 
 
 class AbstractHandler(ABC):
