@@ -19,10 +19,17 @@ class NeteaseProvider(AbstractProvider):
 
     def search(self, keyword, **kwargs):
         songs = api.search(keyword)
+        id_song_map = {}
         if songs:
-            songs_urls = api.weapi_songs_url([song['id'] for song in songs])
-            for song, song_url in zip(songs, songs_urls):
+            for song in songs:
+                id_song_map[str(song['id'])] = song
+            songs_urls = api.weapi_songs_url([int(sid) for sid in id_song_map.keys()])
+            for song_url in songs_urls:
+                sid = song_url['id']
+                song = id_song_map[str(sid)]
                 song['url'] = song_url['url']
+                if song['url'] is None:
+                    import pdb; pdb.set_trace()
                 schema = NeteaseSongSchema(strict=True)
                 try:
                     s, _ = schema.load(song)

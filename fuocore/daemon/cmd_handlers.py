@@ -73,7 +73,14 @@ class SearchHandler(AbstractHandler):
 
     def search_songs(self, query):
         songs = self.app.source.search(query)
-        return '\n'.join((str(song) for song in songs))
+        s = ''
+        for song in songs:
+            if song.name is None:
+                print(song.url)
+                continue
+            s == str(song) + '\n'
+            s += '#' + song.name + ','.join([artist.name for artist in song.artists]) + '\n'
+        return s
 
 
 class ShowHandler(AbstractHandler):
