@@ -29,7 +29,7 @@ class NeteaseProvider(AbstractProvider):
                 song = id_song_map[str(sid)]
                 song['url'] = song_url['url']
                 if song['url'] is None:
-                    import pdb; pdb.set_trace()
+                    continue
                 schema = NeteaseSongSchema(strict=True)
                 try:
                     s, _ = schema.load(song)
