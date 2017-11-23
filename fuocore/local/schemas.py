@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-
+import base64
 
 from marshmallow import Schema, post_load, fields
 
 from fuocore.schemas import SongSchema
+from fuocore.utils import elfhash
 
 
 SOURCE = 'local'
@@ -23,9 +24,10 @@ class EasyMP3MetadataSongSchema(Schema):
         title = title_list[0] if title_list else 'Unknown'
         artist_name_list = data.get('artist_name_list', [])
         album_name_list = data.get('album_name_list', [])
+        identifier = str(elfhash(base64.b64encode(bytes(data['url'], 'utf-8'))))
         song_data = {
             'source': SOURCE,
-            'identifier': data['url'],
+            'identifier': identifier,
             'title': title,
             'duration': data['duration'],
             'url': data['url'],

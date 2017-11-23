@@ -81,7 +81,9 @@ class LocalProvider(AbstractProvider):
         for directory in self._library_paths:
             logger.debug('正在扫描目录({})...'.format(directory))
             media_files.extend(scan_directory(directory, exts, depth))
-        return [self.model_from_fpath(fpath) for fpath in media_files]
+        songs = [self.model_from_fpath(fpath) for fpath in media_files]
+        logger.debug('扫描到 {} 首歌曲'.format(len(songs)))
+        return songs
 
     @property
     def songs(self):

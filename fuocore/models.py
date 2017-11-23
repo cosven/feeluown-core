@@ -17,7 +17,7 @@ class BriefAlbumModel(BaseModel):
 
 
 class BriefSongModel(BaseModel):
-    _fields = ['name', 'url', 'duration', 'brief_album', 'brief_artists']
+    _fields = ['title', 'url', 'duration', 'brief_album', 'brief_artists']
 
 
 class ArtistModel(BriefArtistModel):

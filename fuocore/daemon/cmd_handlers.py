@@ -58,6 +58,15 @@ def exec_cmd(app, cmd):
         return rv + '\nOK\n'
 
 
+def show_songs(songs):
+    s = ''
+    for song in songs:
+        s += str(song)
+        s += '\t# ' + song.title + ' - ' + \
+             ','.join([artist.name for artist in song.artists]) + '\n'
+    return s
+
+
 class AbstractHandler(ABC):
     def __init__(self, app):
         self.app = app
@@ -73,14 +82,7 @@ class SearchHandler(AbstractHandler):
 
     def search_songs(self, query):
         songs = self.app.source.search(query)
-        s = ''
-        for song in songs:
-            if song.name is None:
-                print(song.url)
-                continue
-            s == str(song) + '\n'
-            s += '#' + song.name + ','.join([artist.name for artist in song.artists]) + '\n'
-        return s
+        return show_songs(songs)
 
 
 class ShowHandler(AbstractHandler):
@@ -99,7 +101,7 @@ class ShowHandler(AbstractHandler):
         return '\n'.join(('fuo://' + name for name in provider_names))
 
     def list_songs(self, provider):
-        return '\n'.join((str(song) for song in provider.songs))
+        return show_songs(provider.songs)
 
 
 class PlayerHandler(AbstractHandler):

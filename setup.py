@@ -39,7 +39,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         ),
     install_requires=requires,
-    setup_requires=['pytest-runner'],
+    setup_requires=[],
     tests_require=[
         'pytest',
         'mock',
