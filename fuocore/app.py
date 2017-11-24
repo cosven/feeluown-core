@@ -1,6 +1,11 @@
+import logging
+
 from fuocore.player import MpvPlayer
 from fuocore.provider import providers
 from fuocore.source import Source
+
+
+logger = logging.getLogger(__name__)
 
 
 class App(object):

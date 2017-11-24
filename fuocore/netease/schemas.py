@@ -1,7 +1,7 @@
 from marshmallow import Schema, post_load, fields
 
 from fuocore.schemas import SongSchema
-
+from fuocore.netease.models import NSongModel
 
 SOURCE = 'netease'
 
@@ -36,4 +36,4 @@ class NeteaseSongSchema(Schema):
         data['album'] = album
         data['artists'] = artists
         song, _ = SongSchema(strict=True).load(data)
-        return song
+        return NSongModel(song)

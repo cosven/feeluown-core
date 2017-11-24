@@ -31,12 +31,14 @@ def exec_cmd(app, cmd):
     # 播放器相关操作
     elif cmd.action in (
         'play', 'pause', 'resume', 'stop',
-        'next', 'previous',
     ):
         handler = PlayerHandler(app)
 
     # 播放列表相关命令
-    elif cmd.action in ('add', 'remove', 'clear'):
+    elif cmd.action in (
+        'add', 'remove', 'clear', 'list',
+        'next', 'previous',
+    ):
         """
         add/remove fuo://local:song:xxx
         create xxx
@@ -51,11 +53,11 @@ def exec_cmd(app, cmd):
     rv = 'ACK {} {}'.format(cmd.action, ' '.join(cmd.args))
     try:
         cmd_rv = handler.handle(cmd)
-        if cmd_rv is not None:
+        if cmd_rv:
             rv += '\n' + cmd_rv
     except Exception as e:
         logger.exception('handle cmd({}) error'.format(cmd))
-        return 'Oops'
+        return '\nOops\n'
     else:
         rv = rv or ''
         return rv + '\nOK\n'
@@ -90,12 +92,17 @@ class SearchHandler(AbstractHandler):
 
 class ShowHandler(AbstractHandler):
     def handle(self, cmd):
+        if cmd.args:
+            return self.list_providers()
         furi_str = cmd.args[0]
         furi = parse_furi(furi_str)
         if furi.provider is None:
             return self.list_providers()
-        else:
-            provider = self.app.get_provider(furi.provider)
+
+        provider = self.app.get_provider(furi.provider)
+        if furi.category is None:
+            return provider.list_categories()
+        elif furi.category == 'songs':
             return self.list_songs(provider)
 
     def list_providers(self):
@@ -118,7 +125,6 @@ class PlayerHandler(AbstractHandler):
             self.app.player.stop()
         elif cmd.action == 'resume':
             self.app.player.resume()
-        return ''
 
     def play_song(self, song_furi):
         self.app.play(song_furi)
@@ -126,14 +132,22 @@ class PlayerHandler(AbstractHandler):
 
 class PlaylistHandler(AbstractHandler):
     def handle(self, cmd):
-        if cmd == 'add':
+        if cmd.action == 'add':
             return self.add(cmd.args[0])
-        elif cmd == 'clear':
+        elif cmd.action == 'clear':
             return self.clear()
+        elif cmd.action == 'list':
+            return self.list()
+        elif cmd.action == 'next':
+            self.app.playlist.next()
 
     def add(self, song_furi):
         song = self.app.source.get_song(song_furi)
         self.app.playlist.add(song)
+
+    def list(self):
+        songs = self.app.playlist.list()
+        return show_songs(songs)
 
     def clear(self):
         self.app.playlist.clear()

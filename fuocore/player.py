@@ -83,12 +83,16 @@ class Playlist(object):
             self._songs.append(song)
         else:
             self._songs.insert(self._current_index + 1, song)
+        logger.debug('添加歌曲到当前播放列表: {}'.format(song))
 
     def remove(self, song):
         self._songs.remove(song)
 
     def clear(self):
         self._songs = []
+
+    def list(self):
+        return self._songs
 
     @property
     def current_song(self):
