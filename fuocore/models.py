@@ -40,4 +40,4 @@ class SongModel(BriefSongModel):
             self.__class__.__name__, self.source, self.identifier)
 
     def __str__(self):
-        return 'fuo://{}:song:{}'.format(self.source, self.identifier)  # noqa
+        return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa

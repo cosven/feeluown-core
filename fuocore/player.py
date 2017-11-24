@@ -87,6 +87,9 @@ class Playlist(object):
     def remove(self, song):
         self._songs.remove(song)
 
+    def clear(self):
+        self._songs = []
+
     @property
     def current_song(self):
         if self._current_index is None:

@@ -6,6 +6,7 @@ from fuocore.source import Source
 class App(object):
     def __init__(self):
         self.player = MpvPlayer()
+        self.playlist = self.player.playlist
         self.source = Source()
 
     def list_providers(self):

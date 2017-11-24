@@ -36,7 +36,7 @@ def exec_cmd(app, cmd):
         handler = PlayerHandler(app)
 
     # 播放列表相关命令
-    elif cmd.action in ('add', 'remove'):
+    elif cmd.action in ('add', 'remove', 'clear'):
         """
         add/remove fuo://local:song:xxx
         create xxx
@@ -44,12 +44,15 @@ def exec_cmd(app, cmd):
         set playback_mode=random
         set volume=100
         """
-        handler = None
+        handler = PlaylistHandler(app)
     else:
         return 'Oops\nCommand not found!'
 
+    rv = 'ACK {} {}'.format(cmd.action, ' '.join(cmd.args))
     try:
-        rv = handler.handle(cmd)
+        cmd_rv = handler.handle(cmd)
+        if cmd_rv is not None:
+            rv += '\n' + cmd_rv
     except Exception as e:
         logger.exception('handle cmd({}) error'.format(cmd))
         return 'Oops'
@@ -119,4 +122,18 @@ class PlayerHandler(AbstractHandler):
 
     def play_song(self, song_furi):
         self.app.play(song_furi)
-        return 'PLAYING: {song_furi}'.format(song_furi=song_furi)
+
+
+class PlaylistHandler(AbstractHandler):
+    def handle(self, cmd):
+        if cmd == 'add':
+            return self.add(cmd.args[0])
+        elif cmd == 'clear':
+            return self.clear()
+
+    def add(self, song_furi):
+        song = self.app.source.get_song(song_furi)
+        self.app.playlist.add(song)
+
+    def clear(self):
+        self.app.playlist.clear()

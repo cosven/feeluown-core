@@ -20,7 +20,7 @@ def parse_furi(furi):
     scheme, body = furi.split('://')
     provider = category = identifier = None
     if body:
-        parts = body.split(':')
+        parts = body.split('/')
         if len(parts) == 3:
             provider, category, identifier = parts
         elif len(parts) == 2:
