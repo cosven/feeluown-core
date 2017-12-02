@@ -2,8 +2,8 @@ import asyncio
 import logging
 
 from fuocore.daemon.tcp_server import TcpServer
-from fuocore.daemon.cmd_parser import CmdParser
-from fuocore.daemon.cmd_handlers import exec_cmd
+from fuocore.daemon.parser import CmdParser
+from fuocore.daemon.handlers import exec_cmd
 
 
 logger = logging.getLogger(__name__)

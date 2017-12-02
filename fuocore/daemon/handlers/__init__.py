@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
 
-from fuocore.furi import parse_furi
+from fuocore.daemon.handlers.helpers import show_songs
+
 
 logger = logging.getLogger(__name__)
 
@@ -63,15 +64,6 @@ def exec_cmd(app, cmd):
         return rv + '\nOK\n'
 
 
-def show_songs(songs):
-    s = ''
-    for song in songs:
-        s += str(song)
-        s += '\t# ' + song.title + ' - ' + \
-             ','.join([artist.name for artist in song.artists]) + '\n'
-    return s
-
-
 class AbstractHandler(ABC):
     def __init__(self, app):
         self.app = app
@@ -88,31 +80,6 @@ class SearchHandler(AbstractHandler):
     def search_songs(self, query):
         songs = self.app.source.search(query)
         return show_songs(songs)
-
-
-class ShowHandler(AbstractHandler):
-    def handle(self, cmd):
-        if cmd.args:
-            return self.list_providers()
-        furi_str = cmd.args[0]
-        furi = parse_furi(furi_str)
-        if furi.provider is None:
-            return self.list_providers()
-
-        provider = self.app.get_provider(furi.provider)
-        if furi.category is None:
-            return provider.list_categories()
-        elif furi.category == 'songs':
-            return self.list_songs(provider)
-
-    def list_providers(self):
-        provider_names = (provider.name for provider in
-                          self.app.list_providers())
-        return '\n'.join(('fuo://' + name for name in provider_names))
-
-    def list_songs(self, provider):
-        return show_songs(provider.songs)
-
 
 class PlayerHandler(AbstractHandler):
     def handle(self, cmd):
@@ -151,3 +118,6 @@ class PlaylistHandler(AbstractHandler):
 
     def clear(self):
         self.app.playlist.clear()
+
+
+from fuocore.daemon.handlers.show import ShowHandler
