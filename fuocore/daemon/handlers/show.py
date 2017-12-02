@@ -72,14 +72,19 @@ def route(rule):
 
 def match(path):
     for rule in Router.rules:
-        args_regex_p = re.compile(r'<(.*?)>')
-        args = re.findall(rule)
-        url_regex = r'^{}$'.format(rule)        
-        if args:  # compile rule to a regex
-            for arg in args:
-                url_regex = re.sub(r'<{}>'.format(arg),
-                                   url_regex,
-                                   r'(?P<{}>[^\/]+)'.format(arg))
+        args_regex = re.compile(r'(<.*?>)')
+        match = re.findall(args_regex, rule)
+        if not match:
+            url_regex_s = rule
+        else:
+            url_regex_s = re.sub(
+                args_regex,
+                lambda m: '(?P<{}>[^\/]+)'.format(m.group(0)),
+                rule
+            )
+        url_regex = re.compile(r'^{}$'.format(url_regex_s))
+        if url_regex.match(path):
+            break
 
 
 def dispatch(rule, params):
