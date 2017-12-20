@@ -7,23 +7,23 @@
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
 
-- netease/xiami music api as its `source` `provider`
-- `player` with replacable `backends`. Note: mpv is the default backend
-
 ## Install
 
 ```sh
 sudo apt-get install mpv  # Debian or Ubuntu
 brew install mpv  # mac osx
 
-pip3 install fuocore
+git clone https://github.com/cosven/feeluown-core.git
+cd feeluown-core
+pip3 install -e .
+git clone https://github.com/cosven/feeluown-cli.git
+pip3 install -e .
 ```
 
 ## Usage
 
-```python
->>> from fuocore.backends import MpvPlayer
-
->>> player = MpvPlayer()
->>> player.play('data/test_music/one_tree.mp3')
+```
+# 启动服务端
+fuo --debug
+fuocli search 周杰伦
 ```
