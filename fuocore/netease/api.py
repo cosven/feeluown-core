@@ -232,7 +232,8 @@ class API(object):
         """
         action = uri + '/album/' + str(album_id)
         data = self.request('GET', action)
-        return data
+        if data['code'] == 200:
+            return data['album']
 
     def album_desc(self, album_id):
         action = site_uri + '/album'

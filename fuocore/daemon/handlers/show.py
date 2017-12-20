@@ -13,8 +13,9 @@ import re
 from urllib.parse import urlparse
 
 from fuocore.daemon.handlers import AbstractHandler, CmdHandleException
-from fuocore.daemon.handlers.helpers import show_songs, show_song
-
+from fuocore.daemon.handlers.helpers import (
+    show_songs, show_song, show_artist, show_album
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,6 @@ def route(rule):
 
 def regex_from_rule(rule):
     """为一个 rule 生成对应的正则表达式
-
     >>> regex_from_rule('/<provider>/songs')
     re.compile('^/(?P<provider>[^\\/]+)/songs$')
     """
@@ -145,3 +145,17 @@ def song_detail(req, provider, sid):
     provider = req.app.get_provider(provider)
     song = provider.get_song(sid)
     return show_song(song)
+
+
+@route('/<provider>/artists/<aid>')
+def artist_detail(req, provider, aid):
+    provider = req.app.get_provider(provider)
+    artist = provider.get_artist(aid)
+    return show_artist(artist)
+
+
+@route('/<provider>/albums/<bid>')
+def album_detail(req, provider, bid):
+    provider = req.app.get_provider(provider)
+    album = provider.get_album(bid)
+    return show_album(album)

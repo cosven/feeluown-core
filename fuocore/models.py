@@ -25,7 +25,7 @@ class ArtistModel(BriefArtistModel):
 
 
 class AlbumModel(BriefAlbumModel):
-    _fields = ['img', 'brief_songs', 'brief_artists', 'desc']
+    _fields = ['img', 'songs', 'artists', 'desc']
 
 
 class LyricModel(BaseModel):
