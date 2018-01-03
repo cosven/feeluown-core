@@ -1,6 +1,6 @@
 from marshmallow import Schema, post_load, fields
 
-from fuocore.schemas import SongSchema, AlbumSchema
+from fuocore.schemas import SongSchema, AlbumSchema, ArtistSchema
 from fuocore.netease.models import NSongModel
 
 SOURCE = 'netease'
@@ -62,3 +62,16 @@ class NeteaseAlbumSchema(Schema):
             artist['source'] = SOURCE
         album, _ = AlbumSchema(strict=True).load(data)
         return album
+
+
+class NeteaseArtistSchema(Schema):
+    identifier = fields.Int(required=True, load_from='id')
+    name = fields.Str()
+    img = fields.Str(load_from='picUrl')
+    songs = fields.List(fields.Nested(BriefSongSchema), required=True)
+
+    @post_load
+    def create_model(self, data):
+        data['source'] = SOURCE
+        artist, _ = ArtistSchema(strict=True).load(data)
+        return artist

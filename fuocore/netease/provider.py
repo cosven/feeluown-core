@@ -4,7 +4,11 @@ from marshmallow.exceptions import ValidationError
 
 from fuocore.provider import AbstractProvider
 from fuocore.netease.api import api
-from fuocore.netease.schemas import NeteaseSongSchema, NeteaseAlbumSchema
+from fuocore.netease.schemas import (
+    NeteaseSongSchema,
+    NeteaseAlbumSchema,
+    NeteaseArtistSchema,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -63,4 +67,12 @@ class NeteaseProvider(AbstractProvider):
         return album
 
     def get_artist(self, identifier):
-        pass
+        artist_data = api.artist_infos(identifier)
+        songs = artist_data['hotSongs']
+        songs_urls = api.weapi_songs_url([song['id'] for song in songs])
+        for index, _ in enumerate(songs):
+            songs[index]['url'] = songs_urls[index]['url']
+        artist = artist_data['artist']
+        artist['songs'] = songs
+        artist, _ = NeteaseArtistSchema(strict=True).load(artist)
+        return artist

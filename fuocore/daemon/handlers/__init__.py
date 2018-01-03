@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 import logging
 
-from fuocore.daemon.handlers.helpers import show_songs
+from fuocore.player import PlaybackMode, State
+
+from .helpers import show_songs, show_song
 
 
 logger = logging.getLogger(__name__)
@@ -48,6 +50,8 @@ def exec_cmd(app, cmd):
         set volume=100
         """
         handler = PlaylistHandler(app)
+    elif cmd.action in ('status',):
+        handler = StatusHandler(app)
     else:
         return 'Oops\nCommand not found!'
 
@@ -81,6 +85,28 @@ class SearchHandler(AbstractHandler):
         songs = self.app.source.search(query)
         return show_songs(songs)
 
+
+class StatusHandler(AbstractHandler):
+    def handle(self, cmd):
+        player = self.app.player
+        playlist = self.app.playlist
+        repeat = int(playlist.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop))
+        random = int(playlist.playback_mode == PlaybackMode.random)
+        msgs = [
+            'repeat:    {}'.format(repeat),
+            'random:    {}'.format(random),
+            'volume:    {}'.format(player.volume),
+            'state:     {}'.format(player.state.name),
+        ]
+        if player.state in (State.paused, State.playing):
+            msgs += [
+                'duration:  {}'.format(player.duration),
+                'position:  {}'.format(player.position),
+                'song:      {}'.format(show_song(player.current_song, brief=True)),
+            ]
+        return '\n'.join(msgs)
+
+
 class PlayerHandler(AbstractHandler):
     def handle(self, cmd):
         if cmd.action == 'play':
@@ -101,6 +127,8 @@ class PlaylistHandler(AbstractHandler):
     def handle(self, cmd):
         if cmd.action == 'add':
             return self.add(cmd.args[0])
+        elif cmd.action == 'remove':
+            return self.remove(cmd.args[0])
         elif cmd.action == 'clear':
             return self.clear()
         elif cmd.action == 'list':
@@ -112,6 +140,10 @@ class PlaylistHandler(AbstractHandler):
         song = self.app.source.get_song(song_furi)
         self.app.playlist.add(song)
 
+    def remove(self, song_identifier):
+        song = self.app.source.get_song(song_identifier)
+        self.app.playlist.remove(song)
+
     def list(self):
         songs = self.app.playlist.list()
         return show_songs(songs)
@@ -120,4 +152,4 @@ class PlaylistHandler(AbstractHandler):
         self.app.playlist.clear()
 
 
-from fuocore.daemon.handlers.show import ShowHandler
+from fuocore.daemon.handlers.show import ShowHandler  # noqa
