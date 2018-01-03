@@ -1,4 +1,4 @@
-# feeluown-core
+# feeluown-core (work in progress)
 
 [![Documentation Status](https://readthedocs.org/projects/feeluown-core/badge/?version=latest)](http://feeluown-core.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/cosven/feeluown-core.svg?branch=master)](https://travis-ci.org/cosven/feeluown-core)
@@ -20,10 +20,13 @@ git clone https://github.com/cosven/feeluown-cli.git
 pip3 install -e .
 ```
 
-## Usage
+## Simple Usage
 
 ```
 # 启动服务端
 fuo --debug
-fuocli search 周杰伦
+
+# 另外打开一个 shell
+fuocli search '谢春花' | head -n 20
+fuocli play fuo://netease/songs/458496082
 ```
