@@ -41,3 +41,7 @@ class SongModel(BriefSongModel):
 
     def __str__(self):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa
+
+    def __eq__(self, other):
+        return all([other.source == self.source,
+                    other.identifier == self.identifier])
