@@ -153,11 +153,13 @@ class API(object):
         return action
 
     # 用户歌单
-    def user_playlist(self, uid, offset=0, limit=200):
+    def user_playlists(self, uid, offset=0, limit=200):
         action = uri + '/user/playlist/?offset=' + str(offset) +\
             '&limit=' + str(limit) + '&uid=' + str(uid)
-        res_data = self.request('GET', action)
-        return res_data
+        data = self.request('GET', action)
+        if data['code'] == 200:
+            return data['playlist']
+        return []
 
     # 搜索单曲(1)，歌手(100)，专辑(10)，歌单(1000)，用户(1002) *(type)*
     def search(self, s, stype=1, offset=0, total='true', limit=60):
@@ -179,7 +181,9 @@ class API(object):
         action = uri + '/playlist/detail?id=' + str(playlist_id) +\
             '&offset=0&total=true&limit=1001'
         res_data = self.request('GET', action)
-        return res_data
+        if res_data['code'] == 200:
+            return res_data['result']
+        return None
 
     def update_playlist_name(self, pid, name):
         url = uri + '/playlist/update/name'
@@ -259,6 +263,19 @@ class API(object):
             return artdescs[0].prettify()
         return ''
 
+    def user_brief(self, user_id):
+        # TODO: return more info if needed
+        url = site_uri + '/user/home'
+        data = {'id': user_id}
+        res = self.http.get(url, params=data, headers=self.headers)
+        soup = BeautifulSoup(res.content, 'html.parser')
+        title_parts = soup.title.text.split(' - ')
+        if len(title_parts) > 1:
+            name = title_parts[0]
+            return {'name': name}
+        else:
+            return None
+
     # song id --> song url ( details )
     def song_detail(self, music_id):
         action = uri + '/song/detail/?id=' + str(music_id) + '&ids=[' +\
@@ -281,10 +298,12 @@ class API(object):
 
     def songs_detail(self, music_ids):
         music_ids = [str(music_id) for music_id in music_ids]
-        action = uri + '/api/song/detail?ids=[' +\
+        action = uri + '/song/detail?ids=[' +\
             ','.join(music_ids) + ']'
         data = self.request('GET', action)
-        return data
+        if data['code'] == 200:
+            return data['songs']
+        return []
 
     def op_music_to_playlist(self, mid, pid, op):
         """

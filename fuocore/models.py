@@ -7,6 +7,10 @@ from april import Struct
 class BaseModel(Struct):
     _fields = ['source', 'identifier']
 
+    def __repr__(self):
+        return '<{} source={} identifier={}>'.format(
+            self.__class__.__name__, self.source, self.identifier)
+
 
 class BriefArtistModel(BaseModel):
     _fields = ['name', 'img']
@@ -35,13 +39,20 @@ class LyricModel(BaseModel):
 class SongModel(BriefSongModel):
     _fields = ['album', 'artists']
 
-    def __repr__(self):
-        return '<{} source={} identifier={}>'.format(
-            self.__class__.__name__, self.source, self.identifier)
-
     def __str__(self):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa
 
     def __eq__(self, other):
         return all([other.source == self.source,
                     other.identifier == self.identifier])
+
+
+class PlaylistModel(BaseModel):
+    _fields = ['name', 'songs']
+
+    def __str__(self):
+        return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
+
+
+class UserModel(BaseModel):
+    _fields = ['name', 'playlists']

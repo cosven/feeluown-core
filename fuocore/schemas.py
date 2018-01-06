@@ -2,7 +2,13 @@
 
 from marshmallow import Schema, fields, post_load
 
-from fuocore.models import SongModel, AlbumModel, ArtistModel
+from fuocore.models import (
+    AlbumModel,
+    ArtistModel,
+    PlaylistModel,
+    SongModel,
+    UserModel,
+)
 
 
 class BaseSchema(Schema):
@@ -47,3 +53,21 @@ class SongSchema(BaseSchema):
 class LyricSchema(BaseSchema):
     content = fields.Str(required=True)
     trans_content = fields.Str()   # 翻译之后的歌词
+
+
+class PlaylistSchema(BaseSchema):
+    name = fields.Str(required=True)
+    songs = fields.List(fields.Nested(SongSchema))
+
+    @post_load
+    def create_model(self, data):
+        return PlaylistModel(**data)
+
+
+class UserSchema(BaseSchema):
+    name = fields.Str(required=True)
+    playlists = fields.List(fields.Nested(PlaylistSchema))
+
+    @post_load
+    def create_model(self, data):
+        return UserModel(**data)

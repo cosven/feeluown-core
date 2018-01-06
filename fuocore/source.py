@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from collections import defaultdict
 
-from fuocore.provider import register, get_provider, providers
+from fuocore.provider import get_provider, providers
 from fuocore.furi import parse_furi
 
 
@@ -22,8 +23,19 @@ class Source(object):
         logger.debug('共搜索到了 {} 首关于 {} 的歌曲'.format(len(songs), keyword))
         return songs
 
-    def get_song(self, song_furi_str):
+    def get_song(self, furi_str):
         """get song from identifier"""
-        furi = parse_furi(song_furi_str)
+        furi = parse_furi(furi_str)
         provider = get_provider(furi.provider)
         return provider.get_song(furi.identifier)
+
+    def list_songs(self, furi_str_list):
+        provider_songs_map = defaultdict(list)
+        for furi_str in furi_str_list:
+            furi = parse_furi(furi_str)
+            provider_songs_map[furi.provider].append(furi.identifier)
+        songs = []
+        for provider_name, identifiers in provider_songs_map.items():
+            provider = get_provider(provider_name)
+            songs += provider.list_songs(identifiers)
+        return songs

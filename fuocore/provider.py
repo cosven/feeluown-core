@@ -21,6 +21,13 @@ class AbstractProvider(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def list_songs(self, identifier_list):
+        """list songs by identifier list
+
+        :return: song model: :class:`fuocore.models.SongModel`
+        """
+
+    @abstractmethod
     def get_song(self, identifier):
         """get song by identifier
 

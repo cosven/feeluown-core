@@ -2,12 +2,15 @@ import logging
 
 from marshmallow.exceptions import ValidationError
 
+from fuocore.decorators import log_exectime
 from fuocore.provider import AbstractProvider
 from fuocore.netease.api import api
 from fuocore.netease.schemas import (
-    NeteaseSongSchema,
     NeteaseAlbumSchema,
     NeteaseArtistSchema,
+    NeteasePlaylistSchema,
+    NeteaseSongSchema,
+    NeteaseUserSchema,
 )
 
 
@@ -48,11 +51,26 @@ class NeteaseProvider(AbstractProvider):
         if identifier in self.song_caches:
             return self.song_caches[identifier]
         data = api.song_detail(int(identifier))
-        urls = api.weapi_songs_url([int(identifier)])
-        url = urls[0]['url']
-        data['url'] = url
         song, _ = NeteaseSongSchema(strict=True).load(data)
         return song
+
+    def list_songs(self, identifier_list):
+        song_data_list = api.songs_detail(identifier_list)
+        songs = []
+        for song_data in song_data_list:
+            song, _ = NeteaseSongSchema(strict=True).load(song_data)
+            songs.append(song)
+        return songs
+
+    @log_exectime
+    def get_user(self, identifier):
+        user = {'id': identifier}
+        user_brief = api.user_brief(identifier)
+        user.update(user_brief)
+        playlists = api.user_playlists(identifier)
+        user['playlists'] = playlists
+        user, _ = NeteaseUserSchema(strict=True).load(user)
+        return user
 
     def get_album(self, identifier):
         album_data = api.album_infos(identifier)
@@ -76,3 +94,8 @@ class NeteaseProvider(AbstractProvider):
         artist['songs'] = songs
         artist, _ = NeteaseArtistSchema(strict=True).load(artist)
         return artist
+
+    def get_playlist(self, identifier):
+        playlist_data = api.playlist_detail(identifier)
+        playlist, _ = NeteasePlaylistSchema(strict=True).load(playlist_data)
+        return playlist

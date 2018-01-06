@@ -126,6 +126,9 @@ class LocalProvider(AbstractProvider):
     def get_song(self, identifier):
         return self._identifier_song_map.get(identifier)
 
+    def list_songs(self, identifiers):
+        return map(self._identifier_song_map.get, identifiers)
+
     def get_album(self, identifier):
         return self._identifier_album_map.get(identifier)
 

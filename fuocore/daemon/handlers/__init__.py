@@ -136,12 +136,15 @@ class PlaylistHandler(AbstractHandler):
         elif cmd.action == 'next':
             self.app.playlist.next()
 
-    def add(self, song_furi):
-        song = self.app.source.get_song(song_furi)
-        self.app.playlist.add(song)
+    def add(self, furis):
+        playlist = self.app.playlist
+        furi_list = furis.split(',')
+        songs = self.app.source.list_songs(furi_list)
+        for song in songs:
+            playlist.add(song)
 
-    def remove(self, song_identifier):
-        song = self.app.source.get_song(song_identifier)
+    def remove(self, song_id):
+        song = self.app.source.get_song(song_id)
         self.app.playlist.remove(song)
 
     def list(self):

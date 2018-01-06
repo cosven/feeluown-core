@@ -14,7 +14,8 @@ from urllib.parse import urlparse
 
 from fuocore.daemon.handlers import AbstractHandler, CmdHandleException
 from fuocore.daemon.handlers.helpers import (
-    show_songs, show_song, show_artist, show_album
+    show_songs, show_song, show_artist, show_album, show_user,
+    show_playlist
 )
 
 logger = logging.getLogger(__name__)
@@ -159,3 +160,17 @@ def album_detail(req, provider, bid):
     provider = req.app.get_provider(provider)
     album = provider.get_album(bid)
     return show_album(album)
+
+
+@route('/<provider>/users/<uid>')
+def user_detail(req, provider, uid):
+    provider = req.app.get_provider(provider)
+    user = provider.get_user(uid)
+    return show_user(user)
+
+
+@route('/<provider>/playlists/<pid>')
+def playlist_detail(req, provider, pid):
+    provider = req.app.get_provider(provider)
+    playlist = provider.get_playlist(pid)
+    return show_playlist(playlist)

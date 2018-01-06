@@ -76,3 +76,27 @@ def show_album(album, brief=False):
         msgs += msgs_songs_header
         msgs += msgs_songs
     return '\n'.join(msgs)
+
+
+def show_playlist(playlist, brief=False):
+    if brief:
+        content = '{playlist}\t#{name}'.format(
+            playlist=playlist,
+            name=playlist.name)
+    else:
+        parts = [
+            'name        {}'.format(playlist.name),
+            'songs::\n',
+        ]
+        parts += ['\t' + show_song(song, brief=True) for song in playlist.songs]
+        content = '\n'.join(parts)
+    return content
+
+
+def show_user(user):
+    parts = [
+        'name        {}'.format(user.name),
+        'playlists::\n',
+    ]
+    parts += ['\t' + show_playlist(p, brief=True) for p in user.playlists]
+    return '\n'.join(parts)
