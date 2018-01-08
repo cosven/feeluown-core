@@ -7,10 +7,6 @@ from april import Struct
 class BaseModel(Struct):
     _fields = ['source', 'identifier']
 
-    def __repr__(self):
-        return '<{} source={} identifier={}>'.format(
-            self.__class__.__name__, self.source, self.identifier)
-
 
 class BriefArtistModel(BaseModel):
     _fields = ['name', 'img']

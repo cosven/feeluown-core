@@ -101,5 +101,5 @@ dump.rdb
 # emacs
 \#*\#
 *~
-
 .\#*
+*_flymake.py
