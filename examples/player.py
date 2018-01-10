@@ -4,16 +4,13 @@ import asyncio
 import time
 import random
 
-from fuocore.backends import MpvPlayer
-from fuocore.engine import set_backend, get_backend
+from fuocore.player import MpvPlayer
 from fuocore.source import Source
 
-from fuocore.third_party.netease import NeteaseProvider
+from fuocore.netease import NeteaseProvider
 
 
 player = MpvPlayer()
-set_backend(player)
-player = get_backend()
 player.initialize()
 source = Source()
 

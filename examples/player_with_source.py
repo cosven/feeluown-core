@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 import random
 
-from fuocore.backends import MpvPlayer
+from fuocore.player import MpvPlayer
 from fuocore.source import Source
-from fuocore.provider import LocalProvider
-
-from fuocore.third_party.netease import NeteaseProvider
+from fuocore.local.provider import LocalProvider
+from fuocore.netease.provider import NeteaseProvider
 
 
 player = MpvPlayer()
