@@ -1,4 +1,3 @@
-import json
 import logging
 
 import requests
@@ -13,6 +12,11 @@ api_base_url = 'http://api.xiami.com/web?v=2.0&app_key=1&r='
 class Xiami(object):
     '''
     Why there exists such a weird/strange api?
+
+    .. warning::
+
+        As xiami do not have batch get songs api, we temporarily
+        not using this.
     '''
     def __init__(self):
         self._headers = {

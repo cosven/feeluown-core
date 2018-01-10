@@ -30,13 +30,6 @@ class NeteaseProvider(AbstractProvider):
         if songs:
             for song in songs:
                 id_song_map[str(song['id'])] = song
-            songs_urls = api.weapi_songs_url([int(sid) for sid in id_song_map.keys()])
-            for song_url in songs_urls:
-                sid = song_url['id']
-                song = id_song_map[str(sid)]
-                song['url'] = song_url['url']
-                if song['url'] is None:
-                    continue
                 schema = NeteaseSongSchema(strict=True)
                 try:
                     s, _ = schema.load(song)
