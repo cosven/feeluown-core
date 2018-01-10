@@ -26,4 +26,5 @@ class App(object):
 
     def play(self, song_identifier):
         song = self.source.get_song(song_identifier)
-        self.player.play_song(song)
+        if song is not None:
+            self.player.play_song(song)
