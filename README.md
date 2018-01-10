@@ -17,7 +17,7 @@ sudo apt-get install mpv  # Debian or Ubuntu
 brew install mpv  # mac osx
 
 # please always use the latest release
-pip3 install 'fuocore>=1.0.0a0'
+pip3 install 'fuocore>=1.0.0a1'
 pip3 install 'fuocli>=0.0.1a0'
 ```
 
