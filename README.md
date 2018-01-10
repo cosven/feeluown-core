@@ -6,8 +6,8 @@
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
-录了个一分钟的演示视频
-<iframe width="560" height="315" src="https://www.youtube.com/embed/T5ROYtdlskE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+录了个两分钟的简短的演示视频
+[![Video Show](http://img.youtube.com/vi/pZyT7mC2-FE/0.jpg)](http://www.youtube.com/watch?v=pZyT7mC2-FE)
 
 ## Install
 
@@ -26,19 +26,8 @@ pip3 install 'fuocli>=0.0.1a0'
 # start daemon
 fuo --debug
 
-# use netcat
-nc  127.0.0.1 23333
-# OK feeluown 1.0.0a0
-search 周杰伦
-# ACK search 周杰伦
-# fuo://netease/songs/418603077   #告白气球-周杰伦
-# OK
-play fuo://netease/songs/418603077
-# ACK play fuo://netease/songs/418603077
-# OK
-
 # use fuocli
-fuocli search '谢春花' | head -n 10 | awk '{print $1}' | fuocli add
+fuocli search '谢春花' | grep songs | head -n 10 | awk '{print $1}' | fuocli add
 fuocli add fuo://netease/songs/45849608
 fuocli remove fuo://netease/songs/45849608
 fuocli play fuo://netease/songs/458496082
