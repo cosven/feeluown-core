@@ -13,20 +13,37 @@
 sudo apt-get install mpv  # Debian or Ubuntu
 brew install mpv  # mac osx
 
-git clone https://github.com/cosven/feeluown-core.git
-cd feeluown-core
-pip3 install -e .
-git clone https://github.com/cosven/feeluown-cli.git
-pip3 install -e .
+# please always use the latest release
+pip3 install 'fuocore>=1.0.0a0'
+pip3 install 'fuocli>=0.0.1a0'
 ```
 
 ## Simple Usage
 
 ```
-# 启动服务端
+# start daemon
 fuo --debug
 
-# 另外打开一个 shell
-fuocli search '谢春花' | head -n 20
+# use netcat
+nc  127.0.0.1 23333
+# OK feeluown 1.0.0a0
+search 周杰伦
+# ACK search 周杰伦
+# fuo://netease/songs/418603077   #告白气球-周杰伦
+# OK
+play fuo://netease/songs/418603077
+# ACK play fuo://netease/songs/418603077
+# OK
+
+# use fuocli
+fuocli search '谢春花' | head -n 10 | awk '{print $1}' | fuocli add
+fuocli add fuo://netease/songs/45849608
+fuocli remove fuo://netease/songs/45849608
 fuocli play fuo://netease/songs/458496082
+fuocli list
+fuocli status
+fuocli pause
+fuocli resume
 ```
+
+## FQA

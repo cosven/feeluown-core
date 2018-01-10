@@ -24,8 +24,10 @@ setup(
     py_modules=['mpv'],
     packages=[
         'fuocore',
-        'fuocore.third_party',
-        'fuocore.third_party.netease'
+        'fuocore.local',
+        'fuocore.netease',
+        'fuocore.daemon',
+        'fuocore.daemon.handlers',
         ],
     package_data={
         '': []
