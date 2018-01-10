@@ -10,10 +10,27 @@
 
 [![Video Show](http://img.youtube.com/vi/pZyT7mC2-FE/0.jpg)](http://www.youtube.com/watch?v=pZyT7mC2-FE)
 
+## Features
+
+1. C/S 架构，客户端和服务端基于 TCP 进行通信
+   [protocol](http://feeluown-core.readthedocs.io/en/latest/protocol.html#fuo-protocol)
+2. 输出为 text stream，能被 grep/awk/cut 等工具方便的处理
+3. 抽象 netease/xiami 相关三方资源
+4. 像管理 dotfile 一样管理播放列表、喜欢的歌手等音乐资源
+   [for example](https://github.com/cosven/cosven.github.io/blob/master/music/mix.fuo)
+
+## TODOs
+
+- [ ] (✭✭✭) 提供命令可以展示 歌曲/歌手/专辑 相关有趣的故事 [0%]
+- [ ] (✭✭✭) 代码优化和文档补全 [0%]
+  网易云音乐评论？豆瓣音乐信息？AI?
+- [ ] (✭) p2p like? [0%]
+- [ ] (✭) qq music resources [0%]
+
 ## Install
 
 ```sh
-sudo apt-get install mpv  # Debian or Ubuntu
+sudo apt-get install libmpv1  # Debian or Ubuntu
 brew install mpv  # mac osx
 
 # please always use the latest release
