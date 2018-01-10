@@ -6,6 +6,8 @@
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
+录了个一分钟的演示视频
+<iframe width="560" height="315" src="https://www.youtube.com/embed/T5ROYtdlskE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
 ## Install
 

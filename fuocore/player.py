@@ -86,8 +86,19 @@ class Playlist(object):
         logger.debug('add {} to player playlist'.format(song))
 
     def remove(self, song):
-        self._songs.remove(song)
-        logger.debug('remove {} from player playlist'.format(song))
+        if song in self._songs:
+            index = self._songs.index(song)
+            if index == self._current_index:
+                self.stop()
+                self.playlist.next()
+            elif index > self._current_index:
+                self._songs.remove(song)
+            else:
+                self._songs.remove(song)
+                self._current_index -= 1
+            logger.debug('remove {} from player playlist'.format(song))
+        else:
+            logger.debug('remove {}: song not in playlist'.format(song))
 
     def clear(self):
         self._songs = []
