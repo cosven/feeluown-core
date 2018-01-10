@@ -115,12 +115,15 @@ class LocalProvider(AbstractProvider):
     def search(self, keyword, limit=10):
         repr_song_map = dict()
         for song in self.songs:
-            repr_song_map[str(song) + song.identifier] = song
+            key = song.title + ' ' + song.artists_name + str(song.identifier)
+            repr_song_map[key] = song
         choices = repr_song_map.keys()
         result = process.extract(keyword, choices, limit=limit)
         result_songs = []
         for each, score in result:
-            result_songs.append(repr_song_map[each])
+            # if score > 80, keyword is almost included in song key
+            if score > 80:
+                result_songs.append(repr_song_map[each])
         return result_songs
 
     def get_song(self, identifier):

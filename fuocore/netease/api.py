@@ -6,6 +6,7 @@ import binascii
 import os
 import json
 import logging
+from difflib import SequenceMatcher
 
 from bs4 import BeautifulSoup
 import requests
@@ -294,7 +295,9 @@ class API(object):
         }
         payload = self.encrypt_request(data)
         data = self.request('POST', url, payload)
-        return data['data']
+        if data['code'] == 200:
+            return data['data']
+        return []
 
     def songs_detail(self, music_ids):
         music_ids = [str(music_id) for music_id in music_ids]
@@ -432,13 +435,23 @@ class API(object):
         }
         return payload
 
-    def get_xiami_song_by_title(self, title):
+    def get_xiami_song(self, title, artist_name):
         songs = self.xiami_assister.search(title)
-        if songs:
-            for song in songs:
-                if song['song_name'] == title:
-                    return song['listen_file']
-        return None
+        if not songs:
+            return None
+
+        target_song = songs[0]  # respect xiami search result
+        max_match_ratio = 0.5
+        for song in songs:
+            if song['song_name'].lower() == title.lower():
+                if song['artist_name'] == artist_name:
+                    target_song = song
+                    break
+                ratio = SequenceMatcher(None, song['artist_name'], artist_name).ratio()
+                if ratio > max_match_ratio:
+                    max_match_ratio = ratio
+                    target_song = song
+        return target_song['listen_file']
 
 
 api = API()

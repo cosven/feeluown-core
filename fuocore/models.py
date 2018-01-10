@@ -35,6 +35,14 @@ class LyricModel(BaseModel):
 class SongModel(BriefSongModel):
     _fields = ['album', 'artists']
 
+    @property
+    def artists_name(self):
+        return ','.join((artist.name for artist in self.artists))
+
+    @property
+    def filename(self):
+        return '{} - {}.mp3'.format(self.title, self.artists_name)
+
     def __str__(self):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa
 
