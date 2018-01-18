@@ -21,7 +21,7 @@ class Source(object):
                          .format(provider.name, len(_songs)))
             songs.extend(_songs)
         logger.debug('共搜索到了 {} 首关于 {} 的歌曲'.format(len(songs), keyword))
-        return songs
+        return songs[:40]
 
     def get_song(self, furi_str):
         """get song from identifier"""

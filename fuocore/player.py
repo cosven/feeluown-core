@@ -101,6 +101,7 @@ class Playlist(object):
             logger.debug('remove {}: song not in playlist'.format(song))
 
     def clear(self):
+        self.current_song = None
         self._songs = []
 
     def list(self):
@@ -401,6 +402,7 @@ class MpvPlayer(AbstractPlayer):
             logger.info('will play song: %s' % self._playlist.current_song)
             self.play(self._playlist.current_song.url)
         else:
+            self.stop()
             logger.info('playlist provide no song anymore.')
 
     def _on_event(self, event):
