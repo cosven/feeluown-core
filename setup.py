@@ -5,19 +5,18 @@ from setuptools import setup
 
 requires = [
     'pycrypto>=2.6.1',
-    'requests>=2.13.0',
+    'requests',
     'beautifulsoup4>=4.5.3',
     'marshmallow>=2.13.5',
     'april==2.0.0',
     'mutagen>=1.37',
-    'python-Levenshtein>=0.12.0',
     'fuzzywuzzy',
 ]
 
 
 setup(
     name='fuocore',
-    version='1.0.0a1',
+    version='1.0.0b1',
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
@@ -35,7 +34,6 @@ setup(
     url='https://github.com/cosven/feeluown-core',
     keywords=['media', 'player', 'api'],
     classifiers=(
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3 :: Only',

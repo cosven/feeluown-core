@@ -86,11 +86,17 @@ class Playlist(object):
         logger.debug('add {} to player playlist'.format(song))
 
     def remove(self, song):
+        """Remove song from playlist.
+
+        If song is current song, remove the song and play next. Otherwise,
+        just remove it.
+        """
         if song in self._songs:
             index = self._songs.index(song)
             if index == self._current_index:
-                self.stop()
-                self.playlist.next()
+                self.current_song = None
+                self._songs.remove(song)
+                self.next()
             elif index > self._current_index:
                 self._songs.remove(song)
             else:
@@ -120,11 +126,9 @@ class Playlist(object):
         self._last_song = self.current_song
 
         if song is None:
-            self._current_index = None
-            return
-
+            index = None
         # add it to playlist if song not in playlist
-        if song in self._songs:
+        elif song in self._songs:
             index = self._songs.index(song)
         else:
             if self._current_index is None:
@@ -147,6 +151,7 @@ class Playlist(object):
     def next(self):
         """advance to next song"""
         if not self._songs:
+            self.current_song = None
             return
 
         if self.current_song is None:
@@ -174,6 +179,7 @@ class Playlist(object):
         get the song before current song in playback mode order.
         """
         if not self._songs:
+            self.current_song = None
             return None
 
         if self._last_index is not None:
@@ -370,6 +376,7 @@ class MpvPlayer(AbstractPlayer):
             self.state = State.playing
 
     def stop(self):
+        logger.info('stop player...')
         self._mpv.stop()
         self.state = State.stopped
 
