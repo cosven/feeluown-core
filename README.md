@@ -34,8 +34,8 @@ sudo apt-get install libmpv1  # Debian or Ubuntu
 brew install mpv  # mac osx
 
 # please always use the latest release
-pip3 install 'fuocore>=1.0.0a1'
-pip3 install 'fuocli>=0.0.1a0'
+pip3 install fuocore --upgrade
+pip3 install fuocli --upgrade
 ```
 
 ## Simple Usage
@@ -43,6 +43,7 @@ pip3 install 'fuocli>=0.0.1a0'
 ```
 # start daemon
 fuo --debug
+# nohup fuo &  # 后台运行
 
 # use fuocli
 fuocli search '谢春花' | grep songs | head -n 10 | awk '{print $1}' | fuocli add
@@ -50,6 +51,7 @@ fuocli add fuo://netease/songs/45849608
 fuocli remove fuo://netease/songs/45849608
 fuocli play fuo://netease/songs/458496082
 fuocli list
+fuocli next
 fuocli status
 fuocli pause
 fuocli resume
