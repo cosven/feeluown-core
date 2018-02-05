@@ -50,6 +50,7 @@ setup(
         ],
         'fuo.provider': [
             'local = fuocore.local.provider:LocalProvider',
+            'netease = fuocore.netease.provider:NeteaseProvider',
         ],
     },
 )

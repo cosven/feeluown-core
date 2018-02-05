@@ -22,8 +22,8 @@
 ## TODOs
 
 - [ ] (✭✭✭) 提供命令可以展示 歌曲/歌手/专辑 相关有趣的故事 [0%]
-- [ ] (✭✭✭) 代码优化和文档补全 [0%]
   网易云音乐评论？豆瓣音乐信息？AI?
+- [ ] (✭✭✭) 代码优化和文档补全 [0%]
 - [ ] (✭) p2p like? [0%]
 - [ ] (✭) qq music resources [0%]
 
@@ -58,3 +58,6 @@ fuocli resume
 ```
 
 ## FQA
+
+## Contributing to fuocore
+请参考文档 [Development](http://feeluown-core.readthedocs.io/en/latest/development.html)

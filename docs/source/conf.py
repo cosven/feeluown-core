@@ -59,7 +59,7 @@ author = u'cosven'
 # built documents.
 #
 # The short X.Y version.
-version = u'1.0.0a0'
+version = u'1.0.0'
 # The full version, including alpha/beta/rc tags.
 release = u'1.0.0a0'
 

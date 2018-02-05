@@ -1,6 +1,7 @@
 import logging
 
 from fuocore.player import MpvPlayer
+from fuocore.plugin import load_plugins
 from fuocore.provider import providers
 from fuocore.source import Source
 
@@ -13,6 +14,10 @@ class App(object):
         self.player = MpvPlayer()
         self.playlist = self.player.playlist
         self.source = Source()
+
+    def initialize(self):
+        self.player.initialize()
+        load_plugins()
 
     def list_providers(self):
         for provider in providers:

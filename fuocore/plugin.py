@@ -15,7 +15,7 @@ def load_plugins():
 
     # load available providers
     for entry_point in pkg_resources.iter_entry_points('fuo.provider'):
-        logger.debug('Loading provider from plugins: %s', entry_point)
+        logger.info('Loading provider from plugins: %s', entry_point)
         try:
             provider_cls = entry_point.load(require=False)
         except Exception as e:

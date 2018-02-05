@@ -20,7 +20,9 @@ async def handle(app, conn, addr):
             logger.debug('客户端断开连接')
             break
         command = command.decode().strip()
-        if command in ('exit', 'quit'):
+        # NOTE: we will never recv empty byte unless
+        # client close the connection
+        if not command:
             conn.close()
             break
         logger.info('RECV: ' + command)
