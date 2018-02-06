@@ -18,6 +18,7 @@
 3. 抽象 netease/xiami 相关三方资源
 4. 像管理 dotfile 一样管理播放列表、喜欢的歌手等音乐资源
    [for example](https://github.com/cosven/cosven.github.io/blob/master/music/mix.fuo)
+5. 代码对新手友好，开发者可以快速的开发小功能或者修复 bug
 
 ## TODOs
 

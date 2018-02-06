@@ -35,8 +35,6 @@ def get_backend():
 
 
 class State(Enum):
-    """Player state"""
-
     stopped = 0
     paused = 1
     playing = 2
@@ -50,11 +48,15 @@ class PlaybackMode(Enum):
 
 
 class Playlist(object):
-    """player playlist provide a list of song model to play"""
+    """player playlist provide a list of song model to play
+
+    NOTE - Design: Why we use song model instead of url? Theoretically,
+    using song model may increase the coupling. However, simple url
+    do not obtain enough metadata.
+    """
 
     def __init__(self, songs=[], playback_mode=PlaybackMode.loop):
         """
-
         :param songs: list of :class:`fuocore.models.SongModel`
         :param playback_mode: :class:`fuocore.player.PlaybackMode`
         """
@@ -83,7 +85,7 @@ class Playlist(object):
             self._songs.append(song)
         else:
             self._songs.insert(self._current_index + 1, song)
-        logger.debug('add {} to player playlist'.format(song))
+        logger.debug('Add {} to player playlist'.format(song))
 
     def remove(self, song):
         """Remove song from playlist.
@@ -102,9 +104,9 @@ class Playlist(object):
             else:
                 self._songs.remove(song)
                 self._current_index -= 1
-            logger.debug('remove {} from player playlist'.format(song))
+            logger.debug('Remove {} from player playlist'.format(song))
         else:
-            logger.debug('remove {}: song not in playlist'.format(song))
+            logger.debug('Remove failed: {} not in playlist'.format(song))
 
     def clear(self):
         self.current_song = None
@@ -343,11 +345,14 @@ class MpvPlayer(AbstractPlayer):
         del self._mpv
 
     def play(self, url):
-        logger.info('start play url:%s' % url)
-        # clear playlist before play next song.
-        # otherwise, mpv will seek to the last position and play
-        self._mpv.playlist_clear()
+        # NOTE - API DESGIN: we should return None, see
+        # QMediaPlayer API reference for more details.
 
+        logger.info("Player will play: '%s'" % url)
+
+        # Clear playlist before play next song,
+        # otherwise, mpv will seek to the last position and play.
+        self._mpv.playlist_clear()
         self._mpv.play(url)
         self.state = State.playing
         self.media_changed.emit()
@@ -357,8 +362,13 @@ class MpvPlayer(AbstractPlayer):
                 self.playlist.current_song == song:
             logger.warning('the song to be played is same as current song')
             return
-        self._playlist.current_song = song
-        self.play(song.url)
+
+        url = song.url
+        if url is not None:
+            self._playlist.current_song = song
+            self.play(song.url)
+        else:
+            raise ValueError("invalid song: song url can't be None")
 
     def resume(self):
         self._mpv.pause = False

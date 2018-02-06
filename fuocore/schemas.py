@@ -29,7 +29,7 @@ class ArtistSchema(BaseSchema):
 
 class AlbumSchema(BaseSchema):
     name = fields.Str(required=True)
-    img = fields.Str()  # NOTE: 可能需要单独一个 Schema
+    img = fields.Str()
     songs = fields.List(fields.Nested('SongSchema'))
     artists = fields.List(fields.Nested(ArtistSchema))
 

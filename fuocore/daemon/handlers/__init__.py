@@ -33,7 +33,7 @@ def exec_cmd(app, cmd):
 
     # 播放器相关操作
     elif cmd.action in (
-        'play', 'pause', 'resume', 'stop',
+        'play', 'pause', 'resume', 'stop', 'toggle',
     ):
         handler = PlayerHandler(app)
 
@@ -90,7 +90,8 @@ class StatusHandler(AbstractHandler):
     def handle(self, cmd):
         player = self.app.player
         playlist = self.app.playlist
-        repeat = int(playlist.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop))
+        repeat = int(playlist.playback_mode in
+                     (PlaybackMode.one_loop, PlaybackMode.loop))
         random = int(playlist.playback_mode == PlaybackMode.random)
         msgs = [
             'repeat:    {}'.format(repeat),
@@ -102,7 +103,7 @@ class StatusHandler(AbstractHandler):
             msgs += [
                 'duration:  {}'.format(player.duration),
                 'position:  {}'.format(player.position),
-                'song:      {}'.format(show_song(player.current_song, brief=True)),
+                'song:      {}'.format(show_song(player.current_song, brief=True)),  # noqa
             ]
         return '\n'.join(msgs)
 
@@ -113,11 +114,14 @@ class PlayerHandler(AbstractHandler):
             song_furi = cmd.args[0]
             return self.play_song(song_furi)
         elif cmd.action == 'pause':
+            # FIXME: please follow ``Law of Demeter``
             self.app.player.pause()
         elif cmd.action == 'stop':
             self.app.player.stop()
         elif cmd.action == 'resume':
             self.app.player.resume()
+        elif cmd.action == 'toggle':
+            self.app.player.toggle()
 
     def play_song(self, song_furi):
         self.app.play(song_furi)
@@ -135,6 +139,8 @@ class PlaylistHandler(AbstractHandler):
             return self.list()
         elif cmd.action == 'next':
             self.app.playlist.next()
+        elif cmd.action == 'previous':
+            self.app.playlist.previous()
 
     def add(self, furis):
         playlist = self.app.playlist
