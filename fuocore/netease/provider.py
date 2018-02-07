@@ -47,6 +47,12 @@ class NeteaseProvider(AbstractProvider):
         song, _ = NeteaseSongSchema(strict=True).load(data)
         return song
 
+    def get_lyric(self, song_id):
+        data = api.get_lyric_by_songid(song_id)
+        lrc = data.get('lrc', {})
+        lyric = lrc.get('lyric', '')
+        return lyric
+
     def list_songs(self, identifier_list):
         song_data_list = api.songs_detail(identifier_list)
         songs = []

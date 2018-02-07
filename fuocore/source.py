@@ -29,6 +29,14 @@ class Source(object):
         provider = get_provider(furi.provider)
         return provider.get_song(furi.identifier)
 
+    def get_lyric(self, furi):
+        """
+        :param furi: song furi
+        """
+        result = parse_furi(furi)
+        provider = get_provider(result.provider)
+        return provider.get_lyric(result.identifier)
+
     def list_songs(self, furi_str_list):
         provider_songs_map = defaultdict(list)
         for furi_str in furi_str_list:

@@ -1,0 +1,4 @@
+
+
+class LyricHelper(object):
+    pass

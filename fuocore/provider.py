@@ -34,6 +34,9 @@ class AbstractProvider(metaclass=ABCMeta):
         :return: song model: :class:`fuocore.models.SongModel`
         """
 
+    def get_lyric(self, identifier):
+        return ''
+
     @abstractmethod
     def get_album(self, identifier):
         """get album by identifier
