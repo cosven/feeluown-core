@@ -38,21 +38,28 @@ class AlbumSchema(BaseSchema):
         return AlbumModel(**data)
 
 
+class LyricSchema(BaseSchema):
+    content = fields.Str(required=True)
+    trans_content = fields.Str()   # 翻译之后的歌词
+
+
+class CommentSchema(BaseSchema):
+    user_id = fields.Str()
+    content = fields.Str(required=True)
+
+
 class SongSchema(BaseSchema):
     title = fields.Str(required=True)
     url = fields.Str(required=True)
     duration = fields.Float(required=True)  # mileseconds
     album = fields.Nested(AlbumSchema)
     artists = fields.List(fields.Nested(ArtistSchema))
+    lyric = fields.Nested(LyricSchema)
+    comments = fields.List(fields.Nested(CommentSchema))
 
     @post_load
     def create_model(self, data):
         return SongModel(**data)
-
-
-class LyricSchema(BaseSchema):
-    content = fields.Str(required=True)
-    trans_content = fields.Str()   # 翻译之后的歌词
 
 
 class PlaylistSchema(BaseSchema):

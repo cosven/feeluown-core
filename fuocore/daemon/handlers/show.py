@@ -148,6 +148,15 @@ def song_detail(req, provider, sid):
     return show_song(song)
 
 
+@route('/<provider>/songs/<sid>/lyric')
+def lyric(req, provider, sid):
+    provider = req.app.get_provider(provider)
+    song = provider.get_song(sid)
+    if song.lyric:
+        return song.lyric.content
+    return ''
+
+
 @route('/<provider>/artists/<aid>')
 def artist_detail(req, provider, aid):
     provider = req.app.get_provider(provider)

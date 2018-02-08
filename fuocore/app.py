@@ -29,6 +29,17 @@ class App(object):
                 return provider
         return None
 
+    def current_lyric_sentence(self):
+        """
+        TODO: maybe this function should live somewhere else
+        """
+        song = self.playlist.current_song
+        if song.lyric is None:
+            return None
+        position = self.player.position
+        time_sentence_map = {}
+
+
     def play(self, song_identifier):
         song = self.source.get_song(song_identifier)
         if song is not None:
