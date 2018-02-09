@@ -4,7 +4,7 @@ import sys
 
 from fuocore import setup_logger
 from fuocore.app import App
-from fuocore.daemon import run
+from fuocore.daemon import run, run_live_lyric_pubsub
 
 
 def main():
@@ -16,6 +16,7 @@ def main():
     app.initialize()
     event_loop = asyncio.get_event_loop()
     event_loop.create_task(run(app))
+    event_loop.create_task(run_live_lyric_pubsub(app))
     event_loop.run_forever()
 
 
