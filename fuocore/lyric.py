@@ -4,6 +4,9 @@ import re
 def parse(content):
     """
     Reference: https://github.com/osdlyrics/osdlyrics/blob/master/python/lrc.py
+
+    >>> parse("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
+    {0.0: ' 作曲 : 周杰伦', 1000.0: ' 作词 : 周杰伦'}
     """
     ms_sentence_map = dict()
     sentence_pattern = re.compile(r'\[(\d+(:\d+){0,2}(\.\d+)?)\]')
@@ -14,7 +17,9 @@ def parse(content):
             time_str = m.group(1)
             mileseconds = 0
             unit = 1000
-            for num in time_str.split(':').reverse():
+            t_seq = time_str.split(':')
+            t_seq.reverse()
+            for num in t_seq:
                 mileseconds += float(num) * unit
                 unit *= 60
             sentence = line[m.end():]
