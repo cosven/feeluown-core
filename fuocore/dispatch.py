@@ -6,14 +6,15 @@ import logging
 
 
 class Signal(object):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *sig, name=''):
+        self.sig = sig
         self.receivers = set()
 
-    def emit(self, **kwargs):
+    def emit(self, *args):
         for receiver in self.receivers:
+            # import pdb; pdb.set_trace()
             try:
-                receiver()(**kwargs)
+                receiver()(*args)
             except Exception:
                 logging.exception('receiver %s run error' % receiver())
 

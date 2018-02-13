@@ -139,7 +139,7 @@ class Playlist(object):
                 index = self._current_index + 1
             self._songs.insert(index, song)
         self._current_index = index
-        self.song_changed.emit()
+        self.song_changed.emit(song)
 
     @property
     def playback_mode(self):
@@ -340,6 +340,7 @@ class MpvPlayer(AbstractPlayer):
         )
         self._mpv.register_event_callback(lambda event: self._on_event(event))
         self.song_finished.connect(self._playlist.next)
+        logger.info('Player initialize finished.')
 
     def quit(self):
         del self._mpv
@@ -406,18 +407,18 @@ class MpvPlayer(AbstractPlayer):
 
     def _on_position_changed(self, position):
         self._position = position
-        self.position_changed.emit()
+        self.position_changed.emit(position)
 
     def _on_duration_changed(self, duration):
         """listening to mpv duration change event"""
         logger.info('player receive duration changed signal')
         self.duration = duration
 
-    def _on_song_changed(self):
+    def _on_song_changed(self, song):
         logger.info('player received song changed signal')
-        if self._playlist.current_song is not None:
+        if song is not None:
             logger.info('will play song: %s' % self._playlist.current_song)
-            self.play(self._playlist.current_song.url)
+            self.play(song.url)
         else:
             self.stop()
             logger.info('playlist provide no song anymore.')

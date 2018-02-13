@@ -12,8 +12,8 @@ import logging
 import re
 from urllib.parse import urlparse
 
-from fuocore.daemon.handlers import AbstractHandler, CmdHandleException
-from fuocore.daemon.handlers.helpers import (
+from . import AbstractHandler, CmdHandleException
+from .helpers import (
     show_songs, show_song, show_artist, show_album, show_user,
     show_playlist
 )
@@ -146,6 +146,15 @@ def song_detail(req, provider, sid):
     provider = req.app.get_provider(provider)
     song = provider.get_song(sid)
     return show_song(song)
+
+
+@route('/<provider>/songs/<sid>/lyric')
+def lyric(req, provider, sid):
+    provider = req.app.get_provider(provider)
+    song = provider.get_song(sid)
+    if song.lyric:
+        return song.lyric.content
+    return ''
 
 
 @route('/<provider>/artists/<aid>')

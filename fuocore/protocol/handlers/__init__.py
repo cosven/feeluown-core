@@ -161,4 +161,4 @@ class PlaylistHandler(AbstractHandler):
         self.app.playlist.clear()
 
 
-from fuocore.daemon.handlers.show import ShowHandler  # noqa
+from .show import ShowHandler  # noqa

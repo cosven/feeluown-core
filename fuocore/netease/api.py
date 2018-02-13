@@ -345,7 +345,7 @@ class API(object):
         url = uri + '/mv/detail?id=' + str(mvid)
         return self.request('GET', url)
 
-    def get_lyric_by_musicid(self, mid):
+    def get_lyric_by_songid(self, mid):
         """Get song lyric
         :param mid: music id
         :return: {

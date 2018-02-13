@@ -3,7 +3,7 @@ import time
 import os
 
 from fuocore.consts import MUSIC_LIBRARY_PATH
-from fuocore.models import SongModel
+from fuocore.models import SongModel, LyricModel
 from fuocore.netease.api import api
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,8 @@ class NSongModel(SongModel):
             return path
         return None
 
+    # NOTE: if we want to override mode attribute, we must
+    # implement both getter and setter.
     @property
     def url(self):
         """
@@ -66,3 +68,22 @@ class NSongModel(SongModel):
     def url(self, value):
         self._expired_at = time.time() + 100
         self._url = value
+
+    @property
+    def lyric(self):
+        if self._lyric is not None:
+            assert isinstance(self._lyric, LyricModel)
+            return self._lyric
+        data = api.get_lyric_by_songid(self.identifier)
+        lrc = data.get('lrc', {})
+        lyric = lrc.get('lyric', '')
+        self._lyric = LyricModel(
+            identifier=self.identifier,
+            source=self.source,
+            content=lyric
+        )
+        return self._lyric
+
+    @lyric.setter
+    def lyric(self, value):
+        self._lyric = value

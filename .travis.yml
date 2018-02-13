@@ -1,18 +1,10 @@
-sudo: required
+language: python
 
-env:
-  - ARCH_TRAVIS_VERBOSE=1
-
-arch:
-  packages:
-    - python3
-    - python-pip
-    - mpv
-  script:
-    - python --version
-    - sudo pip install coveralls
-    - coverage run --source=fuocore setup.py test
-    - coveralls
+python:
+  - "3.5"
+  - "3.6"
 
 script:
-  - "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"
+  - pip install coveralls
+  - coverage run --source=fuocore setup.py test
+  - coveralls

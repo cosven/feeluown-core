@@ -33,7 +33,7 @@ class LyricModel(BaseModel):
 
 
 class SongModel(BriefSongModel):
-    _fields = ['album', 'artists']
+    _fields = ['album', 'artists', 'lyric', 'comments']
 
     @property
     def artists_name(self):

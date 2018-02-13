@@ -26,7 +26,8 @@ setup(
         'fuocore.local',
         'fuocore.netease',
         'fuocore.daemon',
-        'fuocore.daemon.handlers',
+        'fuocore.protocol',
+        'fuocore.protocol.handlers',
         ],
     package_data={
         '': []
@@ -39,14 +40,15 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         ),
     install_requires=requires,
-    setup_requires=[],
+    setup_requires=['pytest-runner'],
+    test_suite="tests",
     tests_require=[
         'pytest',
         'mock',
     ],
     entry_points={
         'console_scripts': [
-            'fuo=fuocore.__main__:main',
+            'fuo = fuocore.daemon.main:main',
         ],
         'fuo.provider': [
             'local = fuocore.local.provider:LocalProvider',

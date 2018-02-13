@@ -9,7 +9,7 @@ from mutagen.mp3 import EasyMP3
 
 from fuocore.provider import AbstractProvider
 from fuocore.consts import MUSIC_LIBRARY_PATH
-from fuocore.decorators import log_exectime
+from fuocore.utils import log_exectime
 
 from fuocore.local.schemas import EasyMP3MetadataSongSchema
 
