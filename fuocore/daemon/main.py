@@ -1,11 +1,15 @@
 import asyncio
 import logging
+import sys
 
-from fuocore.daemon.tcp_server import TcpServer
-from fuocore.daemon.parser import CmdParser
-from fuocore.daemon.handlers import exec_cmd
-from fuocore.daemon.lyric_live_pub import LiveLyric
+from .aio_tcp_server import TcpServer
+from .live_lyric import LiveLyric
+from .pubsub import run as run_pubsub
 
+from fuocore import setup_logger
+from fuocore.app import App
+from fuocore.protocol.parser import CmdParser
+from fuocore.protocol.handlers import exec_cmd
 
 logger = logging.getLogger(__name__)
 
@@ -31,31 +35,6 @@ async def handle(app, conn, addr):
         event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
 
 
-async def handle_live_lyric(app, conn, addr):
-    logger.info('live lyric')
-    event_loop = asyncio.get_event_loop()
-    event_loop.sock_sendall(conn, b'OK feeluown live lyric\n')
-    player = app.player
-    playlist = app.playlist
-
-    q = asyncio.Queue(1)
-
-    def send(s):
-        q.put_nowait(s)
-
-    livelyric = LiveLyric(send_func=send)
-    player.position_changed.connect(app.livelyric.on_position_changed)
-    playlist.song_changed.connect(app.livelyric.on_song_changed)
-    while True:
-        s = await q.get()
-        try:
-            event_loop.sock_sendall(s)
-        except Exception as e:
-            conn.close()
-            import pdb; pdb.set_trace()
-            break
-
-
 async def run(app, *args, **kwargs):
     port = 23333
     host = '0.0.0.0'
@@ -64,9 +43,43 @@ async def run(app, *args, **kwargs):
         TcpServer(host, port, handle_func=handle).run(app))
 
 
-async def run_live_lyric_pubsub(app, *args, **kwargs):
-    port = 22332
-    host = '0.0.0.0'
+class LiveLyricPublisher(object):
+    topic = 'topic.live_lyric'
+
+    def __init__(self, gateway):
+        self.gateway = gateway
+        gateway.add_topic(self.topic)
+
+    def publish(self, sentence):
+        self.gateway.publish(sentence + '\n', self.topic)
+
+
+def main():
+    debug = '--debug' in sys.argv
+    setup_logger(debug=debug)
+    logger = logging.getLogger(__name__)
+    logger.info('{} mode.'.format('Debug' if debug else 'Release'))
+
+    app = App()
+    app.initialize()
+
     event_loop = asyncio.get_event_loop()
-    event_loop.create_task(
-        TcpServer(host, port, handle_func=handle_live_lyric).run(app))
+    event_loop.create_task(run(app))
+
+    pubsub_gateway, pubsub_server = run_pubsub()  # runs in another thread
+    live_lyric_publisher = LiveLyricPublisher(pubsub_gateway)
+
+    live_lyric = LiveLyric(on_changed=live_lyric_publisher.publish)
+    app.player.position_changed.connect(live_lyric.on_position_changed)
+    app.playlist.song_changed.connect(live_lyric.on_song_changed)
+
+    try:
+        event_loop.run_forever()
+    except KeyboardInterrupt:
+        # NOTE: gracefully shutdown?
+        pubsub_server.close()
+        event_loop.close()
+
+
+if __name__ == '__main__':
+    main()

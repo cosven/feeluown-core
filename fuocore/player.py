@@ -340,6 +340,7 @@ class MpvPlayer(AbstractPlayer):
         )
         self._mpv.register_event_callback(lambda event: self._on_event(event))
         self.song_finished.connect(self._playlist.next)
+        logger.info('Player initialize finished.')
 
     def quit(self):
         del self._mpv

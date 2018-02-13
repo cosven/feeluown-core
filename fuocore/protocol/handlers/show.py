@@ -12,8 +12,8 @@ import logging
 import re
 from urllib.parse import urlparse
 
-from fuocore.daemon.handlers import AbstractHandler, CmdHandleException
-from fuocore.daemon.handlers.helpers import (
+from . import AbstractHandler, CmdHandleException
+from .helpers import (
     show_songs, show_song, show_artist, show_album, show_user,
     show_playlist
 )

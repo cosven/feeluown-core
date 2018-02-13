@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from fuocore.lyric import parse
@@ -9,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 class LiveLyric(object):
-    def __init__(self, send_func):
-        self.send = send_func
+    def __init__(self, on_changed):
+        self.on_changed = on_changed
 
         self._lyric = None
         self._pos_s_map = {}  # position sentence map
@@ -19,22 +18,20 @@ class LiveLyric(object):
 
     # TODO: performance optimization?
     def on_position_changed(self, position):
-        logger.info('position -------------------')
         if not self._lyric:
             return
 
-        if self._pos is None:
-            pos = find_previous(position, self._pos_list)
-            if pos is not None and pos != self._pos:
-                self.send(self._pos_s_map[pos])
+        pos = find_previous(position*1000 + 300, self._pos_list)
+        if pos is not None and pos != self._pos:
+            self.on_changed(self._pos_s_map[pos])
+            self._pos = pos
 
     def on_song_changed(self, song):
-        logger.info('song !!!!!!!!!!!!!!!!!!!!!')
         if song.lyric is None:
             self._lyric = None
             self._pos_s_map = {}
         else:
             self._lyric = song.lyric.content
             self._pos_s_map = parse(self._lyric)
-            logger.info('Lyric have been changed.')
+        self._pos_list = sorted(list(self._pos_s_map.keys()))
         self._pos = None

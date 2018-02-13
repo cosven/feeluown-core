@@ -32,15 +32,15 @@ class SignalTest(TestCase):
             # pay attention
             self.assertTrue(self.a1.f == self.a2.f == mock_method_f)
             s.connect(self.a1.f)
-            s.emit(arg1=1, arg2='hello')
-            mock_method_f.assert_called_once_with(arg1=1, arg2='hello')
+            s.emit(1, 'hello')
+            mock_method_f.assert_called_once_with(1, 'hello')
 
     @mock.patch('test_signal.f', return_value=None)
     def test_connect2(self, mock_func):
         s = Signal()
         s.connect(f)
-        s.emit(arg1=1, arg2='hello')
-        s.emit(arg1=1, arg2='hello')
+        s.emit(1, 'hello')
+        s.emit(1, 'hello')
         self.assertEqual(mock_func.call_count, 2)
 
     @mock.patch('test_signal.f', return_value=None)
@@ -48,7 +48,7 @@ class SignalTest(TestCase):
         s = Signal()
         s.connect(f)
         s.disconnect(f)
-        s.emit(arg1=1, arg2='hello')
+        s.emit(1, 'hello')
         self.assertEqual(mock_func.call_count, 0)
 
     @mock.patch.object(Signal, 'connect')

@@ -12,6 +12,7 @@ class Signal(object):
 
     def emit(self, *args):
         for receiver in self.receivers:
+            # import pdb; pdb.set_trace()
             try:
                 receiver()(*args)
             except Exception:
