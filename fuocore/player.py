@@ -349,7 +349,7 @@ class MpvPlayer(AbstractPlayer):
         # NOTE - API DESGIN: we should return None, see
         # QMediaPlayer API reference for more details.
 
-        logger.info("Player will play: '%s'" % url)
+        logger.debug("Player will play: '%s'" % url)
 
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
@@ -415,9 +415,9 @@ class MpvPlayer(AbstractPlayer):
         self.duration = duration
 
     def _on_song_changed(self, song):
-        logger.info('player received song changed signal')
+        logger.debug('player received song changed signal')
         if song is not None:
-            logger.info('will play song: %s' % self._playlist.current_song)
+            logger.info('Will play song: %s' % self._playlist.current_song)
             self.play(song.url)
         else:
             self.stop()
@@ -426,6 +426,6 @@ class MpvPlayer(AbstractPlayer):
     def _on_event(self, event):
         if event['event_id'] == MpvEventID.END_FILE:
             reason = event['event']['reason']
-            logger.info('current song finished. reason: %d' % reason)
+            logger.debug('Current song finished. reason: %d' % reason)
             if reason != MpvEventEndFile.ABORTED:
                 self.song_finished.emit()

@@ -104,7 +104,7 @@ def run(host='0.0.0.0', port=23334):
     gateway = Gateway()
     server = TcpServer(host, port, handle_func=handle)
     Thread(target=server.run, args=(gateway,)).start()
-    logger.info('run pubsub server in {host}:{port}'.format(
+    logger.info('Run pubsub server in {host}:{port}'.format(
         host=host, port=port))
     return gateway, server
 

@@ -22,7 +22,7 @@ class InvalidFUri(CmdHandleException):
 
 
 def exec_cmd(app, cmd):
-    logger.info('EXEC_CMD: ' + str(cmd))
+    logger.debug('EXEC_CMD: ' + str(cmd))
 
     # 一些
     if cmd.action in ('show', ):

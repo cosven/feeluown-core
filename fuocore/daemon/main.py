@@ -29,7 +29,7 @@ async def handle(app, conn, addr):
         if not command:
             conn.close()
             break
-        logger.info('RECV: ' + command)
+        logger.debug('RECV: ' + command)
         cmd = CmdParser.parse(command)
         msg = exec_cmd(app, cmd)
         event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
@@ -41,6 +41,7 @@ async def run(app, *args, **kwargs):
     event_loop = asyncio.get_event_loop()
     event_loop.create_task(
         TcpServer(host, port, handle_func=handle).run(app))
+    logger.info('Fuo daemon run in {}:{}'.format(host, port))
 
 
 class LiveLyricPublisher(object):
