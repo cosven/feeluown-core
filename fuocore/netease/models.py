@@ -13,7 +13,7 @@ class NSongModel(SongModel):
 
     def _refresh_url(self):
         songs = api.weapi_songs_url([int(self.identifier)])
-        if songs:
+        if songs and songs[0]['url']:
             self.url = songs[0]['url']
         else:
             self.url = self._find_in_xiami()

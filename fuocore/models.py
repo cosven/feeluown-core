@@ -23,9 +23,15 @@ class BriefSongModel(BaseModel):
 class ArtistModel(BriefArtistModel):
     _fields = ['songs', 'desc']
 
+    def __str__(self):
+        return 'fuo://{}/artists/{}'.format(self.source, self.identifier)
+
 
 class AlbumModel(BriefAlbumModel):
     _fields = ['img', 'songs', 'artists', 'desc']
+
+    def __str__(self):
+        return 'fuo://{}/albums/{}'.format(self.source, self.identifier)
 
 
 class LyricModel(BaseModel):

@@ -14,28 +14,28 @@ TODO: 让代码长得更好看
 def show_song(song, brief=False):
     artists = song.artists or []
     artists_name = ','.join([artist.name for artist in artists])
+    if song.album is not None:
+        album_name = song.album.name
+        album_uri = str(song.album)
+    else:
+        album_name = 'Unknown'
+        album_uri = ''
     if brief:
-        s = '{song}\t#{title}-{artists_name}'.format(
+        s = '{song}\t#{title}-{artists_name}-{album_name}'.format(
             song=song,
             title=song.title,
-            artists_name=artists_name)
+            artists_name=artists_name,
+            album_name=album_name)
         return s
-    artists_id = ','.join([str(artist.identifier) for artist in artists])
-
-    if song.album is not None:
-        album_id = str(song.album.identifier)
-        album_name = song.album.name
-    else:
-        album_id = None
-        album_name = 'Unknown'
+    artists_uri = ','.join(str(artist) for artist in artists)
     msgs = (
         'provider     {}'.format(song.source),
-        'identifier   {}'.format(song.identifier),
+        'uri          {}'.format(str(song)),
         'title        {}'.format(song.title),
         'duration     {}'.format(song.duration),
         'url          {}'.format(song.url),
-        'artists      {}\t#{}'.format(artists_id, artists_name),
-        'album        {}\t#{}'.format(album_id, album_name),
+        'artists      {}\t#{}'.format(artists_uri, artists_name),
+        'album        {}\t#{}'.format(album_uri, album_name),
     )
     return '\n'.join(msgs)
 
@@ -55,7 +55,7 @@ def show_artist(artist):
         songs = ['\t' + each for each in show_songs(artist.songs).split('\n')]
         msgs += songs_header
         msgs += songs
-    return msgs
+    return '\n'.join(msgs)
 
 
 def show_album(album, brief=False):

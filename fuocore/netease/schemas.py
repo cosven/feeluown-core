@@ -27,7 +27,7 @@ class BriefArtistSchema(Schema):
 class BriefSongSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     title = fields.Str(required=True, load_from='name')
-    url = fields.Str()
+    url = fields.Str(allow_none=True)
     duration = fields.Float(required=True)
 
 
@@ -75,8 +75,11 @@ class NeteaseAlbumSchema(Schema):
         data['source'] = SOURCE
         for song in data['songs']:
             song['source'] = SOURCE
-        for artist in data['artists']:
+            song['url'] = ''
+        artists = data['artists']
+        for artist in artists:
             artist['source'] = SOURCE
+        data['artists'] = artists
         album, _ = AlbumSchema(strict=True).load(data)
         return album
 
@@ -90,6 +93,9 @@ class NeteaseArtistSchema(Schema):
     @post_load
     def create_model(self, data):
         data['source'] = SOURCE
+        for song in data['songs']:
+            song['source'] = SOURCE
+            song['url'] = ''
         artist, _ = ArtistSchema(strict=True).load(data)
         return artist
 
