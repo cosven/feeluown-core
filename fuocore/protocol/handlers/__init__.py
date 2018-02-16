@@ -21,21 +21,24 @@ class InvalidFUri(CmdHandleException):
     pass
 
 
-def exec_cmd(app, cmd):
+def exec_cmd(app, live_lyric, cmd):
     logger.debug('EXEC_CMD: ' + str(cmd))
 
     # 一些
     if cmd.action in ('show', ):
-        handler = ShowHandler(app)
+        handler = ShowHandler(app,
+                              live_lyric=live_lyric)
 
     elif cmd.action in ('search', ):
-        handler = SearchHandler(app)
+        handler = SearchHandler(app,
+                                live_lyric=live_lyric)
 
     # 播放器相关操作
     elif cmd.action in (
         'play', 'pause', 'resume', 'stop', 'toggle',
     ):
-        handler = PlayerHandler(app)
+        handler = PlayerHandler(app,
+                                live_lyric=live_lyric)
 
     # 播放列表相关命令
     elif cmd.action in (
@@ -49,9 +52,11 @@ def exec_cmd(app, cmd):
         set playback_mode=random
         set volume=100
         """
-        handler = PlaylistHandler(app)
+        handler = PlaylistHandler(app,
+                                  live_lyric=live_lyric)
     elif cmd.action in ('status',):
-        handler = StatusHandler(app)
+        handler = StatusHandler(app,
+                                live_lyric=live_lyric)
     else:
         return 'Oops\nCommand not found!'
 
@@ -69,8 +74,9 @@ def exec_cmd(app, cmd):
 
 
 class AbstractHandler(ABC):
-    def __init__(self, app):
+    def __init__(self, app, live_lyric):
         self.app = app
+        self.live_lyric = live_lyric
 
     @abstractmethod
     def handle(self, cmd):
@@ -90,6 +96,7 @@ class StatusHandler(AbstractHandler):
     def handle(self, cmd):
         player = self.app.player
         playlist = self.app.playlist
+        live_lyric = self.live_lyric
         repeat = int(playlist.playback_mode in
                      (PlaybackMode.one_loop, PlaybackMode.loop))
         random = int(playlist.playback_mode == PlaybackMode.random)
@@ -104,6 +111,7 @@ class StatusHandler(AbstractHandler):
                 'duration:  {}'.format(player.duration),
                 'position:  {}'.format(player.position),
                 'song:      {}'.format(show_song(player.current_song, brief=True)),  # noqa
+                'lyric-s:   {}'.format(live_lyric.current_sentence),
             ]
         return '\n'.join(msgs)
 

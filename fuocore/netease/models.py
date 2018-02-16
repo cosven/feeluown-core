@@ -66,7 +66,7 @@ class NSongModel(SongModel):
 
     @url.setter
     def url(self, value):
-        self._expired_at = time.time() + 100
+        self._expired_at = time.time() + 60 * 60 * 1  # one hour
         self._url = value
 
     @property

@@ -3,18 +3,18 @@ import logging
 import sys
 
 from .aio_tcp_server import TcpServer
-from .live_lyric import LiveLyric
 from .pubsub import run as run_pubsub
 
 from fuocore import setup_logger
 from fuocore.app import App
+from fuocore.live_lyric import LiveLyric
 from fuocore.protocol.parser import CmdParser
 from fuocore.protocol.handlers import exec_cmd
 
 logger = logging.getLogger(__name__)
 
 
-async def handle(app, conn, addr):
+async def handle(conn, addr, app, live_lyric):
     event_loop = asyncio.get_event_loop()
     event_loop.sock_sendall(conn, b'OK feeluown 1.0.0a0\n')
     while True:
@@ -31,16 +31,16 @@ async def handle(app, conn, addr):
             break
         logger.debug('RECV: ' + command)
         cmd = CmdParser.parse(command)
-        msg = exec_cmd(app, cmd)
+        msg = exec_cmd(app, live_lyric, cmd)
         event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
 
 
-async def run(app, *args, **kwargs):
+async def run(app, live_lyric, *args, **kwargs):
     port = 23333
     host = '0.0.0.0'
     event_loop = asyncio.get_event_loop()
     event_loop.create_task(
-        TcpServer(host, port, handle_func=handle).run(app))
+        TcpServer(host, port, handle_func=handle).run(app, live_lyric))
     logger.info('Fuo daemon run in {}:{}'.format(host, port))
 
 
@@ -61,18 +61,21 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info('{} mode.'.format('Debug' if debug else 'Release'))
 
+    pubsub_gateway, pubsub_server = run_pubsub()  # runs in another thread
+
     app = App()
     app.initialize()
 
-    event_loop = asyncio.get_event_loop()
-    event_loop.create_task(run(app))
+    player = app.player
 
-    pubsub_gateway, pubsub_server = run_pubsub()  # runs in another thread
+    live_lyric = LiveLyric()
     live_lyric_publisher = LiveLyricPublisher(pubsub_gateway)
+    live_lyric.sentence_changed.connect(live_lyric_publisher.publish)
+    player.position_changed.connect(live_lyric.on_position_changed)
+    player.playlist.song_changed.connect(live_lyric.on_song_changed)
 
-    live_lyric = LiveLyric(on_changed=live_lyric_publisher.publish)
-    app.player.position_changed.connect(live_lyric.on_position_changed)
-    app.playlist.song_changed.connect(live_lyric.on_song_changed)
+    event_loop = asyncio.get_event_loop()
+    event_loop.create_task(run(app, live_lyric))
 
     try:
         event_loop.run_forever()
