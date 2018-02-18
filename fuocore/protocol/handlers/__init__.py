@@ -60,7 +60,9 @@ def exec_cmd(app, live_lyric, cmd):
     else:
         return 'Oops\nCommand not found!'
 
-    rv = 'ACK {} {}'.format(cmd.action, ' '.join(cmd.args))
+    rv = 'ACK {}'.format(cmd.action)
+    if cmd.args:
+        rv += ' {}'.format(' '.join(cmd.args))
     try:
         cmd_rv = handler.handle(cmd)
         if cmd_rv:

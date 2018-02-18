@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 async def handle(conn, addr, app, live_lyric):
     event_loop = asyncio.get_event_loop()
-    event_loop.sock_sendall(conn, b'OK feeluown 1.0.0a0\n')
+    event_loop.sock_sendall(conn, b'OK feeluown 1.0.0\n')
     while True:
         try:
             command = await event_loop.sock_recv(conn, 1024)
