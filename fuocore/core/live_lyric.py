@@ -1,9 +1,9 @@
 import logging
 
 from fuocore.dispatch import Signal
-from fuocore.lyric import parse
 from fuocore.utils import find_previous
 
+from .lyric import parse
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 
-from fuocore.player import PlaybackMode, State
+from fuocore.core.player import PlaybackMode, State
 
 from .helpers import show_songs, show_song
 
@@ -25,7 +25,11 @@ def exec_cmd(app, live_lyric, cmd):
     logger.debug('EXEC_CMD: ' + str(cmd))
 
     # 一些
-    if cmd.action in ('show', ):
+    if cmd.action in ('help', ):
+        handler = HelpHandler(app,
+                              live_lyric=live_lyric)
+
+    elif cmd.action in ('show', ):
         handler = ShowHandler(app,
                               live_lyric=live_lyric)
 
@@ -58,7 +62,7 @@ def exec_cmd(app, live_lyric, cmd):
         handler = StatusHandler(app,
                                 live_lyric=live_lyric)
     else:
-        return 'Oops\nCommand not found!'
+        return 'Oops Command not found!\n'
 
     rv = 'ACK {}'.format(cmd.action)
     if cmd.args:
@@ -169,6 +173,28 @@ class PlaylistHandler(AbstractHandler):
 
     def clear(self):
         self.app.playlist.clear()
+
+
+class HelpHandler(AbstractHandler):
+    def handle(self, cmd):
+        return """
+Available commands::
+
+    search <string>  # search songs by <string>
+    show fuo://xxx  # show xxx detail info
+    play fuo://xxx/songs/yyy  # play yyy song
+    list  # show player current playlist
+    status  # show player status
+    next  # play next song
+    previous  # play previous song
+    pause
+    resume
+    toggle
+
+Watch live lyric::
+
+    echo "sub topic.live_lyric" | nc host 23334
+"""
 
 
 from .show import ShowHandler  # noqa

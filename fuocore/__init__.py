@@ -2,10 +2,13 @@ import logging
 import logging.config
 # from logging import NullHandler
 
-from fuocore.source import Source  # noqa
+from fuocore.core.source import Source  # noqa
+from fuocore.core.player import MpvPlayer  # noqa
+from fuocore.core.provider import providers  # noqa
+from fuocore.core.live_lyric import LiveLyric  # noqa
 
 
-__all__ = ['Source']
+__all__ = ['Source', 'MpvPlayer', 'providers', 'LiveLyric']
 
 
 dict_config = {

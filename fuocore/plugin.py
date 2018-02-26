@@ -3,8 +3,8 @@
 import logging
 import pkg_resources
 
-from fuocore.provider import AbstractProvider
-from fuocore.provider import register as register_provider
+from fuocore.core.provider import AbstractProvider
+from fuocore.core.provider import register as register_provider
 
 
 logger = logging.getLogger(__name__)

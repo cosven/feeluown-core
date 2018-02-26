@@ -3,7 +3,7 @@ import logging
 from marshmallow.exceptions import ValidationError
 
 from fuocore.utils import log_exectime
-from fuocore.provider import AbstractProvider
+from fuocore.core.provider import AbstractProvider
 from fuocore.netease.api import api
 from fuocore.netease.schemas import (
     NeteaseAlbumSchema,

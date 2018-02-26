@@ -15,7 +15,8 @@ import random
 from mpv import MPV, MpvEventID, MpvEventEndFile
 
 from fuocore.dispatch import Signal
-from fuocore.exceptions import NoBackendError
+
+from .exceptions import NoBackendError
 
 logger = logging.getLogger(__name__)
 

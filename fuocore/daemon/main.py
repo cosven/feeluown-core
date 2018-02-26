@@ -6,8 +6,8 @@ from .aio_tcp_server import TcpServer
 from .pubsub import run as run_pubsub
 
 from fuocore import setup_logger
+from fuocore import LiveLyric
 from fuocore.app import App
-from fuocore.live_lyric import LiveLyric
 from fuocore.protocol.parser import CmdParser
 from fuocore.protocol.handlers import exec_cmd
 

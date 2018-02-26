@@ -7,7 +7,7 @@ from fuzzywuzzy import process
 from marshmallow.exceptions import ValidationError
 from mutagen.mp3 import EasyMP3
 
-from fuocore.provider import AbstractProvider
+from fuocore.core.provider import AbstractProvider
 from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.utils import log_exectime
 

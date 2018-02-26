@@ -1,9 +1,8 @@
 import logging
 
-from .player import MpvPlayer
+from fuocore import MpvPlayer, Source, providers
+
 from .plugin import load_plugins
-from .provider import providers
-from .source import Source
 
 
 logger = logging.getLogger(__name__)

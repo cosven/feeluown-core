@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fuocore import setup_logger
-from fuocore.provider import providers
+from fuocore.core.provider import providers
 from fuocore.plugin import load_plugins
 
 

@@ -2,9 +2,10 @@
 
 import logging
 from collections import defaultdict
+from urllib.parse import urlparse
 
-from fuocore.provider import get_provider, providers
-from fuocore.furi import parse_furi
+from .provider import get_provider, providers
+from .furi import parse_furi
 
 
 logger = logging.getLogger(__name__)
@@ -25,17 +26,10 @@ class Source(object):
 
     def get_song(self, furi_str):
         """get song from identifier"""
-        furi = parse_furi(furi_str)
-        provider = get_provider(furi.provider)
-        return provider.get_song(furi.identifier)
-
-    def get_lyric(self, furi):
-        """
-        :param furi: song furi
-        """
-        result = parse_furi(furi)
-        provider = get_provider(result.provider)
-        return provider.get_lyric(result.identifier)
+        result = urlparse(furi_str)
+        provider = get_provider(result.netloc)
+        identifier = result.path.split('/')[-1]
+        return provider.get_song(identifier)
 
     def list_songs(self, furi_str_list):
         provider_songs_map = defaultdict(list)
