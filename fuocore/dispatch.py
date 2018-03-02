@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import weakref
-from weakref import WeakMethod
 import logging
+
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from fuocore.backports.weakref import WeakMethod
 
 
 class Signal(object):
-    def __init__(self, *sig, name=''):
+    def __init__(self, name='', *sig):
         self.sig = sig
         self.receivers = set()
 

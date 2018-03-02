@@ -74,6 +74,11 @@ def main():
     player.position_changed.connect(live_lyric.on_position_changed)
     player.playlist.song_changed.connect(live_lyric.on_song_changed)
 
+    # FIXME: temp
+    from .slack import enable
+
+    enable(app)
+
     event_loop = asyncio.get_event_loop()
     event_loop.create_task(run(app, live_lyric))
 

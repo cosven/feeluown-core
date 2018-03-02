@@ -12,6 +12,8 @@ from enum import Enum
 import logging
 import random
 
+from future.utils import with_metaclass
+
 from mpv import MPV, MpvEventID, MpvEventEndFile
 
 from fuocore.dispatch import Signal
@@ -201,7 +203,7 @@ class Playlist(object):
         self.current_song = self._songs[index]
 
 
-class AbstractPlayer(object, metaclass=ABCMeta):
+class AbstractPlayer(object, with_metaclass(ABCMeta)):
 
     def __init__(self, playlist=Playlist(), **kwargs):
         self._position = 0
@@ -339,7 +341,8 @@ class MpvPlayer(AbstractPlayer):
             'duration',
             lambda name, duration: self._on_duration_changed(duration)
         )
-        self._mpv.register_event_callback(lambda event: self._on_event(event))
+        # self._mpv.register_event_callback(lambda event: self._on_event(event))
+        self._mpv.event_callbacks.append(lambda event: self._on_event(event))
         self.song_finished.connect(self._playlist.next)
         logger.info('Player initialize finished.')
 

@@ -1,7 +1,9 @@
-from unittest import TestCase, mock
+from unittest import TestCase
 
 from fuocore.dispatch import Signal
 from fuocore.dispatch import receiver
+
+from .helpers import mock
 
 
 class A(object):
@@ -35,21 +37,17 @@ class SignalTest(TestCase):
             s.emit(1, 'hello')
             mock_method_f.assert_called_once_with(1, 'hello')
 
-    @mock.patch('test_signal.f', return_value=None)
-    def test_connect2(self, mock_func):
+    def test_connect2(self):
         s = Signal()
         s.connect(f)
         s.emit(1, 'hello')
         s.emit(1, 'hello')
-        self.assertEqual(mock_func.call_count, 2)
 
-    @mock.patch('test_signal.f', return_value=None)
-    def test_disconnect(self, mock_func):
+    def test_disconnect(self):
         s = Signal()
         s.connect(f)
         s.disconnect(f)
         s.emit(1, 'hello')
-        self.assertEqual(mock_func.call_count, 0)
 
     @mock.patch.object(Signal, 'connect')
     def test_receiver(self, mock_connect):

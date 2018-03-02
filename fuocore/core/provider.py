@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from future.utils import with_metaclass
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
 providers = set()
 
 
-class AbstractProvider(metaclass=ABCMeta):
+class AbstractProvider(with_metaclass(ABCMeta)):
     """abstract music resource provider"""
 
     @abstractproperty

@@ -11,6 +11,8 @@ requires = [
     'april==2.0.0',
     'mutagen>=1.37',
     'fuzzywuzzy',
+    'future',
+    'enum34',
 ]
 
 
@@ -25,6 +27,7 @@ setup(
         'fuocore',
         'fuocore.local',
         'fuocore.netease',
+        'fuocore.core',
         'fuocore.daemon',
         'fuocore.protocol',
         'fuocore.protocol.handlers',
