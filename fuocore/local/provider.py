@@ -5,6 +5,7 @@ import os
 
 from fuzzywuzzy import process
 from marshmallow.exceptions import ValidationError
+from mutagen import MutagenError
 from mutagen.mp3 import EasyMP3
 
 from fuocore.core.provider import AbstractProvider
@@ -31,6 +32,34 @@ def scan_directory(directory, exts=['mp3'], depth=2):
             if path.split('.')[-1] in exts:
                 media_files.append(path)
     return media_files
+
+
+def create_song(fpath):
+    """
+    parse music file metadata with Easymp3 and return a song
+    model.
+    """
+    try:
+        metadata = EasyMP3(fpath)
+    except MutagenError as e:
+        logger.error('Mutagen parse metadata failed, ignore.')
+        logger.debug(str(e))
+        return
+
+    schema = EasyMP3MetadataSongSchema(strict=True)
+    metadata_dict = dict(metadata)
+    if 'title' not in metadata_dict:
+        title = [fpath.rsplit('/')[-1].split('.')[0], ]
+        metadata_dict['title'] = title
+    metadata_dict.update(dict(
+        url=fpath,
+        duration=metadata.info.length * 1000  # milesecond
+    ))
+    try:
+        song, _ = schema.load(metadata_dict)
+    except ValidationError:
+        logger.exeception('解析音乐文件({}) 元数据失败'.format(fpath))
+    return song
 
 
 class LocalProvider(AbstractProvider):
@@ -81,31 +110,19 @@ class LocalProvider(AbstractProvider):
         for directory in self._library_paths:
             logger.debug('正在扫描目录({})...'.format(directory))
             media_files.extend(scan_directory(directory, exts, depth))
-        songs = [self.model_from_fpath(fpath) for fpath in media_files]
+        songs = []
+        for fpath in media_files:
+            song = create_song(fpath)
+            if song is not None:
+                songs.append(song)
+            else:
+                logger.warning('{} can not be recognized'.format(fpath))
         logger.debug('扫描到 {} 首歌曲'.format(len(songs)))
         return songs
 
     @property
     def songs(self):
         return self._songs
-
-    def model_from_fpath(self, fpath):
-        metadata = EasyMP3(fpath)
-
-        schema = EasyMP3MetadataSongSchema(strict=True)
-        metadata_dict = dict(metadata)
-        if 'title' not in metadata_dict:
-            title = [fpath.rsplit('/')[-1].split('.')[0], ]
-            metadata_dict['title'] = title
-        metadata_dict.update(dict(
-            url=fpath,
-            duration=metadata.info.length * 1000  # milesecond
-        ))
-        try:
-            song, _ = schema.load(metadata_dict)
-        except ValidationError:
-            logger.exeception('解析音乐文件({}) 元数据失败'.format(fpath))
-        return song
 
     @property
     def name(self):
