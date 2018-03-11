@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# Modified by cosven <cosven.yin@gmail.com>.
 
 from ctypes import *
 import ctypes.util
@@ -600,6 +601,7 @@ ALL_PROPERTIES = {
         'stream-pos':                  (int,    'rw'),
         'stream-end':                  (int,    'r'),
         'length':                      (float,  'r'),
+        'duration':                    (float,  'r'),
         'avsync':                      (float,  'r'),
         'total-avsync-change':         (float,  'r'),
         'drop-frame-count':            (int,    'r'),
