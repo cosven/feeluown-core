@@ -85,7 +85,6 @@ def regex_from_rule(rule):
         rule
     )
     regex = re.compile(r'^{}$'.format(pattern))
-    logger.debug('rule: {}, regex: {}'.format(rule, regex))
     return regex
 
 
