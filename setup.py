@@ -18,7 +18,7 @@ requires = [
 
 setup(
     name='fuocore',
-    version='1.1.0a0',
+    version='1.1.0',
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
