@@ -85,12 +85,10 @@ class NeteaseArtistSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     name = fields.Str()
     img = fields.Str(load_from='picUrl')
-    songs = fields.List(fields.Nested(NeteaseSongSchema), required=True)
+    songs = fields.List(fields.Nested(BriefSongSchema), required=True)
 
     @post_load
     def create_model(self, data):
-        for song in data['songs']:
-            song['url'] = ''
         artist, _ = ArtistSchema(strict=True).load(data)
         return artist
 
