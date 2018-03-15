@@ -1,4 +1,4 @@
-from marshmallow import Schema, post_load, fields
+from marshmallow import Schema as _Schema, post_load, fields, pre_load
 
 from fuocore.schemas import (
     AlbumSchema,
@@ -12,11 +12,21 @@ from fuocore.netease.models import NSongModel
 SOURCE = 'netease'
 
 
+class Schema(_Schema):
+    source = fields.Str(missing=SOURCE)
+
+
 # NOTE: these BriefXxxSchema are used to support NeteaseXxxSchema
 # FIXME: remove some of them to make code clean
 class BriefAlbumSchema(Schema):
     identifier = fields.Int(requried=True, load_from='id')
-    name = fields.Str(required=True)
+    name = fields.Str(required=True, allow_none=True)
+
+    @pre_load
+    def pre_load(self, data):
+        if data['name'] is None:
+            data['name'] = ''
+        return data
 
 
 class BriefArtistSchema(Schema):
@@ -29,6 +39,8 @@ class BriefSongSchema(Schema):
     title = fields.Str(required=True, load_from='name')
     url = fields.Str(allow_none=True)
     duration = fields.Float(required=True)
+    album = fields.Nested(BriefAlbumSchema, required=True)
+    artists = fields.List(fields.Nested(BriefArtistSchema), required=True)
 
 
 class BriefPlaylistSchema(Schema):
@@ -46,15 +58,6 @@ class NeteaseSongSchema(Schema):
 
     @post_load
     def create_model(self, data):
-        # FIXME: improve code style if possible
-        album = data['album']
-        album['source'] = SOURCE
-        artists = data['artists']
-        for artist in artists:
-            artist['source'] = SOURCE
-        data['source'] = SOURCE
-        data['album'] = album
-        data['artists'] = artists
         # we can temporarily set url to ''
         if 'url' not in data:
             data['url'] = ''
@@ -72,14 +75,8 @@ class NeteaseAlbumSchema(Schema):
 
     @post_load
     def create_model(self, data):
-        data['source'] = SOURCE
         for song in data['songs']:
-            song['source'] = SOURCE
             song['url'] = ''
-        artists = data['artists']
-        for artist in artists:
-            artist['source'] = SOURCE
-        data['artists'] = artists
         album, _ = AlbumSchema(strict=True).load(data)
         return album
 
@@ -88,13 +85,11 @@ class NeteaseArtistSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     name = fields.Str()
     img = fields.Str(load_from='picUrl')
-    songs = fields.List(fields.Nested(BriefSongSchema), required=True)
+    songs = fields.List(fields.Nested(NeteaseSongSchema), required=True)
 
     @post_load
     def create_model(self, data):
-        data['source'] = SOURCE
         for song in data['songs']:
-            song['source'] = SOURCE
             song['url'] = ''
         artist, _ = ArtistSchema(strict=True).load(data)
         return artist
@@ -110,12 +105,10 @@ class NeteasePlaylistSchema(Schema):
 
     @post_load
     def create_model(self, data):
-        data['source'] = SOURCE
         if data.get('songs') is None:
             data.pop('songs')
         else:
             for song in data['songs']:
-                song['source'] = SOURCE
                 # set url field to avoid ValidationError
                 song['url'] = ''
         playlist, _ = PlaylistSchema(strict=True).load(data)
@@ -129,8 +122,5 @@ class NeteaseUserSchema(Schema):
 
     @post_load
     def create_model(self, data):
-        data['source'] = SOURCE
-        for playlist in data['playlists']:
-            playlist['source'] = SOURCE
         user, _ = UserSchema(strict=True).load(data)
         return user
