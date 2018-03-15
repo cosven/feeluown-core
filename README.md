@@ -1,4 +1,4 @@
-# feeluown-core (work in progress)
+# feeluown-core
 
 [![Documentation Status](https://readthedocs.org/projects/feeluown-core/badge/?version=latest)](http://feeluown-core.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/cosven/feeluown-core.svg?branch=master)](https://travis-ci.org/cosven/feeluown-core)
@@ -6,27 +6,19 @@
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
+feeluown-core 是一个可扩展性强，功能齐全的音乐播放服务器。
+
+几个主要特性：
+
+1. 基于 text 的通信协议，能和 Emacs/tmux 等工具良好集成
+   [protocol](http://feeluown-core.readthedocs.io/en/latest/protocol.html#fuo-protocol)，
+2. 在 dotfile 中管理自己喜欢的音乐
+   [for example](https://github.com/cosven/cosven.github.io/blob/master/music/mix.fuo)
+3. 支持从 netease/xiami 获取免费的音乐资源
+
 录了个几分钟的简短的演示视频 👇
 
 [![Video Show](http://img.youtube.com/vi/-JFXo0J5D9E/0.jpg)](https://youtu.be/-JFXo0J5D9E)
-
-## Features
-
-1. C/S 架构，客户端和服务端基于 TCP 进行通信
-   [protocol](http://feeluown-core.readthedocs.io/en/latest/protocol.html#fuo-protocol)
-2. 输出为 text stream，能被 grep/awk/cut 等工具方便的处理
-3. 抽象 netease/xiami 相关三方资源
-4. 像管理 dotfile 一样管理播放列表、喜欢的歌手等音乐资源
-   [for example](https://github.com/cosven/cosven.github.io/blob/master/music/mix.fuo)
-5. 代码对新手友好，开发者可以快速的开发小功能或者修复 bug
-
-## TODOs
-
-- [ ] (✭✭✭) 提供命令可以展示 歌曲/歌手/专辑 相关有趣的故事 [0%]
-  网易云音乐评论？豆瓣音乐信息？AI?
-- [ ] (✭✭✭) 代码优化和文档补全 [0%]
-- [ ] (✭) p2p like? [0%]
-- [ ] (✭) qq music resources [0%]
 
 ## Install
 
@@ -43,7 +35,7 @@ pip3 install fuocli --upgrade
 
 ```
 # start daemon
-fuo --debug
+fuo
 # nohup fuo &  # 后台运行
 
 # use fuocli
