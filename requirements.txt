@@ -8,3 +8,4 @@ pytest
 mutagen==1.37
 python-Levenshtein==0.12.0
 fuzzywuzzy==0.15.0
+future
