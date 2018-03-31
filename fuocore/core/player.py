@@ -13,28 +13,12 @@ import logging
 import random
 
 from future.utils import with_metaclass
-
 from mpv import MPV, MpvEventID, MpvEventEndFile
 
 from fuocore.dispatch import Signal
 
-from .exceptions import NoBackendError
 
 logger = logging.getLogger(__name__)
-
-_backend = None
-
-
-def set_backend(player):
-    global _backend
-    _backend = player
-
-
-def get_backend():
-    global _backend
-    if _backend is None:
-        raise NoBackendError
-    return _backend
 
 
 class State(Enum):
@@ -58,14 +42,13 @@ class Playlist(object):
     do not obtain enough metadata.
     """
 
-    def __init__(self, songs=[], playback_mode=PlaybackMode.loop):
+    def __init__(self, songs=None, playback_mode=PlaybackMode.loop):
         """
         :param songs: list of :class:`fuocore.models.SongModel`
         :param playback_mode: :class:`fuocore.player.PlaybackMode`
         """
-        self._last_index = None
-        self._current_index = None
-        self._songs = songs
+        self._current_song = None
+        self._songs = songs or []
         self._playback_mode = playback_mode
 
         # signals
@@ -84,11 +67,12 @@ class Playlist(object):
         if song in self._songs:
             return
 
-        if self._current_index is None:
+        if self._current_song is None:
             self._songs.append(song)
         else:
-            self._songs.insert(self._current_index + 1, song)
-        logger.debug('Add {} to player playlist'.format(song))
+            index = self._songs.index(self._current_song)
+            self._songs.insert(index + 1, song)
+        logger.debug('Add %s to player playlist', song)
 
     def remove(self, song):
         """Remove song from playlist.
@@ -97,16 +81,13 @@ class Playlist(object):
         just remove it.
         """
         if song in self._songs:
-            index = self._songs.index(song)
-            if index == self._current_index:
-                self.current_song = None
+            if self._current_song is None:
                 self._songs.remove(song)
-                self.next()
-            elif index > self._current_index:
+            elif song == self._current_song:
+                self.current_song = self.next_song
                 self._songs.remove(song)
             else:
                 self._songs.remove(song)
-                self._current_index -= 1
             logger.debug('Remove {} from player playlist'.format(song))
         else:
             logger.debug('Remove failed: {} not in playlist'.format(song))
@@ -120,28 +101,21 @@ class Playlist(object):
 
     @property
     def current_song(self):
-        if self._current_index is None:
-            return None
-        return self._songs[self._current_index]
+        return self._current_song
 
     @current_song.setter
     def current_song(self, song):
         """change current song, emit song changed singal"""
 
         self._last_song = self.current_song
-
         if song is None:
-            index = None
+            self._current_song = None
         # add it to playlist if song not in playlist
         elif song in self._songs:
-            index = self._songs.index(song)
+            self._current_song = song
         else:
-            if self._current_index is None:
-                index = 0
-            else:
-                index = self._current_index + 1
-            self._songs.insert(index, song)
-        self._current_index = index
+            self.add(song)
+            self._current_song = song
         self.song_changed.emit(song)
 
     @property
@@ -153,54 +127,52 @@ class Playlist(object):
         self._playback_mode = playback_mode
         self.playback_mode_changed.emit()
 
-    def next(self):
-        """advance to next song"""
+    @property
+    def next_song(self):
+        next_song = None
         if not self._songs:
-            self.current_song = None
-            return
-
-        if self.current_song is None:
-            self.current_song = self._songs[0]
-            return
+            return None
 
         if self.playback_mode == PlaybackMode.random:
-            self.current_song = random.choice(range(0, len(self._songs)))
-            return
+            next_song = random.choice(range(0, len(self._songs)))
+        elif self.playback_mode == PlaybackMode.one_loop:
+            next_song = self.current_song
+        else:
+            if self.current_song is None:
+                next_song = self._songs[0]
+            current_index = self._songs.index(self.current_song)
+            if self.playback_mode == PlaybackMode.loop:
+                if current_index == len(self._songs) - 1:
+                    next_song = self._songs[0]
+            elif self.playback_mode == PlaybackMode.sequential:
+                if current_index == len(self._songs) - 1:
+                    next_song = None
+            next_song = self._songs[current_index + 1]
+        return next_song
 
-        if self.playback_mode in (PlaybackMode.one_loop, PlaybackMode.loop):
-            if self._current_index == len(self._songs) - 1:
-                self.current_song = self._songs[0]
-                return
-
-        if self.playback_mode == PlaybackMode.sequential:
-            if self._current_index == len(self._songs) - 1:
-                self.current_song = None
-                return
-
-        self.current_song = self._songs[self._current_index + 1]
-
-    def previous(self):
+    @property
+    def previous_song(self):
         """return to previous played song, if previous played song not exists,
         get the song before current song in playback mode order.
         """
+
         if not self._songs:
-            self.current_song = None
             return None
+        if self.current_song is None:
+            return self._songs[0]
 
-        if self._last_index is not None:
-            self.current_song = self._songs[self._last_index]
-            return
-
-        if self._current_index is None:
-            self.current_song = self._songs[0]
-            return
-
+        previous_song = None
         if self.playback_mode == PlaybackMode.random:
-            index = random.choice(range(0, len(self._songs)))
+            previous_song = random.choice(self._songs)
+        elif self.playback_mode == PlaybackMode.one_loop:
+            previous_song = self.current_song
         else:
-            index = self._current_index - 1
+            current_index = self._songs.index(self.current_song)
+            previous_song = self._songs[current_index - 1]
+        return previous_song
 
-        self.current_song = self._songs[index]
+    def play_next(self):
+        self.current_song = self.next_song
 
 
 class AbstractPlayer(object, with_metaclass(ABCMeta)):
@@ -314,8 +286,8 @@ class AbstractPlayer(object, with_metaclass(ABCMeta)):
         """"initialize player"""
 
     @abstractmethod
-    def quit(self):
-        """quit player, do some clean up here"""
+    def shutdown(self):
+        """shutdown player, do some clean up here"""
 
 
 class MpvPlayer(AbstractPlayer):
@@ -325,7 +297,7 @@ class MpvPlayer(AbstractPlayer):
     playlist ``song_changed`` signal and change the current playback.
     """
     def __init__(self):
-        super().__init__()
+        super(MpvPlayer, self).__init__()
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True)
@@ -342,23 +314,24 @@ class MpvPlayer(AbstractPlayer):
             lambda name, duration: self._on_duration_changed(duration)
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
-        self._mpv.event_callbacks.append(lambda event: self._on_event(event))
-        self.song_finished.connect(self._playlist.next)
+        self._mpv.event_callbacks.append(self._on_event)
+        self.song_finished.connect(self._playlist.play_next)
         logger.info('Player initialize finished.')
 
-    def quit(self):
+    def shutdown(self):
         del self._mpv
 
     def play(self, url):
         # NOTE - API DESGIN: we should return None, see
         # QMediaPlayer API reference for more details.
 
-        logger.debug("Player will play: '%s'" % url)
+        logger.debug("Player will play: '%s'", url)
 
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
         self._mpv.playlist_clear()
         self._mpv.play(url)
+        self._mpv.pause = False
         self.state = State.playing
         self.media_changed.emit()
 

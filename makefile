@@ -9,7 +9,11 @@ lint:
 	flake8 fuocore/
 
 unittest:
-	coverage run --source=fuocore setup.py test && coverage report -m
+	python3 setup.py test
+
+pytest:
+	pip3 install -r dev-requirements.txt
+	pytest --cov=fuocore --doctest-module
 
 test: lint unittest
 

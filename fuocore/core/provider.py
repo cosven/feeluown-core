@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from future.utils import with_metaclass
 from abc import ABCMeta, abstractmethod, abstractproperty
+from future.utils import with_metaclass
 
 
 providers = set()

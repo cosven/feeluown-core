@@ -76,7 +76,7 @@ def route(rule):
 def regex_from_rule(rule):
     """为一个 rule 生成对应的正则表达式
     >>> regex_from_rule('/<provider>/songs')
-    re.compile('^/(?P<provider>[^\\/]+)/songs$')
+    re.compile('^/(?P<provider>[^\\\/]+)/songs$')
     """
     kwargs_regex = re.compile(r'(<.*?>)')
     pattern = re.sub(
@@ -91,7 +91,7 @@ def regex_from_rule(rule):
 def match(path, rules=Router.rules):
     """找到 path 对应的 rule，并解析其中的参数
 
-    >>> match('/local/songs', rule=['/<p>/songs'])
+    >>> match('/local/songs', rules=['/<p>/songs'])
     ('/<p>/songs', {'p': 'local'})
 
     :return: (rule, params) or None
