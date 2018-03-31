@@ -1,8 +1,8 @@
 dist: trusty
-sudo: required
+sudo: false
 
 before_install:
-    - sudo apt-get install libmpv1
+    - apt-get install libmpv1
 
 python:
   - "3.5"
