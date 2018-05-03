@@ -1,1 +1,4 @@
 coverage
+sphinx_rtd_theme
+pytest
+pytest-cov

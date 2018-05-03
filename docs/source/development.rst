@@ -80,3 +80,27 @@ Comments
 """"""""
 - comment with ``NOTE`` flag indicate that it is a basic theory
   or something that is considered as best practice.
+
+Design Decisions
+""""""""""""""""
+
+Why we define basic models?
+'''''''''''''''''''''''''''
+Keep things simple. Where there is a ``song``
+model, there is a ``url`` attribute.
+
+No BriefXXX model
+'''''''''''''''''
+As we can see, provider can't return the whole information related
+to a object in one request. For example, when we get user playlists
+from netease(/user/playlist) API, the server will just response with
+playlist brief info, such as playlist name, playlist owner, etc.
+If we want to get all the songs in a playlist, we have a send another
+request to API(/playlist/detail). Should we need to separate the
+model representation of brief playlist and playlist detail? No!
+
+*Pros* :
+
+1. no need to care about whether it is a brief playlist or not.
+2. the only thing other callers should care is XxxModel. If we had
+   brief model, we may have something like ``api.get_detail``.

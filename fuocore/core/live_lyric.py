@@ -17,9 +17,11 @@ class LiveLyric(object):
         self._pos_list = []  # position list
         self._pos = None
 
+        self._current_sentence = ''
+
     @property
     def current_sentence(self):
-        return getattr(self, '_current_sentence', '')
+        return self._current_sentence
 
     @current_sentence.setter
     def current_sentence(self, value):

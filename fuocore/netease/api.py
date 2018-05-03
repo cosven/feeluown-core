@@ -56,15 +56,6 @@ class Xiami(object):
 
 
 class API(object):
-    """netease music api
-
-    Simple usage::
-
-        from fuocore import netease
-        data = netease.search(u'sugar')
-        songs = data['result']['songs']
-    """
-
     def __init__(self):
         super().__init__()
         self.headers = {

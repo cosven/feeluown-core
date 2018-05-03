@@ -64,6 +64,7 @@ class SongSchema(BaseSchema):
 
 class PlaylistSchema(BaseSchema):
     name = fields.Str(required=True)
+    cover = fields.Url()
     songs = fields.List(fields.Nested(SongSchema))
 
     @post_load
