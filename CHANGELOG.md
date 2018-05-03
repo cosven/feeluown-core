@@ -1,6 +1,8 @@
-## v2.0.0a0 (WIP)
-- more BriefXxxModel (docs for more detail.x)
-- `provider` related things
+## 2.0a0 (WIP)
+- no more BriefXxxModel (docs for more detail.)
+- remove `current_index` attribute from Playlist
+- arguments will be passed to slots when signal emits
+- rename MpvPlayer method `quit` to `shutdown`
 
 ## v1.1.0
 - 若干 bug 修复

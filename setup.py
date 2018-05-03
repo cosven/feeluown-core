@@ -18,7 +18,7 @@ requires = [
 
 setup(
     name='fuocore',
-    version='1.1.0',
+    version='2.0a0',
     description='feeluown core',
     author='Cosven',
     author_email='cosven.yin@gmail.com',
@@ -38,6 +38,7 @@ setup(
     url='https://github.com/cosven/feeluown-core',
     keywords=['media', 'player', 'api'],
     classifiers=(
+        'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3 :: Only',
