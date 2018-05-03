@@ -152,9 +152,9 @@ class PlaylistHandler(AbstractHandler):
         elif cmd.action == 'list':
             return self.list()
         elif cmd.action == 'next':
-            self.app.playlist.next()
+            self.app.playlist.play_next()
         elif cmd.action == 'previous':
-            self.app.playlist.previous()
+            self.app.playlist.play_previous()
 
     def add(self, furis):
         playlist = self.app.playlist

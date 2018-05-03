@@ -46,6 +46,10 @@ class SongModel(BriefSongModel):
         return ','.join((artist.name for artist in self.artists))
 
     @property
+    def album_name(self):
+        return self.album.name if self.album is not None else ''
+
+    @property
     def filename(self):
         return '{} - {}.mp3'.format(self.title, self.artists_name)
 
@@ -58,7 +62,7 @@ class SongModel(BriefSongModel):
 
 
 class PlaylistModel(BaseModel):
-    _fields = ['name', 'songs']
+    _fields = ['name', 'cover', 'songs']
 
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)

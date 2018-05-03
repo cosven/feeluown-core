@@ -3,13 +3,51 @@ import time
 import os
 
 from fuocore.consts import MUSIC_LIBRARY_PATH
-from fuocore.models import SongModel, LyricModel
+from fuocore.models import (
+    BaseModel,
+    SongModel,
+    LyricModel,
+    PlaylistModel,
+    AlbumModel,
+    ArtistModel,
+)
 from fuocore.netease.api import api
+
+from .schemas import (
+    NeteaseSongSchema,
+    NeteaseAlbumSchema,
+    NeteaseArtistSchema,
+    NeteasePlaylistSchema,
+)
+
 
 logger = logging.getLogger(__name__)
 
 
-class NSongModel(SongModel):
+
+class NBaseModel(BaseModel):
+    detail_fields = ()
+
+    @classmethod
+    def get(cls, identifier):
+        raise NotImplementedError
+
+    def __getattribute__(self, name):
+        cls = type(self)
+        value = object.__getattribute__(self, name)
+        if name in cls.detail_fields and value is None:
+            obj = cls.get(self.identifier)
+            self = obj
+            value = object.__getattribute__(self, name)
+        return value
+
+
+class NSongModel(SongModel, NBaseModel):
+    @classmethod
+    def get(cls, identifier):
+        data = api.song_detail(int(identifier))
+        song, _ = NeteaseSongSchema(strict=True).load(data)
+        return song
 
     def _refresh_url(self):
         songs = api.weapi_songs_url([int(self.identifier)])
@@ -87,3 +125,37 @@ class NSongModel(SongModel):
     @lyric.setter
     def lyric(self, value):
         self._lyric = value
+
+
+class NAlbumModel(AlbumModel, NBaseModel):
+    detail_fields = ('img', 'songs', 'artists', )
+
+    @classmethod
+    def get(cls, identifier):
+        album_data = api.album_infos(identifier)
+        if album_data is None:
+            return None
+        album, _ = NeteaseAlbumSchema(strict=True).load(album_data)
+        return album
+
+
+class NArtistModel(ArtistModel, NBaseModel):
+    detail_fields = ('songs', 'img')
+
+    @classmethod
+    def get(cls, identifier):
+        artist_data = api.artist_infos(identifier)
+        artist = artist_data['artist']
+        artist['songs'] = artist_data['hotSongs']
+        artist, _ = NeteaseArtistSchema(strict=True).load(artist)
+        return artist
+
+
+class NPlaylistModel(PlaylistModel, NBaseModel):
+    detail_fields = ('songs', )
+
+    @classmethod
+    def get(cls, identifier):
+        data = api.playlist_detail(identifier)
+        playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
+        return playlist

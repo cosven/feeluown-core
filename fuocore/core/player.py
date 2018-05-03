@@ -106,7 +106,6 @@ class Playlist(object):
     @current_song.setter
     def current_song(self, song):
         """change current song, emit song changed singal"""
-
         self._last_song = self.current_song
         if song is None:
             self._current_song = None
@@ -125,29 +124,29 @@ class Playlist(object):
     @playback_mode.setter
     def playback_mode(self, playback_mode):
         self._playback_mode = playback_mode
-        self.playback_mode_changed.emit()
+        self.playback_mode_changed.emit(playback_mode)
 
     @property
     def next_song(self):
         next_song = None
         if not self._songs:
             return None
+        if self.current_song is None:
+            return self._songs[0]
 
         if self.playback_mode == PlaybackMode.random:
             next_song = random.choice(range(0, len(self._songs)))
         elif self.playback_mode == PlaybackMode.one_loop:
             next_song = self.current_song
         else:
-            if self.current_song is None:
-                next_song = self._songs[0]
             current_index = self._songs.index(self.current_song)
-            if self.playback_mode == PlaybackMode.loop:
-                if current_index == len(self._songs) - 1:
+            if current_index == len(self._songs) - 1:
+                if self.playback_mode == PlaybackMode.loop:
                     next_song = self._songs[0]
-            elif self.playback_mode == PlaybackMode.sequential:
-                if current_index == len(self._songs) - 1:
+                elif self.playback_mode == PlaybackMode.sequential:
                     next_song = None
-            next_song = self._songs[current_index + 1]
+            else:
+                next_song = self._songs[current_index + 1]
         return next_song
 
     @property
@@ -173,6 +172,9 @@ class Playlist(object):
 
     def play_next(self):
         self.current_song = self.next_song
+
+    def play_previous(self):
+        self.current_song = self.previous_song
 
 
 class AbstractPlayer(object, with_metaclass(ABCMeta)):
@@ -201,7 +203,7 @@ class AbstractPlayer(object, with_metaclass(ABCMeta)):
     @state.setter
     def state(self, value):
         self._state = value
-        self.state_changed.emit()
+        self.state_changed.emit(value)
 
     @property
     def current_song(self):
@@ -234,7 +236,6 @@ class AbstractPlayer(object, with_metaclass(ABCMeta)):
 
     @volume.setter
     def volume(self, value):
-        print('change volume')
         value = 0 if value < 0 else value
         value = 100 if value > 100 else value
         self._volume = value
@@ -248,7 +249,7 @@ class AbstractPlayer(object, with_metaclass(ABCMeta)):
     def duration(self, value):
         if value is not None and value != self._duration:
             self._duration = value
-            self.duration_changed.emit()
+            self.duration_changed.emit(value)
 
     @abstractmethod
     def play(self, url):
@@ -333,7 +334,7 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.play(url)
         self._mpv.pause = False
         self.state = State.playing
-        self.media_changed.emit()
+        self.media_changed.emit(url)
 
     def play_song(self, song):
         if self.playlist.current_song is not None and \
@@ -344,7 +345,6 @@ class MpvPlayer(AbstractPlayer):
         url = song.url
         if url is not None:
             self._playlist.current_song = song
-            self.play(song.url)
         else:
             raise ValueError("invalid song: song url can't be None")
 

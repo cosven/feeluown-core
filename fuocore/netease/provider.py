@@ -13,13 +13,18 @@ from fuocore.netease.schemas import (
     NeteaseUserSchema,
 )
 
+from fuocore.netease.models import (
+    NAlbumModel,
+    NArtistModel,
+    NSongModel,
+    NPlaylistModel,
+)
+
 
 logger = logging.getLogger(__name__)
 
 
 class NeteaseProvider(AbstractProvider):
-    song_caches = {}  # TODO: 使用 LRU 策略？
-
     @property
     def name(self):
         return 'netease'
@@ -36,16 +41,11 @@ class NeteaseProvider(AbstractProvider):
                 except ValidationError:
                     logger.exception('反序列化出现异常')
                 else:
-                    self.song_caches[str(s.identifier)] = s
                     yield s
         return []
 
     def get_song(self, identifier):
-        if identifier in self.song_caches:
-            return self.song_caches[identifier]
-        data = api.song_detail(int(identifier))
-        song, _ = NeteaseSongSchema(strict=True).load(data)
-        return song
+        return NSongModel.get(identifier)
 
     def get_lyric(self, song_id):
         data = api.get_lyric_by_songid(song_id)
@@ -72,27 +72,10 @@ class NeteaseProvider(AbstractProvider):
         return user
 
     def get_album(self, identifier):
-        album_data = api.album_infos(identifier)
-        if album_data is None:
-            return None
-        songs = album_data['songs']
-        songs_urls = api.weapi_songs_url([song['id'] for song in songs])
-        for index, _ in enumerate(songs):
-            songs[index]['url'] = songs_urls[index]['url']
-        album_data['songs'] = songs
-        album, _ = NeteaseAlbumSchema(strict=True).load(album_data)
-        return album
+        return NAlbumModel.get(identifier)
 
     def get_artist(self, identifier):
-        artist_data = api.artist_infos(identifier)
-        songs = artist_data['hotSongs']
-        songs_urls = api.weapi_songs_url([song['id'] for song in songs])
-        for index, _ in enumerate(songs):
-            songs[index]['url'] = songs_urls[index]['url']
-        artist = artist_data['artist']
-        artist['songs'] = songs
-        artist, _ = NeteaseArtistSchema(strict=True).load(artist)
-        return artist
+        return NArtistModel.get(identifier)
 
     def get_playlist(self, identifier):
         playlist_data = api.playlist_detail(identifier)

@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class Source(object):
+    """
+    XXX: unstable api
+    """
+    def __init__(self, prvs=None):
+        self.providers = prvs or providers
 
     def search(self, keyword):
         """search song by keyword"""

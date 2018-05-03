@@ -3,11 +3,23 @@ import logging.config
 # from logging import NullHandler
 
 from fuocore.core.source import Source  # noqa
-from fuocore.core.player import MpvPlayer  # noqa
+from fuocore.core.player import (
+    MpvPlayer,
+    State as PlayerState,
+    PlaybackMode,
+    Playlist,
+)  # noqa
 from fuocore.core.live_lyric import LiveLyric  # noqa
 
 
-__all__ = ['Source', 'MpvPlayer', 'LiveLyric']
+__all__ = [
+    'Source',
+    'MpvPlayer',
+    'PlayerState',
+    'PlaybackMode',
+    'Playlist',
+    'LiveLyric',
+]
 
 
 dict_config = {
