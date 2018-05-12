@@ -10,6 +10,7 @@ install:
     - sudo apt-get install libmpv1 -y --force-yes
     - pip install codecov
     - pip install -r dev-requirements.txt
+    - pip install -r requirements.txt
 
 script:
     - make pytest
