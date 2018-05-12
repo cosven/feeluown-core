@@ -13,16 +13,8 @@ from fuocore.models import (
 )
 from fuocore.netease.api import api
 
-from .schemas import (
-    NeteaseSongSchema,
-    NeteaseAlbumSchema,
-    NeteaseArtistSchema,
-    NeteasePlaylistSchema,
-)
-
 
 logger = logging.getLogger(__name__)
-
 
 
 class NBaseModel(BaseModel):
@@ -159,3 +151,12 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
         data = api.playlist_detail(identifier)
         playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
         return playlist
+
+
+# import loop
+from .schemas import (
+    NeteaseSongSchema,
+    NeteaseAlbumSchema,
+    NeteaseArtistSchema,
+    NeteasePlaylistSchema,
+)

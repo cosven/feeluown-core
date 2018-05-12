@@ -104,3 +104,8 @@ model representation of brief playlist and playlist detail? No!
 1. no need to care about whether it is a brief playlist or not.
 2. the only thing other callers should care is XxxModel. If we had
    brief model, we may have something like ``api.get_detail``.
+
+Why we need providers? (Not very sure)
+''''''''''''''''''''''''''''''''''''''
+Complex operations that can not be done by simple model
+should be processed by providers.

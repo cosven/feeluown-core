@@ -2,10 +2,7 @@
 
 import logging
 from collections import defaultdict
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from urllib.parse import urlparse
 
 from .provider import get_provider, providers
 from .furi import parse_furi
