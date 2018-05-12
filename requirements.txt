@@ -4,7 +4,6 @@ pycrypto>=2.6.1
 requests>=2.13.0
 april>=2.0.0
 mock
-pytest
 mutagen==1.37
 python-Levenshtein==0.12.0
 fuzzywuzzy==0.15.0
