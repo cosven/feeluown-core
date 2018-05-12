@@ -1,6 +1,6 @@
 import os
 import time
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
 from fuocore import MpvPlayer
 from fuocore.core.player import Playlist
@@ -22,16 +22,19 @@ class TestPlayer(TestCase):
     def tearDown(self):
         self.player.shutdown()
 
+    @skipIf(os.environ.get('TEST_ENV', 'travis'))
     def test_play(self):
         self.player.play(MP3_URL)
         self.player.stop()
 
+    @skipIf(os.environ.get('TEST_ENV', 'travis'))
     def test_duration(self):
         # This may failed?
         self.player.play(MP3_URL)
         time.sleep(0.1)
         self.assertIsNotNone(self.player.duration)
 
+    @skipIf(os.environ.get('TEST_ENV', 'travis'))
     def test_seek(self):
         self.player.play(MP3_URL)
         time.sleep(0.1)
