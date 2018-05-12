@@ -12,8 +12,8 @@ unittest:
 	python3 setup.py test
 
 pytest:
-	pip3 install -r dev-requirements.txt
-	pytest --cov=fuocore --doctest-module
+	pip3 install -r dev-requirements.txt -q
+	pytest -v --cov=fuocore --doctest-module
 
 test: lint unittest
 

@@ -366,8 +366,8 @@ class MpvPlayer(AbstractPlayer):
     def stop(self):
         logger.info('stop player...')
         self._mpv.pause = True
-        self._mpv.playlist_clear()
         self.state = State.stopped
+        self._mpv.playlist_clear()
 
     @property
     def position(self):
@@ -405,5 +405,5 @@ class MpvPlayer(AbstractPlayer):
         if event['event_id'] == MpvEventID.END_FILE:
             reason = event['event']['reason']
             logger.debug('Current song finished. reason: %d' % reason)
-            if reason != MpvEventEndFile.ABORTED:
+            if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
                 self.song_finished.emit()
