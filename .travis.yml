@@ -9,8 +9,12 @@ python:
     - 3.6
 
 install:
-    - sudo apt-get install libmpv1
+    - sudo apt-get install libmpv1 -y --force-yes
+    - pip install codecov
     - pip install -r dev-requirements.txt
 
 script:
     - make pytest
+
+after_success:
+  - codecov
