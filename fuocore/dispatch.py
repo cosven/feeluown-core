@@ -3,10 +3,10 @@
 import weakref
 import logging
 
-try:
-    from weakref import WeakMethod
-except ImportError:
-    from fuocore.backports.weakref import WeakMethod
+from weakref import WeakMethod
+
+
+logger = logging.getLogger(__name__)
 
 
 class Signal(object):
@@ -19,7 +19,7 @@ class Signal(object):
             try:
                 receiver()(*args)
             except Exception:
-                logging.exception('receiver %s run error' % receiver())
+                logger.exception('receiver %s run error' % receiver())
 
     def _ref(self, receiver):
         ref = weakref.ref
