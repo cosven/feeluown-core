@@ -11,8 +11,6 @@ requires = [
     'april==2.0.0',
     'mutagen>=1.37',
     'fuzzywuzzy',
-    'future',
-    'enum34',
 ]
 
 
@@ -21,7 +19,7 @@ setup(
     version='2.0a0',
     description='feeluown core',
     author='Cosven',
-    author_email='cosven.yin@gmail.com',
+    author_email='yinshaowen241@gmail.com',
     py_modules=['mpv'],
     packages=[
         'fuocore',

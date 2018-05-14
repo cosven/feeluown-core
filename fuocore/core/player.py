@@ -12,7 +12,6 @@ from enum import Enum
 import logging
 import random
 
-from future.utils import with_metaclass
 from mpv import MPV, MpvEventID, MpvEventEndFile
 
 from fuocore.dispatch import Signal
@@ -177,7 +176,7 @@ class Playlist(object):
         self.current_song = self.previous_song
 
 
-class AbstractPlayer(object, with_metaclass(ABCMeta)):
+class AbstractPlayer(metaclass=ABCMeta):
 
     def __init__(self, playlist=Playlist(), **kwargs):
         self._position = 0
