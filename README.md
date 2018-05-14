@@ -1,4 +1,6 @@
-# feeluown-core (work in progress)
+# feeluown-core 1.x
+
+**WARNING**: 这个版本不会加入更多 feature，只会修复一些 bug，主要为 feeluown 1.x 服务。
 
 [![Documentation Status](https://readthedocs.org/projects/feeluown-core/badge/?version=latest)](http://feeluown-core.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/cosven/feeluown-core.svg?branch=master)](https://travis-ci.org/cosven/feeluown-core)

@@ -358,8 +358,8 @@ class MpvPlayer(AbstractPlayer):
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
         self._mpv.playlist_clear()
+        self.resume()
         self._mpv.play(url)
-        self.state = State.playing
         self.media_changed.emit()
 
     def play_song(self, song):
@@ -392,8 +392,9 @@ class MpvPlayer(AbstractPlayer):
 
     def stop(self):
         logger.info('stop player...')
-        self._mpv.stop()
+        self._mpv.pause = True
         self.state = State.stopped
+        self._mpv.playlist_clear()
 
     @property
     def position(self):

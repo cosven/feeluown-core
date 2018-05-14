@@ -103,3 +103,7 @@ dump.rdb
 *~
 .\#*
 *_flymake.py
+
+
+# pytest
+.pytest_cache
