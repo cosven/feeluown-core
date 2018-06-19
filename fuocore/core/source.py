@@ -18,6 +18,9 @@ class Source(object):
     def __init__(self, prvs=None):
         self.providers = prvs or providers
 
+    def register(self, provider):
+        self.providers.add(provider)
+
     def search(self, keyword):
         """search song by keyword"""
         songs = []

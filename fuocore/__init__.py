@@ -2,6 +2,7 @@ import logging
 import logging.config
 # from logging import NullHandler
 
+from fuocore.models import ModelType  # noqa
 from fuocore.core.source import Source  # noqa
 from fuocore.core.player import (
     MpvPlayer,
@@ -19,6 +20,7 @@ __all__ = [
     'PlaybackMode',
     'Playlist',
     'LiveLyric',
+    'ModelType',
 ]
 
 

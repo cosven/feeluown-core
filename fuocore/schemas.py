@@ -19,7 +19,7 @@ class BaseSchema(Schema):
 
 class ArtistSchema(BaseSchema):
     name = fields.Str(required=True)
-    img = fields.Str()  # NOTE: 可能需要单独一个 Schema
+    cover = fields.Str()  # NOTE: 可能需要单独一个 Schema
     songs = fields.List(fields.Nested('SongSchema'))
 
     @post_load
@@ -65,6 +65,7 @@ class SongSchema(BaseSchema):
 class PlaylistSchema(BaseSchema):
     name = fields.Str(required=True)
     cover = fields.Url()
+    desc = fields.Str()
     songs = fields.List(fields.Nested(SongSchema))
 
     @post_load

@@ -27,7 +27,7 @@ class NBaseModel(BaseModel):
     def __getattribute__(self, name):
         cls = type(self)
         value = object.__getattribute__(self, name)
-        if name in cls.detail_fields and value is None:
+        if name in cls.detail_fields and not value:
             obj = cls.get(self.identifier)
             self = obj
             value = object.__getattribute__(self, name)
@@ -120,7 +120,7 @@ class NSongModel(SongModel, NBaseModel):
 
 
 class NAlbumModel(AlbumModel, NBaseModel):
-    detail_fields = ('img', 'songs', 'artists', )
+    detail_fields = ('cover', 'songs', 'artists', )
 
     @classmethod
     def get(cls, identifier):
@@ -132,7 +132,7 @@ class NAlbumModel(AlbumModel, NBaseModel):
 
 
 class NArtistModel(ArtistModel, NBaseModel):
-    detail_fields = ('songs', 'img')
+    detail_fields = ('songs', 'cover')
 
     @classmethod
     def get(cls, identifier):

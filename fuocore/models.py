@@ -1,22 +1,39 @@
 # -*- coding: utf-8 -*-
 
+from enum import Enum
 
 from april import Struct
 
 
+class ModelType(Enum):
+    dummy = 0
+
+    song = 1
+    artist = 2
+    album = 3
+    playlist = 4
+    lyric = 5
+
+    user = 17
+
+
 class BaseModel(Struct):
+    typy_ = ModelType.dummy
     _fields = ['source', 'identifier']
 
 
 class BriefArtistModel(BaseModel):
-    _fields = ['name', 'img']
+    type_ = ModelType.artist
+    _fields = ['name', 'cover']
 
 
 class BriefAlbumModel(BaseModel):
+    type_ = ModelType.album
     _fields = ['name']
 
 
 class BriefSongModel(BaseModel):
+    type_ = ModelType.song
     _fields = ['title', 'url', 'duration', 'brief_album', 'brief_artists']
 
 
@@ -28,13 +45,14 @@ class ArtistModel(BriefArtistModel):
 
 
 class AlbumModel(BriefAlbumModel):
-    _fields = ['img', 'songs', 'artists', 'desc']
+    _fields = ['cover', 'songs', 'artists', 'desc']
 
     def __str__(self):
         return 'fuo://{}/albums/{}'.format(self.source, self.identifier)
 
 
 class LyricModel(BaseModel):
+    type_ = ModelType.lyric
     _fields = ['song', 'content', 'trans_content']
 
 
@@ -62,11 +80,13 @@ class SongModel(BriefSongModel):
 
 
 class PlaylistModel(BaseModel):
-    _fields = ['name', 'cover', 'songs']
+    type_ = ModelType.playlist
+    _fields = ['name', 'cover', 'songs', 'desc']
 
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
 
 
 class UserModel(BaseModel):
+    type_ = ModelType.user
     _fields = ['name', 'playlists']
