@@ -8,7 +8,7 @@ requires = [
     'requests',
     'beautifulsoup4>=4.5.3',
     'marshmallow>=2.13.5',
-    'april==2.0.0',
+    'april>=2.0.0',
     'mutagen>=1.37',
     'fuzzywuzzy',
 ]

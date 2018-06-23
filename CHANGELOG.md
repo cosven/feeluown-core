@@ -3,6 +3,8 @@
 - remove `current_index` attribute from Playlist
 - arguments will be passed to slots when signal emits
 - rename MpvPlayer method `quit` to `shutdown`
+- add `__eq__` for BaseModel
+- add ModelType
 
 ## v1.1.0
 - 若干 bug 修复
