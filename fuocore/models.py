@@ -18,8 +18,16 @@ class ModelType(Enum):
 
 
 class BaseModel(Struct):
-    typy_ = ModelType.dummy
+    type_ = ModelType.dummy
     _fields = ['source', 'identifier']
+
+
+    def __eq__(self, other):
+        if not isinstance(other, BaseModel):
+            return False
+        return all([other.source == self.source,
+                    other.identifier == self.identifier,
+                    other.type_ == self.type_])
 
 
 class BriefArtistModel(BaseModel):
