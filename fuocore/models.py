@@ -94,6 +94,12 @@ class PlaylistModel(BaseModel):
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
 
+    def add_song(self, song_id, allow_exist=True):
+        pass
+
+    def remove_song(self, song_id, allow_not_exist=True):
+        pass
+
 
 class UserModel(BaseModel):
     type_ = ModelType.user

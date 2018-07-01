@@ -313,7 +313,14 @@ class API(object):
             'trackIds': trackIds,  # music id str
             'op': op   # opation
         }
-        return self.request('POST', url_add, data_add)
+        data = self.request('POST', url_add, data_add)
+        code = data.get('code')
+        if code is None:
+            return 0
+        elif code == 502:
+            return -1
+        else:
+            return 1
 
     def set_music_favorite(self, mid, flag):
         url = uri + '/song/like'

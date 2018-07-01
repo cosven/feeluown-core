@@ -2,6 +2,8 @@ import logging
 import time
 import os
 
+from contextlib import contextmanager
+
 from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.models import (
     BaseModel,
@@ -18,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class NBaseModel(BaseModel):
+    api = api
     detail_fields = ()
 
     @classmethod
@@ -37,12 +40,12 @@ class NBaseModel(BaseModel):
 class NSongModel(SongModel, NBaseModel):
     @classmethod
     def get(cls, identifier):
-        data = api.song_detail(int(identifier))
+        data = cls.api.song_detail(int(identifier))
         song, _ = NeteaseSongSchema(strict=True).load(data)
         return song
 
     def _refresh_url(self):
-        songs = api.weapi_songs_url([int(self.identifier)])
+        songs = cls.api.weapi_songs_url([int(self.identifier)])
         if songs and songs[0]['url']:
             self.url = songs[0]['url']
         else:
@@ -50,7 +53,7 @@ class NSongModel(SongModel, NBaseModel):
 
     def _find_in_xiami(self):
         logger.debug('try to find {} equivalent in xiami'.format(self))
-        return api.get_xiami_song(
+        return cls.api.get_xiami_song(
             title=self.title,
             artist_name=self.artists_name
         )
@@ -104,7 +107,7 @@ class NSongModel(SongModel, NBaseModel):
         if self._lyric is not None:
             assert isinstance(self._lyric, LyricModel)
             return self._lyric
-        data = api.get_lyric_by_songid(self.identifier)
+        data = cls.api.get_lyric_by_songid(self.identifier)
         lrc = data.get('lrc', {})
         lyric = lrc.get('lyric', '')
         self._lyric = LyricModel(
@@ -124,7 +127,7 @@ class NAlbumModel(AlbumModel, NBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        album_data = api.album_infos(identifier)
+        album_data = cls.api.album_infos(identifier)
         if album_data is None:
             return None
         album, _ = NeteaseAlbumSchema(strict=True).load(album_data)
@@ -136,7 +139,7 @@ class NArtistModel(ArtistModel, NBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        artist_data = api.artist_infos(identifier)
+        artist_data = cls.api.artist_infos(identifier)
         artist = artist_data['artist']
         artist['songs'] = artist_data['hotSongs']
         artist, _ = NeteaseArtistSchema(strict=True).load(artist)
@@ -148,9 +151,37 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        data = api.playlist_detail(identifier)
+        data = cls.api.playlist_detail(identifier)
         playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
         return playlist
+
+    def add_song(self, song_id, allow_exist=True):
+        rv = self.api.op_music_to_playlist(song_id, self.identifier, 'add')
+        return rv != 0
+
+    def remove_song(self, song_id, allow_not_exist=True):
+        rv = self.api.op_music_to_playlist(song_id, self.identifier, 'del')
+        return rv != 0
+
+
+def auth(cookies=None):
+    """Login as someone.
+
+    XXX: feel free to add keyword arguments.
+    """
+    if cookies is not None:
+        NBaseModel.api._cookies = cookies
+
+
+@contextmanager
+def auth_as(cookies=None):
+    """Login as someone temporarilly."""
+    old_cookies = NBaseModel.api.cookies
+    NBaseModel.api._cookies = cookies
+    try:
+        yield
+    finally:
+        NBaseModel.api._cookies = old_cookies
 
 
 # import loop
