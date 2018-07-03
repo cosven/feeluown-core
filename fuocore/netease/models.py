@@ -45,7 +45,7 @@ class NSongModel(SongModel, NBaseModel):
         return song
 
     def _refresh_url(self):
-        songs = cls.api.weapi_songs_url([int(self.identifier)])
+        songs = self.api.weapi_songs_url([int(self.identifier)])
         if songs and songs[0]['url']:
             self.url = songs[0]['url']
         else:
@@ -53,7 +53,7 @@ class NSongModel(SongModel, NBaseModel):
 
     def _find_in_xiami(self):
         logger.debug('try to find {} equivalent in xiami'.format(self))
-        return cls.api.get_xiami_song(
+        return self.api.get_xiami_song(
             title=self.title,
             artist_name=self.artists_name
         )
@@ -107,7 +107,7 @@ class NSongModel(SongModel, NBaseModel):
         if self._lyric is not None:
             assert isinstance(self._lyric, LyricModel)
             return self._lyric
-        data = cls.api.get_lyric_by_songid(self.identifier)
+        data = self.api.get_lyric_by_songid(self.identifier)
         lrc = data.get('lrc', {})
         lyric = lrc.get('lyric', '')
         self._lyric = LyricModel(
