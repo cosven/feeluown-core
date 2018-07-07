@@ -302,8 +302,6 @@ class API(object):
     def op_music_to_playlist(self, mid, pid, op):
         """
         :param op: add or del
-        把mid这首音乐加入pid这个歌单列表当中去
-        1. 如果歌曲已经在列表当中，返回code为502
         """
         url_add = uri + '/playlist/manipulate/tracks'
         trackIds = '["' + str(mid) + '"]'
@@ -315,12 +313,17 @@ class API(object):
         }
         data = self.request('POST', url_add, data_add)
         code = data.get('code')
-        if code is None:
-            return 0
+
+        # 从歌单中成功的移除歌曲时，code 是 200
+        # 当从歌单中移除一首不存在的歌曲时，code 也是 200
+        # 当向歌单添加歌曲时，如果歌曲已经在列表当中，
+        # 返回 code 为 502
+        if code == 200:
+            return 1
         elif code == 502:
             return -1
         else:
-            return 1
+            return 0
 
     def set_music_favorite(self, mid, flag):
         url = uri + '/song/like'

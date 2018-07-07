@@ -1,4 +1,9 @@
-## 2.0a0 (WIP)
+## 2.0 (WIP)
+
+### 2.0a1
+- 给部分 Model 添加 update/delete 方法
+
+### 2.0a0
 - no more BriefXxxModel (docs for more detail.)
 - remove `current_index` attribute from Playlist
 - arguments will be passed to slots when signal emits

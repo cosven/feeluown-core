@@ -155,13 +155,25 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
         playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
         return playlist
 
-    def add_song(self, song_id, allow_exist=True):
+    def add(self, song_id, allow_exist=True):
         rv = self.api.op_music_to_playlist(song_id, self.identifier, 'add')
-        return rv != 0
+        if rv == 1:
+            song = NSongModel.get(song_id)
+            self.songs.append(song)
+            return True
+        elif rv == -1:
+            return True
+        return False
 
-    def remove_song(self, song_id, allow_not_exist=True):
+    def remove(self, song_id, allow_not_exist=True):
         rv = self.api.op_music_to_playlist(song_id, self.identifier, 'del')
-        return rv != 0
+        if rv != 1:
+            return False
+        # XXX: make it O(1) if you want
+        for song in self.songs:
+            if song.identifier == song_id:
+                self.songs.remove(song)
+        return True
 
 
 def auth(cookies=None):
