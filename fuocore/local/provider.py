@@ -125,6 +125,10 @@ class LocalProvider(AbstractProvider):
         return self._songs
 
     @property
+    def identifier(self):
+        return 'local'
+
+    @property
     def name(self):
         return 'local'
 

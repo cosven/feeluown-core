@@ -26,6 +26,10 @@ logger = logging.getLogger(__name__)
 
 class NeteaseProvider(AbstractProvider):
     @property
+    def identifier(self):
+        return 'netease'
+
+    @property
     def name(self):
         return 'netease'
 

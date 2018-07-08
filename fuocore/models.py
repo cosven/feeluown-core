@@ -42,7 +42,7 @@ class BriefAlbumModel(BaseModel):
 
 class BriefSongModel(BaseModel):
     type_ = ModelType.song
-    _fields = ['title', 'url', 'duration', 'brief_album', 'brief_artists']
+    _fields = ['title', 'url', 'duration', ]
 
 
 class ArtistModel(BriefArtistModel):

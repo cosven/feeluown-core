@@ -10,8 +10,12 @@ class AbstractProvider(metaclass=ABCMeta):
     """abstract music resource provider"""
 
     @abstractproperty
+    def identifier(self):
+        """provider identify"""
+
+    @abstractproperty
     def name(self):
-        """provider name, used to identify"""
+        """provider name"""
 
     @abstractmethod
     def search(self, keyword, **kwargs):

@@ -169,17 +169,11 @@ class Playlist(object):
             previous_song = self._songs[current_index - 1]
         return previous_song
 
-    def play_next(self):
-        self.current_song = self.next_song
-
-    def play_previous(self):
-        self.current_song = self.previous_song
-
 
 class AbstractPlayer(metaclass=ABCMeta):
 
     def __init__(self, playlist=Playlist(), **kwargs):
-        self._position = 0
+        self._position = 0  # seconds
         self._volume = 100  # (0, 100)
         self._playlist = playlist
         self._state = State.stopped
@@ -315,7 +309,7 @@ class MpvPlayer(AbstractPlayer):
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv.event_callbacks.append(self._on_event)
-        self.song_finished.connect(self._playlist.play_next)
+        self.song_finished.connect(self.play_next)
         logger.info('Player initialize finished.')
 
     def shutdown(self):
@@ -346,6 +340,12 @@ class MpvPlayer(AbstractPlayer):
             self._playlist.current_song = song
         else:
             raise ValueError("invalid song: song url can't be None")
+
+    def play_next(self):
+        self.playlist.current_song = self.playlist.next_song
+
+    def play_previous(self):
+        self.playlist.current_song = self.playlist.previous_song
 
     def resume(self):
         self._mpv.pause = False
