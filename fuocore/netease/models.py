@@ -2,8 +2,6 @@ import logging
 import time
 import os
 
-from contextlib import contextmanager
-
 from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.models import (
     BaseModel,
@@ -12,16 +10,21 @@ from fuocore.models import (
     PlaylistModel,
     AlbumModel,
     ArtistModel,
+    SearchModel,
+    UserModel,
 )
-from fuocore.netease.api import api
+
+from .provider import provider
 
 
 logger = logging.getLogger(__name__)
 
 
 class NBaseModel(BaseModel):
-    api = api
-    detail_fields = ()
+    _provider = provider
+    api = provider.api
+
+    _detail_fields = ()
 
     @classmethod
     def get(cls, identifier):
@@ -30,9 +33,10 @@ class NBaseModel(BaseModel):
     def __getattribute__(self, name):
         cls = type(self)
         value = object.__getattribute__(self, name)
-        if name in cls.detail_fields and not value:
+        if name in cls._detail_fields and not value:
             obj = cls.get(self.identifier)
-            self = obj
+            for field in cls._detail_fields:
+                setattr(self, field, getattr(obj, field))
             value = object.__getattribute__(self, name)
         return value
 
@@ -123,7 +127,7 @@ class NSongModel(SongModel, NBaseModel):
 
 
 class NAlbumModel(AlbumModel, NBaseModel):
-    detail_fields = ('cover', 'songs', 'artists', )
+    _detail_fields = ('cover', 'songs', 'artists', )
 
     @classmethod
     def get(cls, identifier):
@@ -135,7 +139,7 @@ class NAlbumModel(AlbumModel, NBaseModel):
 
 
 class NArtistModel(ArtistModel, NBaseModel):
-    detail_fields = ('songs', 'cover')
+    _detail_fields = ('songs', 'cover')
 
     @classmethod
     def get(cls, identifier):
@@ -147,7 +151,7 @@ class NArtistModel(ArtistModel, NBaseModel):
 
 
 class NPlaylistModel(PlaylistModel, NBaseModel):
-    detail_fields = ('songs', )
+    _detail_fields = ('songs', )
 
     @classmethod
     def get(cls, identifier):
@@ -176,24 +180,38 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
         return True
 
 
-def auth(cookies=None):
-    """Login as someone.
-
-    XXX: feel free to add keyword arguments.
-    """
-    if cookies is not None:
-        NBaseModel.api._cookies = cookies
+class NSearchModel(SearchModel, NBaseModel):
+    pass
 
 
-@contextmanager
-def auth_as(cookies=None):
-    """Login as someone temporarilly."""
-    old_cookies = NBaseModel.api.cookies
-    NBaseModel.api._cookies = cookies
-    try:
-        yield
-    finally:
-        NBaseModel.api._cookies = old_cookies
+class NUserModel(UserModel, NBaseModel):
+    _detail_fields = ('playlists', )
+
+    @classmethod
+    def get(cls, identifier):
+        user = {'id': identifier}
+        user_brief = cls.api.user_brief(identifier)
+        user.update(user_brief)
+        playlists = cls.api.user_playlists(identifier)
+        user['playlists'] = playlists
+        user, _ = NeteaseUserSchema(strict=True).load(user)
+        return user
+
+
+def search(keyword):
+    _songs = provider.api.search(keyword)
+    id_song_map = {}
+    songs = []
+    if _songs:
+        for song in _songs:
+            id_song_map[str(song['id'])] = song
+            schema = NeteaseSongSchema(strict=True)
+            s, _ = schema.load(song)
+            songs.append(s)
+    return NSearchModel(q=keyword, songs=songs)
+
+
+provider.search = search
 
 
 # import loop
@@ -202,4 +220,5 @@ from .schemas import (
     NeteaseAlbumSchema,
     NeteaseArtistSchema,
     NeteasePlaylistSchema,
-)
+    NeteaseUserSchema,
+)  # noqa

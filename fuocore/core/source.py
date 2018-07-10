@@ -4,7 +4,6 @@ import logging
 from collections import defaultdict
 from urllib.parse import urlparse
 
-from .provider import get_provider, providers
 from .furi import parse_furi
 
 
@@ -15,8 +14,8 @@ class Source(object):
     """
     XXX: unstable api
     """
-    def __init__(self, prvs=None):
-        self.providers = prvs or providers
+    def __init__(self, prvs=[]):
+        self.providers = prvs
 
     def register(self, provider):
         self.providers.add(provider)
@@ -32,10 +31,16 @@ class Source(object):
         logger.debug('共搜索到了 {} 首关于 {} 的歌曲'.format(len(songs), keyword))
         return songs[:40]
 
+    def _get_provider(self, name):
+        for provider in self.providers:
+            if provider.name == name:
+                return provider
+        return None
+
     def get_song(self, furi_str):
         """get song from identifier"""
         result = urlparse(furi_str)
-        provider = get_provider(result.netloc)
+        provider = self._get_provider(result.netloc)
         identifier = result.path.split('/')[-1]
         return provider.get_song(identifier)
 
@@ -46,6 +51,6 @@ class Source(object):
             provider_songs_map[furi.provider].append(furi.identifier)
         songs = []
         for provider_name, identifiers in provider_songs_map.items():
-            provider = get_provider(provider_name)
+            provider = self._get_provider(provider_name)
             songs += provider.list_songs(identifiers)
         return songs

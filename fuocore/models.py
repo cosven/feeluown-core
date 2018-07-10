@@ -21,7 +21,6 @@ class BaseModel(Struct):
     type_ = ModelType.dummy
     _fields = ['source', 'identifier']
 
-
     def __eq__(self, other):
         if not isinstance(other, BaseModel):
             return False
@@ -101,6 +100,14 @@ class PlaylistModel(BaseModel):
         pass
 
 
+class SearchModel(BaseModel):
+    type_ = ModelType.dummy
+    _fields = ['q', 'songs']
+
+    def __str__(self):
+        return 'fuo://{}?q={}'.format(self.source, self.q)
+
+
 class UserModel(BaseModel):
     type_ = ModelType.user
-    _fields = ['name', 'playlists']
+    _fields = ['name', 'playlists', 'cookies']
