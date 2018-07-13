@@ -13,6 +13,9 @@ from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.utils import log_exectime
 
 from fuocore.local.schemas import EasyMP3MetadataSongSchema
+from fuocore.models import (
+    BaseModel, SearchModel, SongModel, AlbumModel, ArtistModel
+)
 
 
 logger = logging.getLogger(__name__)
@@ -69,7 +72,6 @@ class LocalProvider(AbstractProvider):
 
         self._songs = list()
 
-        # 这几个 map 实际上并不会增加多少内存
         self._identifier_song_map = dict()
         self._identifier_album_map = dict()
         self._identifier_artist_map = dict()
@@ -130,10 +132,11 @@ class LocalProvider(AbstractProvider):
 
     @property
     def name(self):
-        return 'local'
+        return '本地音乐'
 
     @log_exectime
-    def search(self, keyword, limit=10):
+    def search(self, keyword, **kwargs):
+        limit = kwargs.get('limit', 10)
         repr_song_map = dict()
         for song in self.songs:
             key = song.title + ' ' + song.artists_name + str(song.identifier)
@@ -145,16 +148,34 @@ class LocalProvider(AbstractProvider):
             # if score > 80, keyword is almost included in song key
             if score > 80:
                 result_songs.append(repr_song_map[each])
-        return result_songs
+        return SearchModel(q=keyword, source='local', songs=result_songs)
 
-    def get_song(self, identifier):
-        return self._identifier_song_map.get(identifier)
 
-    def list_songs(self, identifiers):
-        return map(self._identifier_song_map.get, identifiers)
+provider = LocalProvider()
 
-    def get_album(self, identifier):
-        return self._identifier_album_map.get(identifier)
 
-    def get_artist(self, identifier):
-        return self._identifier_album_map.get(identifier)
+class NBaseModel(BaseModel):
+    class Meta:
+        provider = provider
+
+
+class LSongModel(SongModel, BaseModel):
+    @classmethod
+    def get(cls, identifier):
+        return cls._meta.provider._identifier_song_map.get(identifier)
+
+    @classmethod
+    def list(cls, identifiers):
+        return map(cls._meta.provider._identifier_song_map.get, identifiers)
+
+
+class LAlbumModel(AlbumModel, BaseModel):
+    @classmethod
+    def get(cls, identifier):
+        return cls._meta.provider._identifier_album_map.get(identifier)
+
+
+class LArtistModel(ArtistModel, BaseModel):
+    @classmethod
+    def get(cls, identifier):
+        return cls._meta.provider._identifier_artist_map.get(identifier)

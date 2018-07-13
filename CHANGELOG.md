@@ -1,5 +1,11 @@
 ## 2.0 (WIP)
 
+### 2.0a2(WIP)
+- 去除 `provider.get_song` 等方法，用 provider.Song.get 代替
+    重构之后：provider 和 Model 的关系类似 db 和 Model 的关系
+- 添加 QQ 音乐搜索 API
+- 废弃之前的 `load_plugin` 逻辑
+
 ### 2.0a1
 - 给部分 Model 添加 update/delete 方法
 

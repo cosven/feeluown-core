@@ -1,9 +1,3 @@
 # -*- coding: utf-8 -*-
 
-
-def enable():
-    pass
-
-
-def disable():
-    pass
+from .provider import provider # noqa

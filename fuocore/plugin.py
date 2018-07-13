@@ -4,14 +4,14 @@ import logging
 import pkg_resources
 
 from fuocore.core.provider import AbstractProvider
-from fuocore.core.provider import register as register_provider
 
 
 logger = logging.getLogger(__name__)
 
 
-def load_plugins():
+def load_providers():
     """load all installed plugins"""
+    providers = []
 
     # load available providers
     for entry_point in pkg_resources.iter_entry_points('fuo.provider'):
@@ -35,5 +35,5 @@ def load_plugins():
         except Exception:
             logger.exception('init provider failed')
             continue
-
-        register_provider(provider)
+        providers.append(provider)
+    return providers

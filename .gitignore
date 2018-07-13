@@ -104,5 +104,8 @@ dump.rdb
 .\#*
 *_flymake.py
 
+# vim
+*.swp
+
 # pytest
 .pytest_cache
