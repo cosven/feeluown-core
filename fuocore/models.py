@@ -112,7 +112,7 @@ class BaseModel(Model):
             return False
         return all([other.source == self.source,
                     other.identifier == self.identifier,
-                    other.model_type == self.model_type])
+                    other._meta.model_type == self._meta.model_type])
 
     @classmethod
     def get(cls, identifier):
