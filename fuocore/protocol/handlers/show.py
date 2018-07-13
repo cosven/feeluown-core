@@ -159,14 +159,14 @@ def lyric(req, provider, sid):
 @route('/<provider>/artists/<aid>')
 def artist_detail(req, provider, aid):
     provider = req.app.get_provider(provider)
-    artist = provider.get_artist(aid)
+    artist = provider.Artist.get(aid)
     return show_artist(artist)
 
 
 @route('/<provider>/albums/<bid>')
 def album_detail(req, provider, bid):
     provider = req.app.get_provider(provider)
-    album = provider.get_album(bid)
+    album = provider.Album.get(bid)
     return show_album(album)
 
 
