@@ -1,65 +1,35 @@
 # -*- coding: utf-8 -*-
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
+from fuocore.models import (
+    SongModel,
+    ArtistModel,
+    AlbumModel,
+    PlaylistModel,
+    LyricModel,
+
+    UserModel,
+)
 
 
-providers = set()
+class AbstractProvider(ABC):
+    """abstract music resource provider
+    """
 
+    # A well behaved provider should implement its own models .
+    Song = SongModel
+    Artist = ArtistModel
+    Album = AlbumModel
+    Playlist = PlaylistModel
+    Lyric = LyricModel
+    User = UserModel
 
-class AbstractProvider(metaclass=ABCMeta):
-    """abstract music resource provider"""
-
-    @abstractproperty
+    @property
+    @abstractmethod
     def identifier(self):
         """provider identify"""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def name(self):
         """provider name"""
-
-    @abstractmethod
-    def search(self, keyword, **kwargs):
-        """search songs by name, artist name, album name
-
-        :return: list of brief songs.
-        """
-
-    @abstractmethod
-    def list_songs(self, identifier_list):
-        """list songs by identifier list
-
-        :return: song model: :class:`fuocore.models.SongModel`
-        """
-
-    @abstractmethod
-    def get_song(self, identifier):
-        """get song by identifier
-
-        :return: song model: :class:`fuocore.models.SongModel`
-        """
-
-    def get_lyric(self, identifier):
-        return ''
-
-    @abstractmethod
-    def get_album(self, identifier):
-        """get album by identifier
-
-        :return: album model: :class:`fuocore.models.AlbumModel`
-        """
-
-
-def register(provider):
-    providers.add(provider)
-
-
-def deregister(provider):
-    if provider in providers:
-        providers.remove(provider)
-
-
-def get_provider(name):
-    for provider in providers:
-        if provider.name == name:
-            return provider
-    return None

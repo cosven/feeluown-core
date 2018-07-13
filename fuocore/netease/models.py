@@ -2,8 +2,6 @@ import logging
 import time
 import os
 
-from contextlib import contextmanager
-
 from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.models import (
     BaseModel,
@@ -12,27 +10,31 @@ from fuocore.models import (
     PlaylistModel,
     AlbumModel,
     ArtistModel,
+    SearchModel,
+    UserModel,
 )
-from fuocore.netease.api import api
+
+from .provider import provider
 
 
 logger = logging.getLogger(__name__)
 
 
 class NBaseModel(BaseModel):
-    api = api
-    detail_fields = ()
+    # FIXME: remove _detail_fields and _api to Meta
+    _detail_fields = ()
+    _api = provider.api
 
-    @classmethod
-    def get(cls, identifier):
-        raise NotImplementedError
+    class Meta:
+        provider = provider
 
     def __getattribute__(self, name):
         cls = type(self)
         value = object.__getattribute__(self, name)
-        if name in cls.detail_fields and not value:
+        if name in cls._detail_fields and not value:
             obj = cls.get(self.identifier)
-            self = obj
+            for field in cls._detail_fields:
+                setattr(self, field, getattr(obj, field))
             value = object.__getattribute__(self, name)
         return value
 
@@ -40,12 +42,21 @@ class NBaseModel(BaseModel):
 class NSongModel(SongModel, NBaseModel):
     @classmethod
     def get(cls, identifier):
-        data = cls.api.song_detail(int(identifier))
+        data = cls._api.song_detail(int(identifier))
         song, _ = NeteaseSongSchema(strict=True).load(data)
         return song
 
+    @classmethod
+    def list(cls, identifiers):
+        song_data_list = cls._api.songs_detail(identifiers)
+        songs = []
+        for song_data in song_data_list:
+            song, _ = NeteaseSongSchema(strict=True).load(data)
+            songs.append(song)
+        return songs
+
     def _refresh_url(self):
-        songs = self.api.weapi_songs_url([int(self.identifier)])
+        songs = self._api.weapi_songs_url([int(self.identifier)])
         if songs and songs[0]['url']:
             self.url = songs[0]['url']
         else:
@@ -53,7 +64,7 @@ class NSongModel(SongModel, NBaseModel):
 
     def _find_in_xiami(self):
         logger.debug('try to find {} equivalent in xiami'.format(self))
-        return self.api.get_xiami_song(
+        return self._api.get_xiami_song(
             title=self.title,
             artist_name=self.artists_name
         )
@@ -107,7 +118,7 @@ class NSongModel(SongModel, NBaseModel):
         if self._lyric is not None:
             assert isinstance(self._lyric, LyricModel)
             return self._lyric
-        data = self.api.get_lyric_by_songid(self.identifier)
+        data = self._api.get_lyric_by_songid(self.identifier)
         lrc = data.get('lrc', {})
         lyric = lrc.get('lyric', '')
         self._lyric = LyricModel(
@@ -123,11 +134,11 @@ class NSongModel(SongModel, NBaseModel):
 
 
 class NAlbumModel(AlbumModel, NBaseModel):
-    detail_fields = ('cover', 'songs', 'artists', )
+    _detail_fields = ('cover', 'songs', 'artists', )
 
     @classmethod
     def get(cls, identifier):
-        album_data = cls.api.album_infos(identifier)
+        album_data = cls._api.album_infos(identifier)
         if album_data is None:
             return None
         album, _ = NeteaseAlbumSchema(strict=True).load(album_data)
@@ -135,11 +146,11 @@ class NAlbumModel(AlbumModel, NBaseModel):
 
 
 class NArtistModel(ArtistModel, NBaseModel):
-    detail_fields = ('songs', 'cover')
+    _detail_fields = ('songs', 'cover')
 
     @classmethod
     def get(cls, identifier):
-        artist_data = cls.api.artist_infos(identifier)
+        artist_data = cls._api.artist_infos(identifier)
         artist = artist_data['artist']
         artist['songs'] = artist_data['hotSongs']
         artist, _ = NeteaseArtistSchema(strict=True).load(artist)
@@ -147,16 +158,16 @@ class NArtistModel(ArtistModel, NBaseModel):
 
 
 class NPlaylistModel(PlaylistModel, NBaseModel):
-    detail_fields = ('songs', )
+    _detail_fields = ('songs', )
 
     @classmethod
     def get(cls, identifier):
-        data = cls.api.playlist_detail(identifier)
+        data = cls._api.playlist_detail(identifier)
         playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
         return playlist
 
     def add(self, song_id, allow_exist=True):
-        rv = self.api.op_music_to_playlist(song_id, self.identifier, 'add')
+        rv = self._api.op_music_to_playlist(song_id, self.identifier, 'add')
         if rv == 1:
             song = NSongModel.get(song_id)
             self.songs.append(song)
@@ -166,7 +177,7 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
         return False
 
     def remove(self, song_id, allow_not_exist=True):
-        rv = self.api.op_music_to_playlist(song_id, self.identifier, 'del')
+        rv = self._api.op_music_to_playlist(song_id, self.identifier, 'del')
         if rv != 1:
             return False
         # XXX: make it O(1) if you want
@@ -176,24 +187,35 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
         return True
 
 
-def auth(cookies=None):
-    """Login as someone.
-
-    XXX: feel free to add keyword arguments.
-    """
-    if cookies is not None:
-        NBaseModel.api._cookies = cookies
+class NSearchModel(SearchModel, NBaseModel):
+    pass
 
 
-@contextmanager
-def auth_as(cookies=None):
-    """Login as someone temporarilly."""
-    old_cookies = NBaseModel.api.cookies
-    NBaseModel.api._cookies = cookies
-    try:
-        yield
-    finally:
-        NBaseModel.api._cookies = old_cookies
+class NUserModel(UserModel, NBaseModel):
+    _detail_fields = ('playlists', )
+
+    @classmethod
+    def get(cls, identifier):
+        user = {'id': identifier}
+        user_brief = cls._api.user_brief(identifier)
+        user.update(user_brief)
+        playlists = cls._api.user_playlists(identifier)
+        user['playlists'] = playlists
+        user, _ = NeteaseUserSchema(strict=True).load(user)
+        return user
+
+
+def search(keyword):
+    _songs = provider.api.search(keyword)
+    id_song_map = {}
+    songs = []
+    if _songs:
+        for song in _songs:
+            id_song_map[str(song['id'])] = song
+            schema = NeteaseSongSchema(strict=True)
+            s, _ = schema.load(song)
+            songs.append(s)
+    return NSearchModel(q=keyword, songs=songs)
 
 
 # import loop
@@ -202,4 +224,5 @@ from .schemas import (
     NeteaseAlbumSchema,
     NeteaseArtistSchema,
     NeteasePlaylistSchema,
-)
+    NeteaseUserSchema,
+)  # noqa

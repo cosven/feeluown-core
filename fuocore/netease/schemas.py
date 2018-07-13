@@ -86,13 +86,15 @@ class NeteaseUserSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     name = fields.Str(required=True)
     playlists = fields.List(fields.Nested(NeteasePlaylistSchema))
+    cookies = fields.Dict()
 
     @post_load
     def create_model(self, data):
-        return UserModel(**data)
+        return NUserModel(**data)
 
 
 from .models import NAlbumModel
 from .models import NArtistModel
 from .models import NPlaylistModel
 from .models import NSongModel
+from .models import NUserModel

@@ -2,13 +2,13 @@ import logging
 from contextlib import contextmanager
 
 from fuocore.core.provider import AbstractProvider
-from fuocore.netease.api import API
+from .api import API
 
 
 logger = logging.getLogger(__name__)
 
 
-class NeteaseProvider(AbstractProvider):
+class QQMusicProvider(AbstractProvider):
     def __init__(self):
         self.api = API()
 
@@ -16,11 +16,11 @@ class NeteaseProvider(AbstractProvider):
 
     @property
     def identifier(self):
-        return 'netease'
+        return 'qqmusic'
 
     @property
     def name(self):
-        return '网易云音乐'
+        return 'QQ 音乐'
 
     @contextmanager
     def auth_as(self, user):
@@ -37,8 +37,4 @@ class NeteaseProvider(AbstractProvider):
         self.api.load_cookies(user.cookies)
 
 
-provider = NeteaseProvider()
-
-
-from .models import search
-provider.search = search
+provider = QQMusicProvider()

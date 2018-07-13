@@ -143,14 +143,14 @@ def list_songs(req, provider):
 @route('/<provider>/songs/<sid>')
 def song_detail(req, provider, sid):
     provider = req.app.get_provider(provider)
-    song = provider.get_song(sid)
+    song = provider.Song.get(sid)
     return show_song(song)
 
 
 @route('/<provider>/songs/<sid>/lyric')
 def lyric(req, provider, sid):
     provider = req.app.get_provider(provider)
-    song = provider.get_song(sid)
+    song = provider.Song.get(sid)
     if song.lyric:
         return song.lyric.content
     return ''
@@ -173,12 +173,12 @@ def album_detail(req, provider, bid):
 @route('/<provider>/users/<uid>')
 def user_detail(req, provider, uid):
     provider = req.app.get_provider(provider)
-    user = provider.get_user(uid)
+    user = provider.User.get(uid)
     return show_user(user)
 
 
 @route('/<provider>/playlists/<pid>')
 def playlist_detail(req, provider, pid):
     provider = req.app.get_provider(provider)
-    playlist = provider.get_playlist(pid)
+    playlist = provider.Playlist.get(pid)
     return show_playlist(playlist)
