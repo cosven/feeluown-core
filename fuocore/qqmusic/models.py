@@ -35,7 +35,8 @@ class QQBaseModel(BaseModel):
 
 class QQSongModel(SongModel, QQBaseModel):
 
-    _fields = ('mid', )
+    class Meta:
+        fields = ('mid', )
 
     @property
     def url(self):
