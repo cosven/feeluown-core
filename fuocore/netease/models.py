@@ -160,6 +160,9 @@ class NArtistModel(ArtistModel, NBaseModel):
 class NPlaylistModel(PlaylistModel, NBaseModel):
     _detail_fields = ('songs', )
 
+    class Meta:
+        fields = ('uid')
+
     @classmethod
     def get(cls, identifier):
         data = cls._api.playlist_detail(identifier)
@@ -192,7 +195,7 @@ class NSearchModel(SearchModel, NBaseModel):
 
 
 class NUserModel(UserModel, NBaseModel):
-    _detail_fields = ('playlists', )
+    _detail_fields = ('playlists', 'fav_playlists')
 
     @classmethod
     def get(cls, identifier):
@@ -200,7 +203,14 @@ class NUserModel(UserModel, NBaseModel):
         user_brief = cls._api.user_brief(identifier)
         user.update(user_brief)
         playlists = cls._api.user_playlists(identifier)
-        user['playlists'] = playlists
+
+        user['playlists'] = []
+        user['fav_playlists'] = []
+        for pl in playlists:
+            if pl['userId'] == identifier:
+                user['playlists'].append(pl)
+            else:
+                user['fav_playlists'].append(pl)
         user, _ = NeteaseUserSchema(strict=True).load(user)
         return user
 

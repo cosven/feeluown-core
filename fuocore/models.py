@@ -196,4 +196,4 @@ class SearchModel(BaseModel):
 class UserModel(BaseModel):
     class Meta:
         model_type = ModelType.user.value
-        fields = ['name', 'playlists', 'cookies']
+        fields = ['name', 'playlists', 'cookies', 'fav_playlists']

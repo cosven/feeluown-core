@@ -55,6 +55,7 @@ class NeteaseArtistSchema(Schema):
 
 class NeteasePlaylistSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
+    uid = fields.Int(required=True, load_from='userId')
     name = fields.Str(required=True)
     desc = fields.Str(required=True, allow_none=True, load_from='description')
     cover = fields.Url(required=True, load_from='coverImgUrl')
@@ -86,6 +87,7 @@ class NeteaseUserSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     name = fields.Str(required=True)
     playlists = fields.List(fields.Nested(NeteasePlaylistSchema))
+    fav_playlists = fields.List(fields.Nested(NeteasePlaylistSchema))
     cookies = fields.Dict()
 
     @post_load
