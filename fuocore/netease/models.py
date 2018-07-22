@@ -51,7 +51,7 @@ class NSongModel(SongModel, NBaseModel):
         song_data_list = cls._api.songs_detail(identifiers)
         songs = []
         for song_data in song_data_list:
-            song, _ = NeteaseSongSchema(strict=True).load(data)
+            song, _ = NeteaseSongSchema(strict=True).load(song_data)
             songs.append(song)
         return songs
 
