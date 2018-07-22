@@ -234,7 +234,7 @@ class API(object):
     def album_desc(self, album_id):
         action = site_uri + '/album'
         data = {'id': album_id}
-        res = self.http.get(action, data)
+        res = self.http.get(action, data, headers=self.headers)
         if res is None:
             return None
         soup = BeautifulSoup(res.content, 'html.parser')
@@ -246,7 +246,7 @@ class API(object):
     def artist_desc(self, artist_id):
         action = site_uri + '/artist/desc'
         data = {'id': artist_id}
-        res = self.http.get(action, data)
+        res = self.http.get(action, data, headers=self.headers)
         if res is None:
             return None
         soup = BeautifulSoup(res.content, 'html.parser')

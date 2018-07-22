@@ -144,6 +144,16 @@ class NAlbumModel(AlbumModel, NBaseModel):
         album, _ = NeteaseAlbumSchema(strict=True).load(album_data)
         return album
 
+    @property
+    def desc(self):
+        if self._desc is None:
+            self._desc = self._api.album_desc(self.identifier)
+        return self._desc
+
+    @desc.setter
+    def desc(self, value):
+        self._desc = value
+
 
 class NArtistModel(ArtistModel, NBaseModel):
     _detail_fields = ('songs', 'cover')
@@ -155,6 +165,16 @@ class NArtistModel(ArtistModel, NBaseModel):
         artist['songs'] = artist_data['hotSongs']
         artist, _ = NeteaseArtistSchema(strict=True).load(artist)
         return artist
+
+    @property
+    def desc(self):
+        if self._desc is None:
+            self._desc = self._api.artist_desc(self.identifier)
+        return self._desc
+
+    @desc.setter
+    def desc(self, value):
+        self._desc = value
 
 
 class NPlaylistModel(PlaylistModel, NBaseModel):
