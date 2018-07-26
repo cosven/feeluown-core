@@ -289,6 +289,8 @@ class MpvPlayer(AbstractPlayer):
 
     player will always play playlist current song. player will listening to
     playlist ``song_changed`` signal and change the current playback.
+
+    TODO: make me singleton
     """
     def __init__(self):
         super(MpvPlayer, self).__init__()

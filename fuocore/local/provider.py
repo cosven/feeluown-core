@@ -21,11 +21,14 @@ from fuocore.models import (
 logger = logging.getLogger(__name__)
 
 
-def scan_directory(directory, exts=['mp3'], depth=2):
+def scan_directory(directory, exts=None, depth=2):
+    exts = exts or ['mp3']
     if depth < 0:
         return []
 
     media_files = []
+    if not os.path.exists(directory):
+        return []
     for path in os.listdir(directory):
         path = os.path.join(directory, path)
         if os.path.isdir(path):
@@ -67,7 +70,7 @@ def create_song(fpath):
 
 class LocalProvider(AbstractProvider):
 
-    def __init__(self, library_paths=[MUSIC_LIBRARY_PATH], depth=2):
+    def __init__(self, library_paths=None, depth=2):
         self._library_paths = library_paths
 
         self._songs = list()
@@ -76,7 +79,7 @@ class LocalProvider(AbstractProvider):
         self._identifier_album_map = dict()
         self._identifier_artist_map = dict()
 
-        self.library_paths = library_paths
+        self.library_paths = library_paths or [MUSIC_LIBRARY_PATH]
 
     @property
     def library_paths(self):
