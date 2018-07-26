@@ -2,8 +2,7 @@ import os
 import time
 from unittest import TestCase, skipIf
 
-from fuocore import MpvPlayer
-from fuocore.core.player import Playlist
+from fuocore.player import MpvPlayer, Playlist
 
 
 MP3_URL = os.path.join(os.path.dirname(__file__),

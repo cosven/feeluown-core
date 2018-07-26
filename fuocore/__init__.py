@@ -3,13 +3,14 @@ import logging.config
 # from logging import NullHandler
 
 from fuocore.models import ModelType  # noqa
-from fuocore.core.player import (
+from fuocore.player import (
     MpvPlayer,
     State as PlayerState,
     PlaybackMode,
     Playlist,
 )  # noqa
-from fuocore.core.live_lyric import LiveLyric  # noqa
+from fuocore.live_lyric import LiveLyric  # noqa
+from .library import Library
 
 
 __all__ = [

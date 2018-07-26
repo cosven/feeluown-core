@@ -1,7 +1,7 @@
 import logging
 from contextlib import contextmanager
 
-from fuocore.core.provider import AbstractProvider
+from fuocore.provider import AbstractProvider
 from .api import API
 
 
@@ -38,3 +38,7 @@ class QQMusicProvider(AbstractProvider):
 
 
 provider = QQMusicProvider()
+
+
+from .models import search
+provider.search = search

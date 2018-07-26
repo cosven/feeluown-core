@@ -1,6 +1,6 @@
 """
-fuocore.daemon.handlers.show
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fuocore.protocol.handlers.show
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 处理 ``show`` 命令::
 
@@ -132,12 +132,6 @@ def list_providers(req):
     provider_names = (provider.name for provider in
                       req.app.list_providers())
     return '\n'.join(('fuo://' + name for name in provider_names))
-
-
-@route('/<provider>/songs')
-def list_songs(req, provider):
-    provider = req.app.get_provider(provider)
-    return show_songs(provider.songs)
 
 
 @route('/<provider>/songs/<sid>')

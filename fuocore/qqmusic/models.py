@@ -1,5 +1,3 @@
-from .provider import provider
-
 from fuocore.models import (
     BaseModel,
     SongModel,
@@ -10,6 +8,8 @@ from fuocore.models import (
     SearchModel,
     UserModel,
 )
+
+from .provider import provider
 
 
 class QQBaseModel(BaseModel):

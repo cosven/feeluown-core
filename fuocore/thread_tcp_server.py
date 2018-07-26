@@ -17,12 +17,12 @@ class TcpServer(object):
     >>> import time
     >>> from threading import Thread
     >>> def handle(conn, addr, *args): pass
-    >>> server = TcpServer(handle_func=handle)
+    >>> server = TcpServer(handle_func=handle, host='0.0.0.0', port=33333)
     >>> Thread(target=server.run).start()
     >>> time.sleep(1)
     >>> server.close()
     """
-    def __init__(self, handle_func, host='0.0.0.0', port=33333):
+    def __init__(self, host, port, handle_func):
         self.host = host
         self.port = port
         self.handle_func = handle_func
@@ -34,6 +34,7 @@ class TcpServer(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((self.host, self.port))
         sock.listen()
+        logger.debug('Tcp server running at %s:%d' % (self.host, self.port))
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock = sock
         # TODO: choose a better selector?
@@ -47,22 +48,23 @@ class TcpServer(object):
                 try:
                     conn, addr = sock.accept()
                 except OSError:  # sock is closed
+                    logger.debug('Tcp server is closed.')
                     break
                 except ConnectionError as e:
                     logger.warning(e)
                     break
                 else:
-                    logger.info('%s:%d connected.' % addr)
+                    logger.debug('%s:%d connected.' % addr)
                     Thread(target=self.handle_func, args=(conn, addr, *args),
                            kwargs=kwargs).start()
-            logger.info('Tcp server is stopped.')
+            logger.debug('Tcp server is stopped.')
 
     def close(self):
-        logger.info('Closing tcp server: %s:%d' % (self.host, self.port))
+        logger.debug('Closing tcp server: %s:%d' % (self.host, self.port))
         if self._sock is not None:
             self._sock.close()
         self._close_event.set()
-        logger.info('Tcp server closed, it will be stopped in 0.5 seconds.')
+        logger.debug('Tcp server closed, it will be stopped in 0.5 seconds.')
 
 
 if __name__ == '__main__':

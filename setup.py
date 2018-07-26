@@ -25,8 +25,6 @@ setup(
         'fuocore',
         'fuocore.local',
         'fuocore.netease',
-        'fuocore.core',
-        'fuocore.daemon',
         'fuocore.protocol',
         'fuocore.protocol.handlers',
         ],
@@ -50,7 +48,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fuo = fuocore.daemon.main:main',
+            'fuo = fuocore.main:main',
         ],
         'fuo.provider': [
             'local = fuocore.local.provider:LocalProvider',

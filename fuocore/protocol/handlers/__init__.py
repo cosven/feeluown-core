@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from urllib.parse import urlparse
 import logging
 
-from fuocore.core.player import PlaybackMode, State
+from fuocore.player import PlaybackMode, State
 
 from .helpers import show_songs, show_song
 
@@ -94,7 +95,7 @@ class SearchHandler(AbstractHandler):
         return self.search_songs(cmd.args[0])
 
     def search_songs(self, query):
-        songs = self.app.source.search(query)
+        songs = self.app.library.search(query)
         return show_songs(songs)
 
 
@@ -138,7 +139,13 @@ class PlayerHandler(AbstractHandler):
             self.app.player.toggle()
 
     def play_song(self, song_furi):
-        self.app.play(song_furi)
+        result = urlparse(song_furi)
+        source = result.netloc
+        identifier = result.path.split('/')[-1]
+        provider = self.app.get_provider(source)
+        song = provider.Song.get(identifier)
+        if song is not None:
+            self.app.player.play_song(song)
 
 
 class PlaylistHandler(AbstractHandler):
@@ -159,13 +166,12 @@ class PlaylistHandler(AbstractHandler):
     def add(self, furis):
         playlist = self.app.playlist
         furi_list = furis.split(',')
-        songs = self.app.source.list_songs(furi_list)
+        songs = self.app.library.list_songs(furi_list)
         for song in songs:
             playlist.add(song)
 
-    def remove(self, song_id):
-        song = self.app.source.get_song(song_id)
-        self.app.playlist.remove(song)
+    def remove(self, song_uri):
+        self.app.playlist.remove(song_uri)
 
     def list(self):
         songs = self.app.playlist.list()

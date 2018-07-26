@@ -1,6 +1,6 @@
 """
-fuocore.daemon.handlers.helper
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fuocore.protocol.handlers.helper
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 良好的用文字展示一个对象
 
@@ -21,7 +21,7 @@ def show_song(song, brief=False):
         album_name = 'Unknown'
         album_uri = ''
     if brief:
-        s = '{song}\t#{title}-{artists_name}-{album_name}'.format(
+        s = '{song}\t#{title} - {artists_name}'.format(
             song=song,
             title=song.title,
             artists_name=artists_name,
