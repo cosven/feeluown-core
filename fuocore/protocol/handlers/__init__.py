@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from urllib.parse import urlparse
+
 import logging
 
 from fuocore.player import PlaybackMode, State
@@ -142,8 +144,12 @@ class PlayerHandler(AbstractHandler):
         result = urlparse(song_furi)
         source = result.netloc
         identifier = result.path.split('/')[-1]
-        provider = self.app.get_provider(source)
-        song = provider.Song.get(identifier)
+        provider = self.app.library.get(source)
+        try:
+            song = provider.Song.get(identifier)
+        except NotImplementedError:
+            return 'Play song failed: provider(%s) '\
+                'can not fetch song detail.' % provider.identifier
         if song is not None:
             self.app.player.play_song(song)
 
@@ -166,9 +172,20 @@ class PlaylistHandler(AbstractHandler):
     def add(self, furis):
         playlist = self.app.playlist
         furi_list = furis.split(',')
+        provider_songs_map = defaultdict(list)
+        for furi_str in furi_list:
+            result = urlparse(furi_str)
+            provider_id = result.netloc
+            identifier = result.path.split('/')[-1]
+            provider_songs_map[provider_id].append(identifier)
+        songs = []
+        for provider_id, song_ids in provider_songs_map.items():
+            provider = self.get(provider_id)
+            songs += provider.Song.list(song_ids)
         songs = self.app.library.list_songs(furi_list)
         for song in songs:
             playlist.add(song)
+        return songs
 
     def remove(self, song_uri):
         self.app.playlist.remove(song_uri)

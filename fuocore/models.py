@@ -116,7 +116,7 @@ class BaseModel(Model):
 
     @classmethod
     def get(cls, identifier):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class ArtistModel(BaseModel):
