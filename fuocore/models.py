@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+fuocore.model
+~~~~~~~~~~~~~
+
+这个模块对音乐相关模型进行了定义，声明了各模型的属性。
+"""
+
 from enum import Enum
 
 
@@ -29,10 +36,22 @@ class ModelMetadata(object):
     def __init__(self,
                  model_type=ModelType.dummy.value,
                  provider=None,
-                 fields=None):
+                 fields=None,
+                 allow_get=False,
+                 allow_batch=False,
+                 **kwargs):
+        """Model metadata class
+
+        :param allow_get: if get method is implemented
+        :param allow_batch: if list method is implemented
+        """
         self.model_type = model_type
         self.provider = provider
         self.fields = fields
+        self.allow_get = allow_get
+        self.allow_batch = allow_batch
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 
 class ModelMeta(type):
@@ -43,6 +62,8 @@ class ModelMeta(type):
             base_meta = getattr(base, '_meta', None)
             if base_meta is not None:
                 _metas.append(base_meta)
+
+        # similar with djang/peewee model meta
         Meta = attrs.pop('Meta', None)
         if Meta:
             _metas.append(Meta)
@@ -116,7 +137,16 @@ class BaseModel(Model):
 
     @classmethod
     def get(cls, identifier):
-        raise NotImplemented
+        """获取 Model 详细信息
+
+        NOTE: 字段值如果是 None 的话，说明之前这个字段没有被初始化过。
+        所以在调用 get 接口之后，需要将每个字段初始化为非 None。
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def list(cls, identifier_list):
+        raise NotImplementedError
 
 
 class ArtistModel(BaseModel):
@@ -187,6 +217,9 @@ class PlaylistModel(BaseModel):
 class SearchModel(BaseModel):
     class Meta:
         model_type = ModelType.dummy.value
+
+        # XXX: songs should be a empty list instead of None
+        # when there is not song.
         fields = ['q', 'songs']
 
     def __str__(self):

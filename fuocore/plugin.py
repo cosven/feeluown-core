@@ -3,7 +3,7 @@
 import logging
 import pkg_resources
 
-from fuocore.core.provider import AbstractProvider
+from fuocore.provider import AbstractProvider
 
 
 logger = logging.getLogger(__name__)

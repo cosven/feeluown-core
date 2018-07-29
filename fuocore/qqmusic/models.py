@@ -1,5 +1,3 @@
-from .provider import provider
-
 from fuocore.models import (
     BaseModel,
     SongModel,
@@ -10,6 +8,8 @@ from fuocore.models import (
     SearchModel,
     UserModel,
 )
+
+from .provider import provider
 
 
 class QQBaseModel(BaseModel):
@@ -70,7 +70,7 @@ class QQSearchModel(SearchModel, QQBaseModel):
     pass
 
 
-def search(keyword):
+def search(keyword, **kwargs):
     data_songs = provider.api.search(keyword)
     songs = []
     for data_song in data_songs:
@@ -82,7 +82,7 @@ def search(keyword):
                                    name=data_artist['name'])
             artists.append(artist)
         song = QQSongModel(identifier=data_song['songid'],
-                           source='qqmusic',
+                           source=provider.identifier,
                            mid=data_song['songmid'],
                            title=data_song['songname'],
                            duration=data_song['interval'] * 1000,
