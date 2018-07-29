@@ -1,7 +1,7 @@
 import logging
 from contextlib import contextmanager
 
-from fuocore.core.provider import AbstractProvider
+from fuocore.provider import AbstractProvider
 from fuocore.netease.api import API
 
 

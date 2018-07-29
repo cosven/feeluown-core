@@ -7,10 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class TcpServer(object):
-    """
-    目前是用相对非常底层的接口来实现功能，熟悉了之后可以考虑封装好的
-    API。
-    """
+    """A simple asyncio TCP server"""
+
     def __init__(self, host, port, handle_func):
         self.host = host
         self.port = port

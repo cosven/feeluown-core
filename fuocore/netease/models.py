@@ -26,12 +26,14 @@ class NBaseModel(BaseModel):
     _api = provider.api
 
     class Meta:
+        allow_get = True
         provider = provider
 
     def __getattribute__(self, name):
         cls = type(self)
         value = object.__getattribute__(self, name)
-        if name in cls._detail_fields and not value:
+        if name in cls._detail_fields and value is None:
+            logger.debug('Field %s value is None, get model detail first.')
             obj = cls.get(self.identifier)
             for field in cls._detail_fields:
                 setattr(self, field, getattr(obj, field))
@@ -162,7 +164,7 @@ class NArtistModel(ArtistModel, NBaseModel):
     def get(cls, identifier):
         artist_data = cls._api.artist_infos(identifier)
         artist = artist_data['artist']
-        artist['songs'] = artist_data['hotSongs']
+        artist['songs'] = artist_data['hotSongs'] or []
         artist, _ = NeteaseArtistSchema(strict=True).load(artist)
         return artist
 
@@ -235,7 +237,7 @@ class NUserModel(UserModel, NBaseModel):
         return user
 
 
-def search(keyword):
+def search(keyword, **kwargs):
     _songs = provider.api.search(keyword)
     id_song_map = {}
     songs = []
@@ -245,7 +247,8 @@ def search(keyword):
             schema = NeteaseSongSchema(strict=True)
             s, _ = schema.load(song)
             songs.append(s)
-    return NSearchModel(q=keyword, songs=songs)
+    return NSearchModel(q=keyword, songs=songs,
+                        source=provider.identifier)
 
 
 # import loop

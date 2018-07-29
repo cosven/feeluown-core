@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
+from urllib.parse import urlparse
+
 import logging
 
-from fuocore.core.player import PlaybackMode, State
+from fuocore.player import PlaybackMode, State
 
 from .helpers import show_songs, show_song
 
@@ -94,7 +97,16 @@ class SearchHandler(AbstractHandler):
         return self.search_songs(cmd.args[0])
 
     def search_songs(self, query):
-        songs = self.app.source.search(query)
+        logger.debug('搜索 %s ...' % query)
+        providers = self.app.library.list()
+        source_in = [provd.identifier for provd in providers
+                     if provd.Song._meta.allow_get]
+        songs = []
+        for result in self.app.library.search(query, source_in=source_in):
+            logger.debug('从 %s 搜索到 %d 首歌曲，取前 20 首'
+                         % (result.source, len(result.songs)))
+            songs.extend(result.songs[:20])
+        logger.debug('总共搜索到 %d 首歌曲' % len(songs))
         return show_songs(songs)
 
 
@@ -138,7 +150,17 @@ class PlayerHandler(AbstractHandler):
             self.app.player.toggle()
 
     def play_song(self, song_furi):
-        self.app.play(song_furi)
+        result = urlparse(song_furi)
+        source = result.netloc
+        identifier = result.path.split('/')[-1]
+        provider = self.app.library.get(source)
+        try:
+            song = provider.Song.get(identifier)
+        except NotImplementedError:
+            return 'Play song failed: provider(%s) '\
+                'can not fetch song detail.' % provider.identifier
+        if song is not None:
+            self.app.player.play_song(song)
 
 
 class PlaylistHandler(AbstractHandler):
@@ -159,13 +181,23 @@ class PlaylistHandler(AbstractHandler):
     def add(self, furis):
         playlist = self.app.playlist
         furi_list = furis.split(',')
-        songs = self.app.source.list_songs(furi_list)
+        provider_songs_map = defaultdict(list)
+        for furi_str in furi_list:
+            result = urlparse(furi_str)
+            provider_id = result.netloc
+            identifier = result.path.split('/')[-1]
+            provider_songs_map[provider_id].append(identifier)
+        songs = []
+        for provider_id, song_ids in provider_songs_map.items():
+            provider = self.get(provider_id)
+            songs += provider.Song.list(song_ids)
+        songs = self.app.library.list_songs(furi_list)
         for song in songs:
             playlist.add(song)
+        return songs
 
-    def remove(self, song_id):
-        song = self.app.source.get_song(song_id)
-        self.app.playlist.remove(song)
+    def remove(self, song_uri):
+        self.app.playlist.remove(song_uri)
 
     def list(self):
         songs = self.app.playlist.list()

@@ -2,7 +2,7 @@ from collections import defaultdict
 import logging
 from threading import Thread
 
-from fuocore.daemon.thread_tcp_server import TcpServer
+from fuocore.thread_tcp_server import TcpServer
 
 
 logger = logging.getLogger(__name__)
@@ -102,9 +102,9 @@ def handle(conn, addr, gateway, *args, **kwargs):
 
 def run(host='0.0.0.0', port=23334):
     gateway = Gateway()
-    server = TcpServer(host, port, handle_func=handle)
+    server = TcpServer(handle_func=handle, host=host, port=port)
     Thread(target=server.run, args=(gateway,)).start()
-    logger.info('Run pubsub server in {host}:{port}'.format(
+    logger.info('Fuo pubsub server running  at {host}:{port}'.format(
         host=host, port=port))
     return gateway, server
 
