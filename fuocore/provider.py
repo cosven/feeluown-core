@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+fuocore.provider
+~~~~~~~~~~~~~~~~
+
+provider 意为音乐提供方
+"""
+
 from abc import ABC, abstractmethod
 from fuocore.models import (
     SongModel,

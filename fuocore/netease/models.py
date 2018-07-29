@@ -32,7 +32,8 @@ class NBaseModel(BaseModel):
     def __getattribute__(self, name):
         cls = type(self)
         value = object.__getattribute__(self, name)
-        if name in cls._detail_fields and not value:
+        if name in cls._detail_fields and value is None:
+            logger.debug('Field %s value is None, get model detail first.')
             obj = cls.get(self.identifier)
             for field in cls._detail_fields:
                 setattr(self, field, getattr(obj, field))
@@ -163,7 +164,7 @@ class NArtistModel(ArtistModel, NBaseModel):
     def get(cls, identifier):
         artist_data = cls._api.artist_infos(identifier)
         artist = artist_data['artist']
-        artist['songs'] = artist_data['hotSongs']
+        artist['songs'] = artist_data['hotSongs'] or []
         artist, _ = NeteaseArtistSchema(strict=True).load(artist)
         return artist
 

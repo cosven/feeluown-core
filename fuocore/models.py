@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+fuocore.model
+~~~~~~~~~~~~~
+
+这个模块对音乐相关模型进行了定义，声明了各模型的属性。
+"""
+
 from enum import Enum
 
 
@@ -130,6 +137,11 @@ class BaseModel(Model):
 
     @classmethod
     def get(cls, identifier):
+        """获取 Model 详细信息
+
+        NOTE: 字段值如果是 None 的话，说明之前这个字段没有被初始化过。
+        所以在调用 get 接口之后，需要将每个字段初始化为非 None。
+        """
         raise NotImplementedError
 
     @classmethod
