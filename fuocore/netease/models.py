@@ -26,6 +26,7 @@ class NBaseModel(BaseModel):
     _api = provider.api
 
     class Meta:
+        allow_get = True
         provider = provider
 
     def __getattribute__(self, name):
@@ -235,7 +236,7 @@ class NUserModel(UserModel, NBaseModel):
         return user
 
 
-def search(keyword):
+def search(keyword, **kwargs):
     _songs = provider.api.search(keyword)
     id_song_map = {}
     songs = []
@@ -245,7 +246,8 @@ def search(keyword):
             schema = NeteaseSongSchema(strict=True)
             s, _ = schema.load(song)
             songs.append(s)
-    return NSearchModel(q=keyword, songs=songs)
+    return NSearchModel(q=keyword, songs=songs,
+                        source=provider.identifier)
 
 
 # import loop

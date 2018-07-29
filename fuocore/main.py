@@ -76,7 +76,7 @@ def main():
     library = Library()
     library.register(lp)
     library.register(np)
-    # library.register(qp)
+    library.register(qp)
 
     pubsub_gateway, pubsub_server = run_pubsub()
 
