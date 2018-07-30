@@ -17,9 +17,9 @@ def _fit_text(text, length, filling=True):
     >>> _fit_text('12345', 6)
     '12345 '
     >>> _fit_text('哈哈哈哈哈s', 6)  # doctest: -ELLIPSIS
-    '哈....'
+    '哈哈 …'
     >>> _fit_text('哈s哈哈哈哈s', 6)  # doctest: -ELLIPSIS
-    '哈s...'
+    '哈s哈…'
     >>> _fit_text('sssss', 5)
     'sssss'
 
@@ -48,7 +48,7 @@ def _fit_text(text, length, filling=True):
     if remain in len_index_map:
         return text[:(len_index_map[remain] + 1)] + '…'
     else:
-        return text[:(len_index_map[remain - 1] + 1)] + '…'
+        return text[:(len_index_map[remain - 1] + 1)] + ' …'
 
 
 def show_song(song, uri_length=None, brief=False):
