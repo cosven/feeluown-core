@@ -1,22 +1,23 @@
 feeluown core
 =============
 
-trying to be a hackable music player for \*nix
+feeluown-core 是 `feeluown <https://github.com/cosven/feeluown>`_ 的核心模块。
 
-Features
---------
+.. note::
 
-* keep your music library in a text file
-* share song with a simple uri
-* whole control throught TCP
-* netease, xiami and qq songs library included
+   目前，项目 README 中对此项目的定位为 ``音乐播放服务器`` ，但其实并不是那样子。
+   此项目主要是为 feeluown 服务，作为 feeluown 的一个模块存在。
+   README 中功能演示，以后也会转移到 feeluown 项目中去。
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: 目录:
 
    intro
    protocol
-   glossary
+   api
    qa
+
    development
+   glossary
+   research

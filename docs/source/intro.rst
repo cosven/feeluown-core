@@ -1,5 +1,5 @@
-Introduction
-============
+项目介绍
+========
 
 Have you ever heard `Music Player Daemon`_? Conceptually,
 fuocore(feeluown core) is also a MPD, but fuocore has its own

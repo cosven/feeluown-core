@@ -1,5 +1,5 @@
-Development
-===========
+参与项目开发
+============
 
 Quickstart
 ----------
@@ -54,20 +54,6 @@ Architecture
      protocol -> emacs_fuo;
    }
 
-
-Code Structure
---------------
-
-.. code::
-
-    fuocore
-    ├── core  # modules will be reused by other programs
-    ├── daemon  # fuo dependency
-    ├── local  # a provider example
-    ├── netease  # a provider example
-    ├── protocol  # fuo protocol related
-    ├── xxx.py  # private modules which used by fuo itself or plugins
-    └── xiami  # a provider example
 
 Code Style
 ----------

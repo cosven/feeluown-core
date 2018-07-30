@@ -162,3 +162,8 @@ texinfo_documents = [
      author, 'fuocore', 'One line description of project.',
      'Miscellaneous'),
 ]
+
+
+# -- Options for autodoc ---------------------------
+# created by @cosven
+autodoc_member_order = 'bysource'
