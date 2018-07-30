@@ -1,3 +1,11 @@
+"""
+main.py
+~~~~~~~
+
+基于 fuocore 提供的模块和功能，写的一个 DEMO 应用。
+"""
+
+import argparse
 import asyncio
 import logging
 import sys
@@ -67,11 +75,33 @@ def setup_logger(debug=True):
         logging.config.dictConfig(dict_config)
 
 
+def setup_argparse():
+    parser = argparse.ArgumentParser(description='运行 fuo 播放服务')
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
+                        help='开启调试模式')
+
+    # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
+    # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
+
+    # TODO: 需要在文档中给出如何查看有哪些播放设备的方法
+    parser.add_argument(
+        '--mpv-audio-device',
+        default='auto',
+        help='（高级选项）给 mpv 播放器指定播放设备'
+    )
+    return parser
+
+
 def main():
-    debug = '-d' in sys.argv
+    parser = setup_argparse()
+    args = parser.parse_args()
+
+    debug = args.debug
+    mpv_audio_device = args.mpv_audio_device
+
     setup_logger(debug=debug)
 
-    player = MpvPlayer()
+    player = MpvPlayer(audio_device=bytes(mpv_audio_device, 'utf-8'))
     player.initialize()
     library = Library()
     library.register(lp)
