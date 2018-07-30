@@ -197,7 +197,11 @@ class PlaylistHandler(AbstractHandler):
         return songs
 
     def remove(self, song_uri):
-        self.app.playlist.remove(song_uri)
+        # FIXME: a little bit tricky
+        for song in self.app.playlist.list():
+            if str(song) == song_uri:
+                self.app.playlist.remove(song)
+                break
 
     def list(self):
         songs = self.app.playlist.list()

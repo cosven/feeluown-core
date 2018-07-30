@@ -22,6 +22,8 @@ def _fit_text(text, length, filling=True):
     '哈s...'
     >>> _fit_text('sssss', 5)
     'sssss'
+
+    FIXME: 这样可能会截断一些英文词汇
     """
     assert 80 >= length >= 5
 
@@ -37,16 +39,16 @@ def _fit_text(text, length, filling=True):
             text_len += 2
             len_index_map[text_len] = i
 
-    if text_len == length:
+    if text_len <= length:
+        if filling:
+            return text + (length - text_len) * ' '
         return text
-    elif text_len < length:
-        return text + (length - text_len) * ' '
 
-    remain = length - 3
+    remain = length - 1
     if remain in len_index_map:
-        return text[:(len_index_map[remain] + 1)] + '...'
+        return text[:(len_index_map[remain] + 1)] + '…'
     else:
-        return text[:(len_index_map[remain - 1] + 1)] + '....'
+        return text[:(len_index_map[remain - 1] + 1)] + '…'
 
 
 def show_song(song, uri_length=None, brief=False):
@@ -57,10 +59,7 @@ def show_song(song, uri_length=None, brief=False):
     """
     artists = song.artists or []
     artists_name = ','.join([artist.name for artist in artists])
-    if len(song.title) < 20:
-        title = song.title
-    else:
-        title = _fit_text(song.title, 20)
+    title = _fit_text(song.title, 18, filling=False)
     if song.album is not None:
         album_name = song.album.name
         album_uri = str(song.album)
@@ -72,7 +71,8 @@ def show_song(song, uri_length=None, brief=False):
     else:
         song_uri = str(song)
     if brief:
-        s = '{song}\t#{title} - {artists_name}'.format(
+        artists_name = _fit_text(artists_name, 20, filling=False)
+        s = '{song}\t# {title} - {artists_name}'.format(
             song=song_uri,
             title=title,
             artists_name=artists_name,
@@ -81,18 +81,18 @@ def show_song(song, uri_length=None, brief=False):
     artists_uri = ','.join(str(artist) for artist in artists)
     msgs = (
         'provider     {}'.format(song.source),
-        'uri          {}'.format(song_uri),
-        'title        {}'.format(song.title),
+        '     uri     {}'.format(song_uri),
+        '   title     {}'.format(song.title),
         'duration     {}'.format(song.duration),
-        'url          {}'.format(song.url),
-        'artists      {}\t#{}'.format(artists_uri, artists_name),
-        'album        {}\t#{}'.format(album_uri, album_name),
+        '     url     {}'.format(song.url),
+        ' artists     {}\t# {}'.format(artists_uri, artists_name),
+        '   album     {}\t# {}'.format(album_uri, album_name),
     )
     return '\n'.join(msgs)
 
 
 def show_songs(songs):
-    uri_length = max((len(str(song)) for song in songs))
+    uri_length = max((len(str(song)) for song in songs)) if songs else None
     return '\n'.join([show_song(song, uri_length=uri_length, brief=True)
                       for song in songs])
 
