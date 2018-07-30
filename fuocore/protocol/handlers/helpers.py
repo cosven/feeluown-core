@@ -14,12 +14,16 @@ TODO: 让代码长得更好看
 def _fit_text(text, length, filling=True):
     """裁剪或者填补字符串，控制其显示的长度
 
+    >>> _fit_text('12345', 6)
+    '12345 '
+    >>> _fit_text('哈哈哈哈哈s', 6)  # doctest: -ELLIPSIS
+    '哈....'
+    >>> _fit_text('哈s哈哈哈哈s', 6)  # doctest: -ELLIPSIS
+    '哈s...'
     >>> _fit_text('sssss', 5)
     'sssss'
-    >>> _fit_text('哈哈哈s', 5)
-    '哈...'
     """
-    assert 80 >= length >= 3
+    assert 80 >= length >= 5
 
     text_len = 0
     len_index_map = {}
@@ -37,10 +41,12 @@ def _fit_text(text, length, filling=True):
         return text
     elif text_len < length:
         return text + (length - text_len) * ' '
-    if length in len_index_map:
-        return text[:(len_index_map[len_index_map] + 1)]
+
+    remain = length - 3
+    if remain in len_index_map:
+        return text[:(len_index_map[remain] + 1)] + '...'
     else:
-        return text[:(len_index_map[length - 3]) + 1] + '...'
+        return text[:(len_index_map[remain - 1] + 1)] + '....'
 
 
 def show_song(song, uri_length=None, brief=False):

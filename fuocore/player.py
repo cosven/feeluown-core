@@ -1,11 +1,22 @@
 # -*- coding: utf-8 -*-
 
 """
-    fuocore.player
-    ~~~~~~~~~~~~~~
+播放器模块
+----------
 
-    fuocore media player.
-"""
+该模块提供了 :class:`.AbstractPlayer` 抽象基类，并基于 mpv(libmpv) 播放器实现了
+:class:`.MpvPlayer`，随之也提供了 :class:`.Playlist` 用于管理播放列表。
+
+
+**简单使用示例**
+
+.. sourcecode:: python
+
+    >>> from fuocore.player import MpvPlayer
+    >>> player = MpvPlayer()
+    >>> player.initialize()
+    >>> player.play('xxx')  # local file path or http url
+ """
 
 from abc import ABCMeta, abstractmethod
 from enum import Enum
@@ -22,16 +33,22 @@ logger = logging.getLogger(__name__)
 
 
 class State(Enum):
+    """
+    播放器的状态
+    """
     stopped = 0
     paused = 1
     playing = 2
 
 
 class PlaybackMode(Enum):
-    one_loop = 0
-    sequential = 1
-    loop = 2
-    random = 3
+    """
+    播放列表的歌曲播放顺序
+    """
+    one_loop = 0  #: 单曲循环
+    sequential = 1  #: 顺序播放
+    loop = 2  #: 循环播放
+    random = 3  #: 随机播放
 
 
 class Playlist(object):
@@ -48,11 +65,15 @@ class Playlist(object):
         :param playback_mode: :class:`fuocore.player.PlaybackMode`
         """
         self._current_song = None
+        self._bad_songs = []  # songs whose url is invalid
         self._songs = songs or []
+
         self._playback_mode = playback_mode
 
-        # signals
+        #: playback mode changed signal
         self.playback_mode_changed = Signal()
+
+        #: current song changed signal
         self.song_changed = Signal()
 
     def __len__(self):
@@ -62,8 +83,15 @@ class Playlist(object):
         """overload [] operator"""
         return self._songs[index]
 
+    def mark_as_bad(self, song):
+        if song in self._songs and song not in self._bad_songs:
+            self._bad_songs.append(song)
+
     def add(self, song):
-        """insert a song after current song"""
+        """Insert a song after current song
+
+        If current song is None, append to end.
+        """
         if song in self._songs:
             return
 
@@ -92,15 +120,24 @@ class Playlist(object):
         else:
             logger.debug('Remove failed: {} not in playlist'.format(song))
 
+        if song in self._bad_songs:
+            self._bad_songs.remove(song)
+
     def clear(self):
+        """清空播放列表"""
+
         self.current_song = None
         self._songs = []
+        self._bad_songs.clear()
 
     def list(self):
         return self._songs
 
     @property
     def current_song(self):
+        """
+        获取当前歌曲，当它为空时返回 None
+        """
         return self._current_song
 
     @current_song.setter
@@ -127,51 +164,90 @@ class Playlist(object):
         self.playback_mode_changed.emit(playback_mode)
 
     @property
-    def next_song(self):
-        next_song = None
-        if not self._songs:
+    def _good_songs(self):
+        """可以用来播放的歌曲（不在 _bad_song 集合中的歌曲）"""
+        return [song for song in self._songs
+                if song not in self._bad_songs]
+
+    def _get_good_song(self, base=0, random=False, direction=1):
+        """从播放列表中获取一首可以播放的歌曲
+
+        :param base: base index
+        :param random: random strategy or not
+        :param direction: forward if > 0 else backword
+
+        >>> pl = Playlist([1, 2, 3])
+        >>> pl._get_good_song()
+        1
+        >>> pl._get_good_song(base=1)
+        2
+        >>> pl._bad_songs = [2]
+        >>> pl._get_good_song(base=1, direction=-1)
+        1
+        >>> pl._get_good_song(base=1)
+        3
+        >>> pl._bad_songs = [1, 2, 3]
+        >>> pl._get_good_song()
+        """
+        if not self._songs or len(self._songs) <= len(self._bad_songs):
+            logger.debug('No good song in playlist.')
             return None
+
+        good_songs = []
+        if direction > 0:
+            song_list = self._songs[base:] + self._songs[0:base]
+        else:
+            song_list = self._songs[base::-1] + self._songs[:base:-1]
+        for song in song_list:
+            if song not in self._bad_songs:
+                good_songs.append(song)
+        if random:
+            return random.choice(good_songs)
+        else:
+            return good_songs[0]
+
+    @property
+    def next_song(self):
+        """下一首用来播放的歌曲（根据播放模式来计算的）"""
+        # 如果没有正在播放的歌曲，找列表里面第一首能播放的
         if self.current_song is None:
-            return self._songs[0]
+            return self._get_good_song()
 
         if self.playback_mode == PlaybackMode.random:
-            next_song = random.choice(range(0, len(self._songs)))
+            next_song = self._get_good_song(random=True)
         elif self.playback_mode == PlaybackMode.one_loop:
-            next_song = self.current_song
+            current_index = self._songs.index(self.current_song)
+            next_song = self._get_good_song(base=current_index)
         else:
             current_index = self._songs.index(self.current_song)
             if current_index == len(self._songs) - 1:
                 if self.playback_mode == PlaybackMode.loop:
-                    next_song = self._songs[0]
+                    next_song = self._get_good_song()
                 elif self.playback_mode == PlaybackMode.sequential:
                     next_song = None
             else:
-                next_song = self._songs[current_index + 1]
+                next_song = self._get_good_song(base=current_index+1)
         return next_song
 
     @property
     def previous_song(self):
-        """return to previous played song, if previous played song not exists,
-        get the song before current song in playback mode order.
-        """
-
-        if not self._songs:
-            return None
+        """上一首歌曲"""
         if self.current_song is None:
-            return self._songs[0]
+            return self._get_good_song(direction=-1)
 
-        previous_song = None
         if self.playback_mode == PlaybackMode.random:
-            previous_song = random.choice(self._songs)
+            previous_song = self._get_good_song(direction=-1)
         elif self.playback_mode == PlaybackMode.one_loop:
-            previous_song = self.current_song
+            current_index = self._songs.index(self.current_song)
+            previous_song = self._get_good_song(base=current_index, direction=-1)
         else:
             current_index = self._songs.index(self.current_song)
-            previous_song = self._songs[current_index - 1]
+            previous_song = self._get_good_song(base=current_index - 1, direction=-1)
         return previous_song
 
 
 class AbstractPlayer(metaclass=ABCMeta):
+    """Player abstrace base class"""
 
     def __init__(self, playlist=Playlist(), **kwargs):
         self._position = 0  # seconds
@@ -190,7 +266,7 @@ class AbstractPlayer(metaclass=ABCMeta):
     def state(self):
         """player state
 
-        :return: :class:`fuocore.engine.State`
+        :return: :class:`.State`
         """
         return self._state
 
@@ -207,7 +283,7 @@ class AbstractPlayer(metaclass=ABCMeta):
     def playlist(self):
         """player playlist
 
-        :return: :class:`fuocore.engine.Playlist`
+        :return: :class:`.Playlist`
         """
         return self._playlist
 
@@ -342,10 +418,11 @@ class MpvPlayer(AbstractPlayer):
             return
 
         url = song.url
-        if url is not None:
+        if url:
             self._playlist.current_song = song
         else:
-            raise ValueError("invalid song: song url can't be None")
+            logger.warning("Invalid song: song url can't be None or ''")
+            self._playlist.mark_as_bad(song)
 
     def play_next(self):
         self.playlist.current_song = self.playlist.next_song
