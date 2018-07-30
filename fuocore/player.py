@@ -12,7 +12,8 @@ from enum import Enum
 import logging
 import random
 
-from mpv import MPV, MpvEventID, MpvEventEndFile
+from mpv import MPV, MpvEventID, MpvEventEndFile, \
+    _mpv_set_property_string
 
 from fuocore.dispatch import Signal
 
@@ -292,11 +293,14 @@ class MpvPlayer(AbstractPlayer):
 
     TODO: make me singleton
     """
-    def __init__(self):
+    def __init__(self, audio_device=b'auto', *args, **kwargs):
         super(MpvPlayer, self).__init__()
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True)
+
+        _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
+
         self._playlist = Playlist()
         self._playlist.song_changed.connect(self._on_song_changed)
 
