@@ -69,11 +69,11 @@ def create_song(fpath):
 
 
 class LocalProvider(AbstractProvider):
-
     def __init__(self, library_paths=None, depth=2):
+        # TODO: 避免在初始化的时候进行 scan
         self._library_paths = library_paths
 
-        self._songs = list()
+        self._songs = []
 
         self._identifier_song_map = dict()
         self._identifier_album_map = dict()
