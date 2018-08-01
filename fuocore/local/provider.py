@@ -9,7 +9,6 @@ from mutagen import MutagenError
 from mutagen.mp3 import EasyMP3
 
 from fuocore.provider import AbstractProvider
-from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.utils import log_exectime
 
 from fuocore.local.schemas import EasyMP3MetadataSongSchema
@@ -19,6 +18,7 @@ from fuocore.models import (
 
 
 logger = logging.getLogger(__name__)
+MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
 
 
 def scan_directory(directory, exts=None, depth=2):

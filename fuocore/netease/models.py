@@ -2,7 +2,6 @@ import logging
 import time
 import os
 
-from fuocore.consts import MUSIC_LIBRARY_PATH
 from fuocore.models import (
     BaseModel,
     SongModel,
@@ -18,6 +17,7 @@ from .provider import provider
 
 
 logger = logging.getLogger(__name__)
+MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
 
 
 class NBaseModel(BaseModel):
