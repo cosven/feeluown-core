@@ -14,13 +14,16 @@ class TcpServer(object):
         self.port = port
         self.handle_func = handle_func
 
+        self._sock = None
+
     async def run(self, *args, **kwargs):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((self.host, self.port))
         sock.listen()
         # make restart easier
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setblocking(0)
+        self._sock = sock
 
         event_loop = asyncio.get_event_loop()
         while True:

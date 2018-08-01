@@ -32,10 +32,10 @@ class TcpServer(object):
 
     def run(self, *args, **kwargs):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((self.host, self.port))
         sock.listen()
         logger.debug('Tcp server running at %s:%d' % (self.host, self.port))
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock = sock
         # TODO: choose a better selector?
         with selectors.DefaultSelector() as sel:
