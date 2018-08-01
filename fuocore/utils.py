@@ -23,6 +23,11 @@ def log_exectime(func):
 def elfhash(s):
     """
     :param string: bytes
+
+    >>> import base64
+    >>> s = base64.b64encode(b'hello world')
+    >>> elfhash(s)
+    224648685
     """
     hash = 0
     x = 0
@@ -62,11 +67,3 @@ def find_previous(element, l):
 
         if current <= element < l[index+1]:
             return current
-
-
-if __name__ == '__main__':
-    import base64
-
-    key = base64.b64encode('你好啊'.encode('utf-8'))
-    print(key)
-    print(key, elfhash(key))
