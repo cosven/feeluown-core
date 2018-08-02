@@ -1,6 +1,6 @@
 # feeluown-core
 
-[![Documentation Status](https://readthedocs.org/projects/feeluown-core/badge/?version=latest)](http://feeluown-core.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/feeluown-core/badge/?version=latest)](http://feeluown-core.readthedocs.org)
 [![Build Status](https://travis-ci.org/cosven/feeluown-core.svg?branch=master)](https://travis-ci.org/cosven/feeluown-core)
 [![Coverage Status](https://coveralls.io/repos/github/cosven/feeluown-core/badge.svg?branch=master&service=github)](https://coveralls.io/github/cosven/feeluown-core?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
