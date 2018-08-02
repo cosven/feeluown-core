@@ -1,5 +1,0 @@
-[MASTER]
-disable=missing-docstring,
-        invalid-name
-
-enable=c-extension-no-member
