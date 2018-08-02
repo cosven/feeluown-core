@@ -35,8 +35,8 @@ pip3 install fuocli --upgrade
 
 ```
 # start daemon
-fuo
-# nohup fuo &  # 后台运行
+feeluown_core_test
+# nohup feeluown_core_test &  # 后台运行
 
 # use fuocli
 fuocli search '谢春花' | grep songs | head -n 10 | awk '{print $1}' | fuocli add

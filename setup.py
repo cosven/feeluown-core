@@ -8,7 +8,6 @@ requires = [
     'requests',
     'beautifulsoup4>=4.5.3',
     'marshmallow>=2.13.5',
-    'april>=2.0.0',
     'mutagen>=1.37',
     'fuzzywuzzy',
 ]
@@ -16,7 +15,7 @@ requires = [
 
 setup(
     name='fuocore',
-    version='2.0a0',
+    version='2.0',
     description='feeluown core',
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
@@ -25,6 +24,7 @@ setup(
         'fuocore',
         'fuocore.local',
         'fuocore.netease',
+        'fuocore.qqmusic',
         'fuocore.protocol',
         'fuocore.protocol.handlers',
         ],
@@ -37,6 +37,7 @@ setup(
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3 :: Only',
         ),
     install_requires=requires,
@@ -48,11 +49,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fuo = fuocore.main:main',
-        ],
-        'fuo.provider': [
-            'local = fuocore.local.provider:LocalProvider',
-            'netease = fuocore.netease.provider:NeteaseProvider',
+            'feeluown_core_test = fuocore.main:main',
         ],
     },
 )
