@@ -33,11 +33,13 @@ class NBaseModel(BaseModel):
         cls = type(self)
         value = object.__getattribute__(self, name)
         if name in cls._detail_fields and value is None:
-            logger.debug('Field %s value is None, get model detail first.')
+            logger.debug('Field %s value is None, get model detail first.' % name)
             obj = cls.get(self.identifier)
             for field in cls._detail_fields:
                 setattr(self, field, getattr(obj, field))
             value = object.__getattribute__(self, name)
+        elif name in cls._detail_fields and not value:
+            logger.warning('Field %s value is not None, but is %s' % (name, value))
         return value
 
 
@@ -58,11 +60,12 @@ class NSongModel(SongModel, NBaseModel):
         return songs
 
     def _refresh_url(self):
+        """刷新获取 url，失败的时候返回空而不是 None"""
         songs = self._api.weapi_songs_url([int(self.identifier)])
         if songs and songs[0]['url']:
             self.url = songs[0]['url']
         else:
-            self.url = self._find_in_xiami()
+            self.url = self._find_in_xiami() or ''
 
     def _find_in_xiami(self):
         logger.debug('try to find {} equivalent in xiami'.format(self))
@@ -78,7 +81,7 @@ class NSongModel(SongModel, NBaseModel):
             return path
         return None
 
-    # NOTE: if we want to override mode attribute, we must
+    # NOTE: if we want to override model attribute, we must
     # implement both getter and setter.
     @property
     def url(self):
@@ -101,13 +104,9 @@ class NSongModel(SongModel, NBaseModel):
 
         if not self._url:
             self._refresh_url()
-        elif hasattr(self, '_expired_at'):
-            if time.time() > self._expired_at:
-                logger.debug('song({}) url is expired, refresh...'
-                             .format(self))
-                self._refresh_url()
-        else:
-            raise RuntimeError('song url should not be None')
+        elif time.time() > self._expired_at:
+            logger.debug('song({}) url is expired, refresh...'.format(self))
+            self._refresh_url()
         return self._url
 
     @url.setter

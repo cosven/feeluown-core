@@ -72,12 +72,15 @@ class NeteasePlaylistSchema(Schema):
             # 这里 Artist 和 Album 的 picUrl 链接不对，
             # 这个链接指向的是一个网易云默认的灰色图片，
             # 我们将其设置为 None
+            #
+            # 另外，song.album.songs 这里会返回空列表，设置为 None
             for song in data['songs']:
                 if song.artists:
                     for artist in song.artists:
                         artist.cover = None
                 if song.album:
                     song.album.cover = None
+                    song.album.songs = None
         if data.get('desc') is None:
             data.pop('desc')
         return NPlaylistModel(**data)
