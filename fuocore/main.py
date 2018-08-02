@@ -3,12 +3,12 @@ main.py
 ~~~~~~~
 
 基于 fuocore 提供的模块和功能，写的一个 DEMO 应用。
+主要用于 fuocore 模块集成测试，非生产使用。
 """
 
 import argparse
 import asyncio
 import logging
-import sys
 from fuocore import MpvPlayer
 from fuocore.app import CliAppMixin, run_server
 from fuocore.pubsub import run as run_pubsub
