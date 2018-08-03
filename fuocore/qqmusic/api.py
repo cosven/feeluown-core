@@ -16,7 +16,10 @@ class API(object):
     Please http capture request from (mobile) qqmusic mobile web page
     """
 
-    def __init__(self):
+    def __init__(self, timeout=1):
+        # TODO: 暂时无脑统一一个 timeout
+        # 正确的应该是允许不同接口有不同的超时时间
+        self._timeout = timeout
         self._headers = {
             'Accept': '*/*',
             'Accept-Encoding': 'gzip,deflate,sdch',
@@ -48,7 +51,8 @@ class API(object):
             }
         }
         payload_str = json.dumps(payload)
-        response = requests.post(url, data=payload_str, headers=self._headers)
+        response = requests.post(url, data=payload_str, headers=self._headers,
+                                 timeout=self._timeout)
         data = response.json()
         data_song = data['detail']['data']['track_info']
         if data_song['id'] <= 0:
@@ -63,7 +67,8 @@ class API(object):
             'from': 'myqq',
             'channel': 10007100,
         }
-        response = requests.get(url, params=params, headers=self._headers)
+        response = requests.get(url, params=params, headers=self._headers,
+                                timeout=self._timeout)
         soup = BeautifulSoup(response.content, 'html.parser')
         media = soup.select('#h5audio_media')
         if media:
@@ -78,7 +83,7 @@ class API(object):
             'n': limit,
             'page': page,
         }
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=self._timeout)
         content = response.text[9:-1]
         songs = json.loads(content)['data']['song']['list']
         return songs

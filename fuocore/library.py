@@ -35,5 +35,10 @@ class Library(object):
             if not provider.search:
                 continue
 
-            result = provider.search(keyword=keyword)
-            yield result
+            try:
+                result = provider.search(keyword=keyword)
+            except Exception as e:
+                logger.exception(str(e))
+                logger.error('Search %s in %s failed.' % (keyword, provider))
+            else:
+                yield result
