@@ -1,6 +1,3 @@
-import logging
-import logging.config
-
 from fuocore.models import ModelType  # noqa
 from fuocore.player import (
     MpvPlayer,
