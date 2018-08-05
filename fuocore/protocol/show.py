@@ -12,9 +12,9 @@ import logging
 import re
 from urllib.parse import urlparse
 
-from . import AbstractHandler, CmdHandleException
+from .handlers import AbstractHandler
 from .helpers import (
-    show_songs, show_song, show_artist, show_album, show_user,
+    show_song, show_artist, show_album, show_user,
     show_playlist
 )
 
@@ -123,7 +123,8 @@ class ShowHandler(AbstractHandler):
         try:
             rule, params = match(path)
         except NotFound as e:
-            raise CmdHandleException('uri 不能被正确识别')
+            # FIXME: 抛一个合理的异常
+            raise Exception('uri 不能被正确识别')
         return dispatch(self, rule, params)
 
 
