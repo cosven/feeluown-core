@@ -15,7 +15,7 @@ requires = [
 
 setup(
     name='fuocore',
-    version='2.0.1',
+    version='2.0.2.dev',
     description='feeluown core',
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
@@ -26,7 +26,6 @@ setup(
         'fuocore.netease',
         'fuocore.qqmusic',
         'fuocore.protocol',
-        'fuocore.protocol.handlers',
         ],
     package_data={
         '': []
