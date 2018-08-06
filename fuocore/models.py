@@ -7,10 +7,10 @@ fuocore.model
 这个模块对音乐相关模型进行了定义，声明了各模型的属性。
 """
 
-from enum import Enum
+from enum import IntEnum
 
 
-class ModelType(Enum):
+class ModelType(IntEnum):
     dummy = 0
 
     song = 1
