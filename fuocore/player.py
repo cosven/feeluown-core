@@ -19,7 +19,7 @@
  """
 
 from abc import ABCMeta, abstractmethod
-from enum import Enum
+from enum import IntEnum
 import logging
 import random
 
@@ -32,7 +32,7 @@ from fuocore.dispatch import Signal
 logger = logging.getLogger(__name__)
 
 
-class State(Enum):
+class State(IntEnum):
     """
     播放器的状态
     """
@@ -41,7 +41,7 @@ class State(Enum):
     playing = 2
 
 
-class PlaybackMode(Enum):
+class PlaybackMode(IntEnum):
     """
     播放列表的歌曲播放顺序
     """
