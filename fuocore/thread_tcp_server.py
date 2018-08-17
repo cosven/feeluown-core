@@ -31,7 +31,6 @@ class TcpServer(object):
         self._close_event = Event()
 
     def run(self, *args, **kwargs):
-        # TODO: enable TCP_QUICKACK?
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((self.host, self.port))
@@ -40,8 +39,6 @@ class TcpServer(object):
         self._sock = sock
         # TODO: choose a better selector?
         with selectors.DefaultSelector() as sel:
-            # NOTE: use selector timeout and server status flag(threading.Event)
-            # to make tcp server stoppable
             sel.register(self._sock, selectors.EVENT_READ)
             while not self._close_event.is_set():
                 # TODO: better default interval settings?

@@ -5,16 +5,18 @@ import os
 from fuocore.models import (
     BaseModel,
     SongModel,
-    LyricModel,
-    PlaylistModel,
     AlbumModel,
     ArtistModel,
-    SearchModel,
+    PlaylistModel,
+    LyricModel,
+    CommentModel,
     UserModel,
+    BillboardModel,
+    RecommendationModel,
+    SearchModel,
 )
 
 from .provider import provider
-
 
 logger = logging.getLogger(__name__)
 MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
@@ -46,33 +48,32 @@ class NBaseModel(BaseModel):
 class NSongModel(SongModel, NBaseModel):
     @classmethod
     def get(cls, identifier):
-        data = cls._api.song_detail(int(identifier))
-        song, _ = NeteaseSongSchema(strict=True).load(data)
+        song_data = cls._api.song_detail(int(identifier))
+        song, _ = NeteaseSongSchema(strict=True).load(song_data)
         return song
 
     @classmethod
     def list(cls, identifiers):
-        song_data_list = cls._api.songs_detail(identifiers)
+        songs_data = cls._api.songs_detail(identifiers)
         songs = []
-        for song_data in song_data_list:
+        for song_data in songs_data:
             song, _ = NeteaseSongSchema(strict=True).load(song_data)
             songs.append(song)
         return songs
 
     def _refresh_url(self):
         """刷新获取 url，失败的时候返回空而不是 None"""
-        songs = self._api.weapi_songs_url([int(self.identifier)])
-        if songs and songs[0]['url']:
-            self.url = songs[0]['url']
+        songs = self._api.songs_url([int(self.identifier)])
+        if songs and songs[0]:
+            self.url = songs[0]
         else:
-            self.url = self._find_in_xiami() or ''
+            self.url = self._find_in_3rd() or ''
 
-    def _find_in_xiami(self):
-        logger.debug('try to find {} equivalent in xiami'.format(self))
-        return self._api.get_xiami_song(
-            title=self.title,
-            artist_name=self.artists_name
-        )
+    def _find_in_3rd(self):
+        logger.debug('try to find {} equivalent in 3rd'.format(self))
+        return self._api.get_3rd_url(title=self.title,
+                                     artist_name=self.artists_name,
+                                     duration=self.duration)
 
     def _find_in_local(self):
         path = os.path.join(MUSIC_LIBRARY_PATH, self.filename)
@@ -89,7 +90,7 @@ class NSongModel(SongModel, NBaseModel):
         We will always check if this song file exists in local library,
         if true, we return the url of the local file.
         If a song does not exists in netease library, we will *try* to
-        find a equivalent in xiami temporarily.
+        find a equivalent in 3rd temporarily.
 
         .. note::
 
@@ -119,27 +120,71 @@ class NSongModel(SongModel, NBaseModel):
         if self._lyric is not None:
             assert isinstance(self._lyric, LyricModel)
             return self._lyric
-        data = self._api.get_lyric_by_songid(self.identifier)
-        lrc = data.get('lrc', {})
+        lyric_data = self._api.song_lyrics(self.identifier)
+        lrc = lyric_data.get('lrc', {})
         lyric = lrc.get('lyric', '')
-        self._lyric = LyricModel(
-            identifier=self.identifier,
-            source=self.source,
-            content=lyric
-        )
+        self._lyric = LyricModel(identifier=self.identifier,
+                                 source=self.source,
+                                 content=lyric)
         return self._lyric
 
     @lyric.setter
     def lyric(self, value):
         self._lyric = value
 
+    @property
+    def comments(self):
+        comments_data = self._api.song_comments(self.identifier)
+        self._comments = []
+        if 'hotComments' not in comments_data:
+            return self._comments
+        for comment_data in comments_data['hotComments']:
+            comment = CommentModel(identifier=comment_data['commentId'],
+                                   source=self.source,
+                                   uid=comment_data['user']['userId'],
+                                   content=comment_data['content'])
+            self._comments.append(comment)
+        return self._comments
+
+    @comments.setter
+    def comments(self, value):
+        self._comments = value
+
+    def similar_songs(self):
+        songs = []
+        songs_data = self._api.similar_songs(self.identifier)
+        for song_data in songs_data:
+            song, _ = NeteaseSongSchema(strict=True).load(song_data)
+            songs.append(song)
+        return songs
+
+    def similar_playlists(self):
+        playlists = []
+        playlists_data = self._api.similar_playlists(self.identifier)
+        for playlist_data in playlists_data:
+            playlist, _ = NeteasePlaylistSchema(strict=True).load(playlist_data)
+            playlists.append(playlist)
+        return playlists
+
+    def set_favorite(self, allow_exist=True):
+        return self._api.update_favorite_song(self.identifier, 'add')
+
+    def cancel_favorite(self, allow_exist=True):
+        return self._api.update_favorite_song(self.identifier, 'del')
+
+    def set_trash(self, allow_exist=True):
+        return self._api.update_fm_trash(self.identifier, 'add')
+
+    def cancel_trash(self, allow_exist=True):
+        return self._api.update_fm_trash(self.identifier, 'del')
+
 
 class NAlbumModel(AlbumModel, NBaseModel):
-    _detail_fields = ('cover', 'songs', 'artists', )
+    _detail_fields = ('cover', 'songs', 'artists')
 
     @classmethod
     def get(cls, identifier):
-        album_data = cls._api.album_infos(identifier)
+        album_data = cls._api.album_detail(identifier)
         if album_data is None:
             return None
         album, _ = NeteaseAlbumSchema(strict=True).load(album_data)
@@ -155,16 +200,35 @@ class NAlbumModel(AlbumModel, NBaseModel):
     def desc(self, value):
         self._desc = value
 
+    @property
+    def comments(self):
+        comments_data = self._api.album_comments(self.identifier)
+        self._comments = []
+        if 'hotComments' not in comments_data:
+            return self._comments
+        for comment_data in comments_data['hotComments']:
+            comment = CommentModel(identifier=comment_data['commentId'],
+                                   source=self.source,
+                                   uid=comment_data['user']['userId'],
+                                   content=comment_data['content'])
+            self._comments.append(comment)
+        return self._comments
+
+    @comments.setter
+    def comments(self, value):
+        self._comments = value
+
 
 class NArtistModel(ArtistModel, NBaseModel):
-    _detail_fields = ('songs', 'cover')
+    _detail_fields = ('cover', 'songs', 'albums')
 
     @classmethod
     def get(cls, identifier):
-        artist_data = cls._api.artist_infos(identifier)
-        artist = artist_data['artist']
-        artist['songs'] = artist_data['hotSongs'] or []
-        artist, _ = NeteaseArtistSchema(strict=True).load(artist)
+        _artist_data, _ = cls._api.artist_detail(identifier)
+        artist_data = _artist_data['artist']
+        artist_data['songs'] = _artist_data['hotSongs'] or []
+        artist_data['albums'], _ = cls._api.artist_albums(identifier)
+        artist, _ = NeteaseArtistSchema(strict=True).load(artist_data)
         return artist
 
     @property
@@ -177,77 +241,215 @@ class NArtistModel(ArtistModel, NBaseModel):
     def desc(self, value):
         self._desc = value
 
+    # @property
+    # def comments(self):
+    #     self._comments = []
+    #     return self._comments
+    #
+    # @comments.setter
+    # def comments(self, value):
+    #     self._comments = value
+
+    def similar_artists(self):
+        artists = []
+        artists_data = self._api.similar_artists(self.identifier)
+        for artist_data in artists_data:
+            artist, _ = NeteaseArtistSchema(strict=True).load(artist_data)
+            artists.append(artist)
+        return artists
+
 
 class NPlaylistModel(PlaylistModel, NBaseModel):
-    _detail_fields = ('songs', )
+    # 默认url:'http://p4.music.126.net/tGHU62DTszbFQ37W9qPHcg==/2002210674180197.jpg'
+    _detail_fields = ('cover', 'songs')
 
     class Meta:
-        fields = ('uid')
+        fields = ('uid',)
 
     @classmethod
     def get(cls, identifier):
-        data = cls._api.playlist_detail(identifier)
-        playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
+        playlist_data = cls._api.playlist_detail(identifier)
+        playlist, _ = NeteasePlaylistSchema(strict=True).load(playlist_data)
         return playlist
 
-    def add(self, song_id, allow_exist=True):
-        rv = self._api.op_music_to_playlist(song_id, self.identifier, 'add')
-        if rv == 1:
-            song = NSongModel.get(song_id)
-            self.songs.append(song)
-            return True
-        elif rv == -1:
-            return True
-        return False
+    @property
+    def comments(self):
+        comments_data = self._api.playlist_comments(self.identifier)
+        self._comments = []
+        if 'hotComments' not in comments_data:
+            return self._comments
+        for comment_data in comments_data['hotComments']:
+            comment = CommentModel(identifier=comment_data['commentId'],
+                                   source=self.source,
+                                   uid=comment_data['user']['userId'],
+                                   content=comment_data['content'])
+            self._comments.append(comment)
+        return self._comments
 
-    def remove(self, song_id, allow_not_exist=True):
-        rv = self._api.op_music_to_playlist(song_id, self.identifier, 'del')
-        if rv != 1:
-            return False
-        # XXX: make it O(1) if you want
+    @comments.setter
+    def comments(self, value):
+        self._comments = value
+
+    @classmethod
+    def create(cls, user_id, name='default'):
+        playlist_data = cls._api.new_playlist(user_id, name)
+        playlist, _ = NeteasePlaylistSchema(strict=True).load(playlist_data)
+        return playlist
+
+    def rename(self, name):
+        return self._api.update_playlist_name(self.identifier, name)
+
+    def delete(self):
+        return self._api.delete_playlist(self.identifier)
+
+    def add(self, song_id, allow_exist=True):
         for song in self.songs:
             if song.identifier == song_id:
-                self.songs.remove(song)
-        return True
+                return False
+        rv = self._api.update_playlist_song(self.identifier, song_id, 'add')
+        if True:
+            song = NSongModel.get(song_id)
+            self.songs.append(song)
+        return rv
+
+    def remove(self, song_id, allow_not_exist=True):
+        for song in self.songs:
+            if song.identifier == song_id:
+                rv = self._api.update_playlist_song(self.identifier, song_id, 'del')
+                if rv:
+                    self.songs.remove(song)
+                    return True
+                return rv
+        return False
+
+
+class NUserModel(UserModel, NBaseModel):
+    _detail_fields = ('playlists', 'fav_songs', 'fav_albums', 'fav_artists', 'fav_playlists')
+
+    @classmethod
+    def get(cls, identifier):
+        _user_data = cls._api.user_detail(identifier)
+        user_data = {'id': identifier,
+                     'name': _user_data['nickname'],
+                     'cover': _user_data['avatarUrl'],
+                     'cookies': cls._api.cookies}
+        playlists, _ = cls._api.user_playlists(identifier)
+
+        user_data['playlists'] = []
+        user_data['fav_songs'] = []
+        user_data['fav_playlists'] = []
+        for pl in playlists:
+            if pl['specialType'] == 5:
+                user_data['fav_songs'] = cls._api.playlist_detail(pl['id'])['tracks']
+            elif pl['userId'] == identifier:
+                user_data['playlists'].append(pl)
+            else:
+                user_data['fav_playlists'].append(pl)
+
+        user_data['fav_albums'], _info = cls._api.user_favorite_albums(limit=200)
+        while _info['more']:
+            _fav_albums, _info = cls._api.user_favorite_albums(_info['next'], 200)
+            user_data['fav_albums'].extend(_fav_albums)
+
+        user_data['fav_artists'], _info = cls._api.user_favorite_artists(limit=200)
+        while _info['more']:
+            _fav_artists, _info = cls._api.user_favorite_artists(_info['next'], 200)
+            user_data['fav_artists'].extend(_fav_artists)
+
+        user, _ = NeteaseUserSchema(strict=True).load(user_data)
+        return user
+
+    def fm_songs(self):
+        songs_data = self._api.personal_fm()
+        songs = []
+        for song_data in songs_data:
+            song, _ = NeteaseSongSchema(strict=True).load(song_data)
+            songs.append(song)
+        return songs
+
+    def recommend_songs(self):
+        songs_data = self._api.recommend_songs()
+        songs = []
+        for song_data in songs_data:
+            song, _ = NeteaseSongSchema(strict=True).load(song_data)
+            songs.append(song)
+        return songs
+
+    def recommend_playlists(self):
+        playlists_data = self._api.recommend_playlists()
+        playlists = []
+        for playlist_data in playlists_data:
+            playlist_data = self._api.playlist_detail(playlist_data['id'])
+            playlist, _ = NeteasePlaylistSchema(strict=True).load(playlist_data)
+            playlists.append(playlist)
+        return playlists
+
+
+class NBillboardModel(BillboardModel, NBaseModel):
+    _detail_fields = ('t', 'cover', 'songs')
+
+    @classmethod
+    def get(cls, identifier):
+        songs_data = cls._api.top_songlist(identifier['id'])
+        songs = []
+        for song_data in songs_data:
+            song, _ = NeteaseSongSchema(strict=True).load(song_data)
+            songs.append(song)
+        return NBillboardModel(source=provider.identifier,
+                               t=identifier['name'],
+                               # cover=songs[0].album.cover,
+                               songs=songs)
+
+    @staticmethod
+    def dicts():
+        items = []
+        for item in provider.api.return_toplists().values():
+            items.append({'id': item[1],
+                          'name': item[0]})
+        return items
+
+
+class NRecommendationModel(RecommendationModel, NBaseModel):
+    _detail_fields = ('r', 'playlists')
+
+    @classmethod
+    def get(cls, identifier):
+        playlists_data, _ = cls._api.top_playlists(identifier)
+        playlists = []
+        for playlist_data in playlists_data:
+            playlist, _ = NeteasePlaylistSchema(strict=True).load(playlist_data)
+            playlists.append(playlist)
+        return NRecommendationModel(source=provider.identifier,
+                                    r=identifier,
+                                    playlists=playlists)
+
+    @staticmethod
+    def dicts():
+        items_data = provider.api.return_playlist_classes()
+        items = []
+        for item_data in items_data[0]:
+            items.append({'classes': item_data,
+                          'items': items_data[1][item_data]})
+        return items
 
 
 class NSearchModel(SearchModel, NBaseModel):
     pass
 
 
-class NUserModel(UserModel, NBaseModel):
-    _detail_fields = ('playlists', 'fav_playlists')
-
-    @classmethod
-    def get(cls, identifier):
-        user = {'id': identifier}
-        user_brief = cls._api.user_brief(identifier)
-        user.update(user_brief)
-        playlists = cls._api.user_playlists(identifier)
-
-        user['playlists'] = []
-        user['fav_playlists'] = []
-        for pl in playlists:
-            if pl['userId'] == identifier:
-                user['playlists'].append(pl)
-            else:
-                user['fav_playlists'].append(pl)
-        user, _ = NeteaseUserSchema(strict=True).load(user)
-        return user
-
-
 def search(keyword, **kwargs):
-    _songs = provider.api.search(keyword)
+    songs_data, _ = provider.api.search(keyword)
     id_song_map = {}
     songs = []
-    if _songs:
-        for song in _songs:
-            id_song_map[str(song['id'])] = song
+    if songs_data:
+        for song_data in songs_data:
+            id_song_map[str(song_data['id'])] = song_data
             schema = NeteaseSongSchema(strict=True)
-            s, _ = schema.load(song)
-            songs.append(s)
-    return NSearchModel(q=keyword, songs=songs,
-                        source=provider.identifier)
+            song, _ = schema.load(song_data)
+            songs.append(song)
+    return NSearchModel(source=provider.identifier,
+                        q=keyword,
+                        songs=songs)
 
 
 # import loop

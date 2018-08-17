@@ -14,21 +14,27 @@ class ModelType(IntEnum):
     dummy = 0
 
     song = 1
-    artist = 2
-    album = 3
+    album = 2
+    artist = 3
     playlist = 4
     lyric = 5
+    comment = 6
 
     user = 17
+    billboard = 18
+    recommendation = 19
 
 
 _TYPE_NAME_MAP = {
     ModelType.song: 'Song',
-    ModelType.artist: 'Artist',
     ModelType.album: 'Album',
+    ModelType.artist: 'Artist',
     ModelType.playlist: 'Playlist',
     ModelType.lyric: 'Lyric',
+    ModelType.comment: 'Comment',
     ModelType.user: 'User',
+    ModelType.billboard: 'Billboard',
+    ModelType.recommendation: 'Recommendation',
 }
 
 
@@ -74,7 +80,7 @@ class ModelMeta(type):
             inherited_fields = getattr(_meta, 'fields', [])
             fields.extend(inherited_fields)
             for k, v in _meta.__dict__.items():
-                if k.startswith('_') or k in ('fields', ):
+                if k.startswith('_') or k in ('fields',):
                     continue
                 if k == 'model_type':
                     if ModelType(v) != ModelType.dummy:
@@ -149,30 +155,6 @@ class BaseModel(Model):
         raise NotImplementedError
 
 
-class ArtistModel(BaseModel):
-    class Meta:
-        model_type = ModelType.artist.value
-        fields = ['name', 'cover', 'songs', 'desc']
-
-    def __str__(self):
-        return 'fuo://{}/artists/{}'.format(self.source, self.identifier)
-
-
-class AlbumModel(BaseModel):
-    class Meta:
-        model_type = ModelType.album.value
-        fields = ['name', 'cover', 'songs', 'artists', 'desc']
-
-    def __str__(self):
-        return 'fuo://{}/albums/{}'.format(self.source, self.identifier)
-
-
-class LyricModel(BaseModel):
-    class Meta:
-        model_type = ModelType.lyric.value
-        fields = ['song', 'content', 'trans_content']
-
-
 class SongModel(BaseModel):
     class Meta:
         model_type = ModelType.song.value
@@ -189,7 +171,7 @@ class SongModel(BaseModel):
 
     @property
     def filename(self):
-        return '{} - {}.mp3'.format(self.title, self.artists_name)
+        return '{} - {}.mp3'.format(self.artists_name, self.title)
 
     def __str__(self):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa
@@ -197,6 +179,24 @@ class SongModel(BaseModel):
     def __eq__(self, other):
         return all([other.source == self.source,
                     other.identifier == self.identifier])
+
+
+class AlbumModel(BaseModel):
+    class Meta:
+        model_type = ModelType.album.value
+        fields = ['name', 'cover', 'songs', 'artists', 'desc']
+
+    def __str__(self):
+        return 'fuo://{}/albums/{}'.format(self.source, self.identifier)
+
+
+class ArtistModel(BaseModel):
+    class Meta:
+        model_type = ModelType.artist.value
+        fields = ['name', 'cover', 'songs', 'albums', 'desc']
+
+    def __str__(self):
+        return 'fuo://{}/artists/{}'.format(self.source, self.identifier)
 
 
 class PlaylistModel(BaseModel):
@@ -214,6 +214,53 @@ class PlaylistModel(BaseModel):
         pass
 
 
+class LyricModel(BaseModel):
+    class Meta:
+        model_type = ModelType.lyric.value
+        fields = ['song', 'content', 'trans_content']
+
+    def __str__(self):
+        return 'fuo://{}/lyrics/{}'.format(self.source, self.identifier)
+
+
+class CommentModel(BaseModel):
+    class Meta:
+        model_type = ModelType.comment.value
+        fields = ['uid', 'content']
+
+    def __str__(self):
+        return 'fuo://{}/comments/{}'.format(self.source, self.identifier)
+
+
+class UserModel(BaseModel):
+    class Meta:
+        model_type = ModelType.user.value
+        fields = ['name', 'cover', 'cookies', 'playlists', 'fav_songs', 'fav_albums', 'fav_artists', 'fav_playlists']
+
+    def __str__(self):
+        return 'fuo://{}/users/{}'.format(self.source, self.identifier)
+
+
+class BillboardModel(BaseModel):
+    class Meta:
+        model_type = ModelType.billboard.value
+
+        fields = ['t', 'cover', 'songs']
+
+    def __str__(self):
+        return 'fuo://{}?t={}'.format(self.source, self.t)
+
+
+class RecommendationModel(BaseModel):
+    class Meta:
+        model_type = ModelType.recommendation.value
+
+        fields = ['r', 'playlists']
+
+    def __str__(self):
+        return 'fuo://{}?r={}'.format(self.source, self.r)
+
+
 class SearchModel(BaseModel):
     class Meta:
         model_type = ModelType.dummy.value
@@ -224,9 +271,3 @@ class SearchModel(BaseModel):
 
     def __str__(self):
         return 'fuo://{}?q={}'.format(self.source, self.q)
-
-
-class UserModel(BaseModel):
-    class Meta:
-        model_type = ModelType.user.value
-        fields = ['name', 'playlists', 'cookies', 'fav_playlists']
