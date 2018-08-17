@@ -16,6 +16,8 @@ from fuocore.models import (
     LyricModel,
 
     UserModel,
+    BillboardModel,
+    RecommendationModel,
 )
 
 
@@ -30,6 +32,8 @@ class AbstractProvider(ABC):
     Playlist = PlaylistModel
     Lyric = LyricModel
     User = UserModel
+    Billboard = BillboardModel
+    Recommendation = RecommendationModel
 
     @property
     @abstractmethod

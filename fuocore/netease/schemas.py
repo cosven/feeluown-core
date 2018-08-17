@@ -9,7 +9,6 @@ from fuocore.schemas import (
 )
 from fuocore.models import UserModel
 
-
 SOURCE = 'netease'
 
 
@@ -22,11 +21,21 @@ class NeteaseSongSchema(Schema):
     title = fields.Str(required=True, load_from='name')
     duration = fields.Float(required=True)
     url = fields.Str(allow_none=True)
-    album = fields.Nested('NeteaseAlbumSchema')
-    artists = fields.List(fields.Nested('NeteaseArtistSchema'))
+    album = fields.Nested('NeteaseAlbumSchema',allow_none=True)
+    artists = fields.List(fields.Nested('NeteaseArtistSchema'),allow_none=True)
 
     @post_load
     def create_model(self, data):
+        if 'album' in data:
+            # 需要保留cover以显示出来
+            # data['album'].cover = None
+            data['album'].songs = None
+            data['album'].artists = None
+        if 'artists' in data:
+            for artist in data['artists']:
+                artist.cover = None
+                artist.songs = None
+                artist.albums = None
         return NSongModel(**data)
 
 
@@ -34,11 +43,27 @@ class NeteaseAlbumSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     name = fields.Str(required=True)
     cover = fields.Str(load_from='picUrl', allow_none=True)
-    songs = fields.List(fields.Nested('NeteaseSongSchema'))
-    artists = fields.List(fields.Nested('NeteaseArtistSchema'))
+    songs = fields.List(fields.Nested(NeteaseSongSchema), allow_none=True)
+    artists = fields.List(fields.Nested('NeteaseArtistSchema'), allow_none=True)
 
     @post_load
     def create_model(self, data):
+        if 'songs' in data:
+            for song in data['songs']:
+                if song.artists:
+                    for artist in song.artists:
+                        artist.cover = None
+                        artist.songs = None
+                        artist.albums = None
+                if song.album:
+                    song.album.cover = None
+                    song.album.songs = None
+                    song.album.artists = None
+        if 'artists' in data:
+            for artist in data['artists']:
+                artist.cover = None
+                artist.songs = None
+                artist.albums = None
         return NAlbumModel(**data)
 
 
@@ -46,10 +71,28 @@ class NeteaseArtistSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     name = fields.Str()
     cover = fields.Str(load_from='picUrl', allow_none=True)
-    songs = fields.List(fields.Nested('NeteaseSongSchema'))
+    songs = fields.List(fields.Nested(NeteaseSongSchema), allow_none=True)
+    albums = fields.List(fields.Nested(NeteaseAlbumSchema), allow_none=True)
 
     @post_load
     def create_model(self, data):
+        if 'songs' in data:
+            for song in data['songs']:
+                if song.artists:
+                    for artist in song.artists:
+                        artist.cover = None
+                        artist.songs = None
+                        artist.albums = None
+                if song.album:
+                    song.album.cover = None
+                    song.album.songs = None
+                    song.album.artists = None
+        if 'albums' in data:
+            for album in data['albums']:
+                # 需要保留cover以显示出来
+                # album.cover = None
+                album.songs = None
+                album.artists = None
         return NArtistModel(**data)
 
 
@@ -67,20 +110,20 @@ class NeteasePlaylistSchema(Schema):
     @post_load
     def create_model(self, data):
         if data.get('songs') is None:
+            # 通过user调用的时候为空,需要pop掉(特殊情况,playlists本身为空)
             data.pop('songs')
         else:
-            # 这里 Artist 和 Album 的 picUrl 链接不对，
-            # 这个链接指向的是一个网易云默认的灰色图片，
-            # 我们将其设置为 None
-            #
-            # 另外，song.album.songs 这里会返回空列表，设置为 None
+            # song.album.songs 这里会返回空列表，设置为 None
             for song in data['songs']:
                 if song.artists:
                     for artist in song.artists:
                         artist.cover = None
+                        artist.songs = None
+                        artist.albums = None
                 if song.album:
                     song.album.cover = None
                     song.album.songs = None
+                    song.album.artists = None
         if data.get('desc') is None:
             data.pop('desc')
         return NPlaylistModel(**data)
@@ -89,9 +132,13 @@ class NeteasePlaylistSchema(Schema):
 class NeteaseUserSchema(Schema):
     identifier = fields.Int(required=True, load_from='id')
     name = fields.Str(required=True)
-    playlists = fields.List(fields.Nested(NeteasePlaylistSchema))
-    fav_playlists = fields.List(fields.Nested(NeteasePlaylistSchema))
+    cover = fields.Str(allow_none=True)
     cookies = fields.Dict()
+    playlists = fields.List(fields.Nested(NeteasePlaylistSchema))
+    fav_songs = fields.List(fields.Nested(NeteaseSongSchema))
+    fav_albums = fields.List(fields.Nested(NeteaseAlbumSchema))
+    fav_artists = fields.List(fields.Nested(NeteaseArtistSchema))
+    fav_playlists = fields.List(fields.Nested(NeteasePlaylistSchema))
 
     @post_load
     def create_model(self, data):
