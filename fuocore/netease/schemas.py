@@ -50,6 +50,11 @@ class NeteaseArtistSchema(Schema):
 
     @post_load
     def create_model(self, data):
+        for song in data.get('songs', ()):
+            # song.album.songs 这里会返回空列表，设置为 None
+            if song.album:
+                song.album.cover = None
+                song.album.songs = None
         return NArtistModel(**data)
 
 
