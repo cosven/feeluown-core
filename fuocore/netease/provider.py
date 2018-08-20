@@ -40,5 +40,5 @@ class NeteaseProvider(AbstractProvider):
 provider = NeteaseProvider()
 
 
-from .models import search
+from .models import search  # noqa
 provider.search = search

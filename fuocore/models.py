@@ -176,6 +176,7 @@ class LyricModel(BaseModel):
 class SongModel(BaseModel):
     class Meta:
         model_type = ModelType.song.value
+        # TODO: 支持低/中/高不同质量的音乐文件
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
                   'duration', ]
 

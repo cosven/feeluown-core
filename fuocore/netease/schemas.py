@@ -1,13 +1,4 @@
-from marshmallow import Schema as _Schema, post_load, fields, pre_load
-
-from fuocore.schemas import (
-    AlbumSchema,
-    ArtistSchema,
-    PlaylistSchema,
-    SongSchema,
-    UserSchema,
-)
-from fuocore.models import UserModel
+from marshmallow import Schema as _Schema, post_load, fields
 
 
 SOURCE = 'netease'

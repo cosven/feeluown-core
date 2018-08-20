@@ -39,6 +39,8 @@ class XiamiProvider(AbstractProvider):
 
 provider = XiamiProvider()
 
+
+# 让 provider 能够发现对应 Model
 from .models import search  # noqa
 
 provider.search = search
