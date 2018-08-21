@@ -9,6 +9,7 @@ from fuocore.models import (
     PlaylistModel,
     LyricModel,
     SearchModel,
+    UserModel,
 )
 
 from .provider import provider
@@ -82,7 +83,7 @@ class XSongModel(SongModel, XBaseModel):
 
 
 class XAlbumModel(AlbumModel, XBaseModel):
-    _detail_fields = ('artists', )
+    _detail_fields = ('songs', 'artists', 'desc')
 
     @classmethod
     def get(cls, identifier):
@@ -126,10 +127,8 @@ class XArtistModel(ArtistModel, XBaseModel):
 
 
 class XPlaylistModel(PlaylistModel, XBaseModel):
-    # 默认url:http://pic.xiami.net/images/album/img30/130/5abb2bc0ac13c_6525430_1522215872.png
-
     class Meta:
-        fields = ('uid',)
+        fields = ('uid', )
 
     @classmethod
     def get(cls, identifier):
@@ -142,9 +141,77 @@ class XPlaylistModel(PlaylistModel, XBaseModel):
         playlist, _ = schema.load(data)
         return playlist
 
+    def add(self, song_id, **kwargs):
+        rv = self._api.update_playlist_song(song_id, self.identifier, 'add')
+        if rv:
+            song = XSongModel.get(song_id)
+            self.songs.append(song)
+            return True
+        return rv
+
+    def remove(self, song_id, allow_not_exist=True):
+        rv = self._api.update_playlist_song(song_id, self.identifier, 'del')
+        # XXX: make it O(1) if you want
+        for song in self.songs:
+            if song.identifier == song_id:
+                self.songs.remove(song)
+        return rv
+
 
 class XSearchModel(SearchModel, XBaseModel):
     pass
+
+
+class XUserModel(UserModel, XBaseModel):
+    class Meta:
+        fields = ('access_token', )
+
+    @classmethod
+    def get(cls, identifier):
+        user_data = cls._api.user_detail(identifier)
+        if user_data is None:
+            return None
+        schema = UserSchema(strict=True)
+        user, _ = schema.load(user_data)
+        return user
+
+    @property
+    def playlists(self):
+        """获取用户创建的歌单
+
+        如果不是用户本人，则不能获取用户默认精选集
+        """
+        if self._playlists is None:
+            self._playlists = []
+            schema = PlaylistSchema(strict=True)
+            playlists_data = self._api.user_playlists(self.identifier)
+            if not playlists_data:
+                return
+            for playlist_data in playlists_data:
+                playlist = schema.load(playlist_data)
+                self._playlists.append(playlist)
+        return self._playlists
+
+    @playlists.setter
+    def playlists(self, value):
+        self._playlists = value
+
+    @property
+    def fav_playlists(self):
+        if self._fav_playlists is None:
+            self._fav_playlists = []
+            schema = PlaylistSchema(strict=True)
+            playlists_data = self._api.user_fav_playlists(self.identifier)
+            if not playlists_data:
+                return
+            for playlist_data in playlists_data:
+                playlist = schema.load(playlist_data)
+                self._fav_playlists.append(playlist)
+        return self._fav_playlists
+
+    @fav_playlists.setter
+    def fav_playlists(self, value):
+        self._fav_playlists = value
 
 
 def search(keyword, **kwargs):
@@ -162,4 +229,5 @@ from .schemas import (
     NestedSongSchema,
     SongSchema,
     SongSearchSchema,
+    UserSchema,
 )  # noqa

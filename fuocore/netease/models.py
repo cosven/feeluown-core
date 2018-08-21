@@ -218,6 +218,9 @@ class NSearchModel(SearchModel, NBaseModel):
 class NUserModel(UserModel, NBaseModel):
     _detail_fields = ('playlists', 'fav_playlists')
 
+    class Meta:
+        fields = ('cookies', )
+
     @classmethod
     def get(cls, identifier):
         user = {'id': identifier}

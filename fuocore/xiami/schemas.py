@@ -38,7 +38,7 @@ class AlbumSchema(Schema):
     cover = fields.Str(load_from='albumLogo')
 
     songs = fields.List(fields.Nested('NestedSongSchema'))
-    artists = fields.List(fields.Nested(ArtistSchema), load_from='singerVOs')
+    artists = fields.List(fields.Nested(ArtistSchema), load_from='artists')
     desc = fields.Str(load_from='description')
 
     @post_load
@@ -57,13 +57,15 @@ class SongSchema(Schema):
     >>> song.url
     ''
     """
-    identifier = fields.Str(load_from='songId')
+    identifier = fields.Int(load_from='songId')
     title = fields.Str(load_from='songName')
     duration = fields.Str(load_from='length')
 
     url = fields.Str(load_from='listenFile', missing='')
     # files = fields.List(fields.Dict, load_from='listenFiles', missing=[])
 
+    # XXX: 这里用 singerVOs 来表示歌曲的 artist，即使虾米接口中
+    # 也会包含歌曲 artistVOs 信息
     artists = fields.List(fields.Nested(ArtistSchema), load_from='singerVOs')
 
     album_id = fields.Str(load_from='albumId')
@@ -124,10 +126,11 @@ class PlaylistSchema(Schema):
     100
     """
     identifier = fields.Str(load_from='listId')
+    uid = fields.Int(load_from='userId')
     name = fields.Str(load_from='collectName')
     cover = fields.Str(load_from='collectLogo')
-    songs = fields.List(fields.Nested(NestedSongSchema))
-    desc = fields.Str(load_from='description')
+    songs = fields.List(fields.Nested(NestedSongSchema), missing=None)
+    desc = fields.Str(load_from='description', missing=None)
 
     @post_load
     def create_model(self, data):
@@ -143,10 +146,20 @@ class SongSearchSchema(Schema):
         return XSearchModel(**data)
 
 
+class UserSchema(Schema):
+    identifier = fields.Int(load_from='userId')
+    name = fields.Str(load_from='nickName')
+
+    @post_load
+    def create_model(self, data):
+        return XUserModel(**data)
+
+
 from .models import (
     XAlbumModel,
     XArtistModel,
     XPlaylistModel,
     XSongModel,
     XSearchModel,
+    XUserModel,
 )  # noqa

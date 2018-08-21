@@ -228,6 +228,10 @@ class SearchModel(BaseModel):
 
 
 class UserModel(BaseModel):
+    """
+    playlists: 创建的歌单
+    fav_playlists: 收藏的歌单
+    """
     class Meta:
         model_type = ModelType.user.value
-        fields = ['name', 'playlists', 'cookies', 'fav_playlists']
+        fields = ['name', 'playlists', 'fav_playlists']

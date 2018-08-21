@@ -24,6 +24,7 @@ class XiamiProvider(AbstractProvider):
 
     @contextmanager
     def auth_as(self, user):
+        # TODO
         old_user = self._user
         self.auth(user)
         try:
@@ -32,9 +33,10 @@ class XiamiProvider(AbstractProvider):
             self.auth(old_user)
 
     def auth(self, user):
-        assert user.cookies is not None
+        # TODO
+        assert user.access_token is not None
         self._user = user
-        self.api.load_cookies(user.cookies)
+        self.api.set_access_token(user.access_token)
 
 
 provider = XiamiProvider()

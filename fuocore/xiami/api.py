@@ -36,6 +36,9 @@ class API(object):
         self._req_token = None
         self._http = None
 
+    def set_access_token(self, access_token):
+        self._req_header['accessToken'] = access_token
+
     def set_http(self, http):
         self._http = http
         self._http.headers.update(self._headers)
@@ -68,6 +71,14 @@ class API(object):
         }
         return params
 
+    def _fetch_token(self):
+        url = _gen_url('mtop.alimusic.xuser.facade.xiamiuserservice.login')
+        response = self.http.get(url, timeout=1)
+        resp_cookies = response.cookies.get_dict()
+        self._cookies.update(resp_cookies)
+        m_h5_tk = self._cookies['_m_h5_tk']
+        self._req_token, _ = m_h5_tk.split('_')
+
     def request(self, action, payload, timeout=3):
         """
         虾米 API 请求流程：
@@ -78,12 +89,7 @@ class API(object):
         3. 发送请求
         """
         if self._req_token is None:  # 获取 token
-            url = _gen_url('mtop.alimusic.xuser.facade.xiamiuserservice.login')
-            response = self.http.get(url, timeout=timeout)
-            resp_cookies = response.cookies.get_dict()
-            self._cookies.update(resp_cookies)
-            m_h5_tk = self._cookies['_m_h5_tk']
-            self._req_token, _ = m_h5_tk.split('_')
+            self._fetch_token()
 
         url = _gen_url(action)
         params = self._sign_payload(payload)
@@ -95,6 +101,11 @@ class API(object):
         # app id 和 key 不匹配，一般应该不会出现这种情况
         if code == 'FAIL_SYS_PARAMINVALID_ERROR':
             raise RuntimeError('Xiami api app id and key not match.')
+        elif code == 'FAIL_SYS_TOKEN_EXOIRED':  # 刷新 token
+            self._fetch_token()
+        elif code == 'FAIL_BIZ_GLOBAL_NEED_LOGIN':
+            # TODO: 单独定义一个 Exception
+            raise RuntimeError('Xiami api need access token.')
         else:
             if code != 'SUCCESS':
                 logger.warning('Xiami request failed:: '
@@ -116,6 +127,11 @@ class API(object):
             'mtop.alimusic.xuser.facade.xiamiuserservice.login',
             payload
         )
+        if code == 'SUCCESS':
+            # TODO: 保存 refreshToken 和过期时间等更多信息
+            # 根据目前观察，token 过期时间有三年
+            accessToken = rv['data']['data']['accessToken']
+            self.set_access_token(accessToken)
         return rv  # rv -> return value
 
     # 搜索歌曲(1),专辑(10),歌手(100),歌单(1000)*(type)*
@@ -184,7 +200,7 @@ class API(object):
         code, msg, rv = self.request(action, payload)
         return rv['data']['data']['artistDetailVO']
 
-    def artist_songs(self, artist_id, page=1, limit=30):
+    def artist_songs(self, artist_id, page=1, limit=50):
         action = 'mtop.alimusic.music.songservice.getartistsongs'
         payload = {
             'artistId': artist_id,
@@ -195,7 +211,7 @@ class API(object):
         }
         code, msg, rv = self.request(action, payload)
         # TODO: 支持获取更多
-        return rv['songs']
+        return rv['data']['data']['songs']
 
     def playlist_detail(self, playlist_id):
         """获取歌单详情
@@ -231,6 +247,18 @@ class API(object):
         # TODO: 支持获取更多
         return rv['data']['data']['collects']
 
+    def user_favorite_playlists(self, user_id, page=1, limit=30):
+        action = 'mtop.alimusic.fav.collectfavoriteservice.getfavoritecollects'
+        payload = {
+            'userId': user_id,
+            'pagingVO': {
+                'page': page,
+                'pageSize': limit
+            }
+        }
+        code, msg, rv = self.request("GET", action, payload)
+        return rv['data']['data']['collects']
+
     def user_favorite_songs(self, user_id, page=1, limit=200):
         action = 'mtop.alimusic.fav.songfavoriteservice.getfavoritesongs'
         payload = {
@@ -243,6 +271,21 @@ class API(object):
         code, msg, rv = self.request(action, payload)
         # TODO: 支持获取更多
         return rv['data']['data']['songs']
+
+    def update_playlist_song(self, playlist_id, song_id, op):
+        """从播放列表删除或者增加一首歌曲
+
+        如果歌曲不存在与歌单中，删除时返回 True；如果歌曲已经存在于
+        歌单，添加时也返回 True。
+        """
+        action = 'mtop.alimusic.music.list.collectservice.{}songs'.format(
+            'delete' if op == 'del' else 'add')
+        payload = {
+            'listId': playlist_id,
+            'songIds': [song_id]
+        }
+        code, msg, rv = self.request(action, payload)
+        return rv['data']['data']['success'] == 'true'
 
 
 api = API()
