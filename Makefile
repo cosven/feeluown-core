@@ -12,7 +12,7 @@ unittest: pytest
 
 pytest:
 	# install dependencies first
-	pytest -v --cov=fuocore --doctest-module
+	pytest -v --cov=fuocore --cov-report term-missing --doctest-module
 
 test: lint unittest
 

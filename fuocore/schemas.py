@@ -18,6 +18,7 @@ class BaseSchema(Schema):
 
 
 class ArtistSchema(BaseSchema):
+    # TODO: 添加一个 alias 字段？
     name = fields.Str(required=True)
     cover = fields.Str()  # NOTE: 可能需要单独一个 Schema
     songs = fields.List(fields.Nested('SongSchema'))

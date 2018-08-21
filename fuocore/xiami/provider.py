@@ -1,14 +1,14 @@
 import logging
-from contextlib import contextmanager
 
+from contextlib import contextmanager
 from fuocore.provider import AbstractProvider
-from fuocore.netease.api import API
+from fuocore.xiami.api import API
 
 
 logger = logging.getLogger(__name__)
 
 
-class NeteaseProvider(AbstractProvider):
+class XiamiProvider(AbstractProvider):
     def __init__(self):
         self.api = API()
 
@@ -16,14 +16,15 @@ class NeteaseProvider(AbstractProvider):
 
     @property
     def identifier(self):
-        return 'netease'
+        return 'xiami'
 
     @property
     def name(self):
-        return '网易云音乐'
+        return '虾米音乐'
 
     @contextmanager
     def auth_as(self, user):
+        # TODO
         old_user = self._user
         self.auth(user)
         try:
@@ -32,13 +33,16 @@ class NeteaseProvider(AbstractProvider):
             self.auth(old_user)
 
     def auth(self, user):
-        assert user.cookies is not None
+        # TODO
+        assert user.access_token is not None
         self._user = user
-        self.api.load_cookies(user.cookies)
+        self.api.set_access_token(user.access_token)
 
 
-provider = NeteaseProvider()
+provider = XiamiProvider()
 
 
+# 让 provider 能够发现对应 Model
 from .models import search  # noqa
+
 provider.search = search
