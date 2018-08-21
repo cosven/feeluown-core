@@ -16,6 +16,7 @@ from fuocore.library import Library
 from fuocore.local.provider import provider as lp
 from fuocore.netease.provider import provider as np
 from fuocore.qqmusic.provider import provider as qp
+from fuocore.xiami.provider import provider as xp
 
 
 logger = logging.getLogger()
@@ -107,6 +108,7 @@ def main():
     library.register(lp)
     library.register(np)
     library.register(qp)
+    library.register(xp)
 
     pubsub_gateway, pubsub_server = run_pubsub()
 

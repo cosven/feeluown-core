@@ -27,12 +27,17 @@ with open('data/fixtures/xiami/user.json') as f:
 with open('data/fixtures/xiami/user_playlists.json') as f:
     data_user_playlists = json.load(f)
 
+with open('data/fixtures/xiami/search.json') as f:
+    data_search = json.load(f)
+
 
 class TestXiamiModel(TestCase):
     @patch.object(API, 'song_detail', return_value=data_song)
     def test_song_model(self, mock_song_detail):
         song = provider.Song.get(11)
+        self.assertEqual(song.source, 'xiami')
         self.assertEqual(song.identifier, 1801370698)
+        self.assertEqual(song.album.identifier, 2103467442)
 
     @patch.object(API, 'album_detail', return_value=data_album)
     def test_album_model(self, mock_album_detail):
@@ -95,3 +100,11 @@ class TestXiamiModel(TestCase):
         user = provider.User.get(11)
         self.assertEqual(len(user.playlists), 2)
         mock_user_playlists.assert_called_once_with(user.identifier)
+
+    @patch.object(API, 'search', return_value=data_search)
+    def test_search(self, mock_search):
+        s_result = provider.search('xx')
+        songs = s_result.songs
+        song = songs[0]
+        self.assertEqual(song.identifier, 1769400313)
+        self.assertEqual(song.source, 'xiami')

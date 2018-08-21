@@ -161,6 +161,10 @@ class ArtistModel(BaseModel):
 class AlbumModel(BaseModel):
     class Meta:
         model_type = ModelType.album.value
+
+        # TODO: 之后可能需要给 Album 多加一个字段用来分开表示 artist 和 singer
+        # 从意思上来区分的话：artist 是专辑制作人，singer 是演唱者
+        # 像虾米音乐中，它即提供了专辑制作人信息，也提供了 singer 信息
         fields = ['name', 'cover', 'songs', 'artists', 'desc']
 
     def __str__(self):

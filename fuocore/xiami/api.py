@@ -164,7 +164,7 @@ class API(object):
         payload = {'songId': song_id}
         code, msg, rv = self.request(action, payload)
         if code == 'SUCCESS':
-            return rv['data']['data']
+            return rv['data']['data']['songDetail']
         return None
 
     def songs_detail(self, song_ids):
