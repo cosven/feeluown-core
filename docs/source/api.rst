@@ -1,6 +1,10 @@
 API
 ===
 
+.. automodule:: fuocore.models
+.. autoclass:: fuocore.models.SongModel
+
+
 .. automodule:: fuocore.player
 .. autoclass:: fuocore.player.State
    :members:

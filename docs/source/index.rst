@@ -18,6 +18,7 @@ feeluown-core 是 `feeluown <https://github.com/cosven/feeluown>`_ 的核心模�
    api
    qa
 
+   design
    development
    glossary
    research

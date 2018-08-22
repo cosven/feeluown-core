@@ -45,6 +45,8 @@ class XSongModel(SongModel, XBaseModel):
     @classmethod
     def get(cls, identifier):
         data = cls._api.song_detail(identifier)
+        if data is None:
+            return None
         schema = SongSchema(strict=True)
         song, _ = schema.load(data)
         return song
