@@ -19,6 +19,16 @@
 import os
 import sys
 import sphinx_rtd_theme
+from mock import MagicMock
+
+
+class Mock(MagicMock):
+    def __getattr__(self, name):
+            return MagicMock()
+
+
+MOCK_MODULES = ['cfbclient', 'pstatsd']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 sys.path.insert(0, os.path.abspath('../..'))
 
