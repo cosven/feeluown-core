@@ -1,5 +1,5 @@
 [run]
 omit =
   fuocore/netease/api.py
-
-
+  fuocore/xiami/api.py
+  fuocore/qq/api.py
