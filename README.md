@@ -53,4 +53,3 @@ fuocli resume
 ## FQA
 
 ## Contributing to fuocore
-请参考文档 [Development](http://feeluown-core.readthedocs.io/en/latest/development.html)
