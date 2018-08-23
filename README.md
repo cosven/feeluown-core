@@ -6,21 +6,17 @@
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
-feeluown-core 是 [feeluown](https://github.com/cosven/FeelUOwn) 的核心模块。文档 👉 <https://feeluown-core.readthedocs.io>
+feeluown-core 是 [feeluown](https://github.com/cosven/FeelUOwn) 的核心模块。
 
-录了个几分钟的简短的演示视频 👇
-
-[![Video Show](http://img.youtube.com/vi/-JFXo0J5D9E/0.jpg)](https://youtu.be/-JFXo0J5D9E)
-
-## 安装试用
+- [👉 详细文档](https://feeluown-core.readthedocs.io)
+- [👉 视频演示](https://youtu.be/-JFXo0J5D9E)
 
 ### 安装
 
 ```sh
 sudo apt-get install libmpv1  # Debian or Ubuntu
-brew install mpv  # mac osx
+brew install mpv              # mac osx
 
-# please always use the latest release
 pip3 install fuocore --upgrade
 pip3 install fuocli --upgrade
 ```
