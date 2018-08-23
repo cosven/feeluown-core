@@ -6,21 +6,17 @@
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/fuocore)
 
-feeluown-core 是一个可扩展性强，功能齐全的音乐播放服务器。
+feeluown-core 是 [feeluown](https://github.com/cosven/FeelUOwn) 的核心模块。文档 👉 <https://feeluown-core.readthedocs.io>
 
-几个主要特性：
-
-1. 基于 text 的通信协议，能和 Emacs/tmux 等工具良好集成
-   [protocol](http://feeluown-core.readthedocs.io/en/latest/protocol.html#fuo-protocol)，
-2. 在 dotfile 中管理自己喜欢的音乐
-   [for example](https://github.com/cosven/cosven.github.io/blob/master/music/mix.fuo)
-3. 支持从 netease/xiami 获取免费的音乐资源
+## DEMO 演示
 
 录了个几分钟的简短的演示视频 👇
 
 [![Video Show](http://img.youtube.com/vi/-JFXo0J5D9E/0.jpg)](https://youtu.be/-JFXo0J5D9E)
 
-## Install
+## 安装试用
+
+### 安装
 
 ```sh
 sudo apt-get install libmpv1  # Debian or Ubuntu
@@ -31,25 +27,19 @@ pip3 install fuocore --upgrade
 pip3 install fuocli --upgrade
 ```
 
-## Simple Usage
+### 试用
 
 ```
-# start daemon
-feeluown_core_test
-# nohup feeluown_core_test &  # 后台运行
+feeluown_core_test # 启动服务
+# nohup feeluown_core_test &  # 在后台运行服务
 
-# use fuocli
+# 使用 fuocli
 fuocli search '谢春花' | grep songs | head -n 10 | awk '{print $1}' | fuocli add
 fuocli add fuo://netease/songs/45849608
 fuocli remove fuo://netease/songs/45849608
 fuocli play fuo://netease/songs/458496082
-fuocli list
-fuocli next
-fuocli status
-fuocli pause
-fuocli resume
+fuocli list  # 还有 resume/pause/next/last 等命令
+
+# 在终端查看实时歌词
+echo "sub topic.live_lyric" | nc localhost 23334
 ```
-
-## FQA
-
-## Contributing to fuocore
