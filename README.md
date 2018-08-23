@@ -8,8 +8,6 @@
 
 feeluown-core 是 [feeluown](https://github.com/cosven/FeelUOwn) 的核心模块。文档 👉 <https://feeluown-core.readthedocs.io>
 
-## DEMO 演示
-
 录了个几分钟的简短的演示视频 👇
 
 [![Video Show](http://img.youtube.com/vi/-JFXo0J5D9E/0.jpg)](https://youtu.be/-JFXo0J5D9E)
