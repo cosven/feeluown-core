@@ -24,10 +24,10 @@ pip3 install fuocli --upgrade
 ### 试用
 
 ```
-feeluown_core_test # 启动服务
-# nohup feeluown_core_test &  # 在后台运行服务
+# 启动服务
+feeluown_core_test
 
-# 使用 fuocli
+# 使用 fuocli 控制服务
 fuocli search '谢春花' | grep songs | head -n 10 | awk '{print $1}' | fuocli add
 fuocli add fuo://netease/songs/45849608
 fuocli remove fuo://netease/songs/45849608
