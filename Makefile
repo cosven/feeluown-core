@@ -11,8 +11,7 @@ lint:
 unittest: pytest
 
 pytest:
-	# install dependencies first
-	pytest -v --cov=fuocore --cov-report term-missing --doctest-module
+	pytest
 
 test: lint unittest
 
