@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## 2.0.2 (WIP)
+## 2.0.2 (2018-08-24)
 - 加上对虾米音乐的支持 @cyliuu
 - protocol 模块小幅重构
+- 用 IntEnum 代替 Enum
 
 ## 2.0.1 (2018-08-03)
 - 给 Library.search 接口加上异常捕获

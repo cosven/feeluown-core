@@ -1,5 +1,5 @@
 import json
-from mock import patch
+from unittest.mock import patch
 from unittest import TestCase
 
 from fuocore.xiami.api import API

@@ -1,6 +1,3 @@
-import logging
-import logging.config
-
 from fuocore.models import ModelType  # noqa
 from fuocore.player import (
     MpvPlayer,
@@ -10,6 +7,9 @@ from fuocore.player import (
 )  # noqa
 from fuocore.live_lyric import LiveLyric  # noqa
 from .library import Library  # noqa
+
+
+__version__ = '2.0.2'
 
 
 __all__ = [

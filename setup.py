@@ -2,6 +2,8 @@
 
 from setuptools import setup
 
+from fuocore import __version__
+
 
 requires = [
     'pycrypto>=2.6.1',
@@ -15,7 +17,7 @@ requires = [
 
 setup(
     name='fuocore',
-    version='2.0.1',
+    version=__version__,
     description='feeluown core',
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
