@@ -182,7 +182,7 @@ class API(object):
         payload = {'songId': song_id}
         code, msg, rv = self.request(action, payload)
         for lyric in rv['data']['data']['lyrics']:
-            if lyric['type'] == 2:
+            if int(lyric['type']) == 2:
                 return lyric['content']
         return ''
 
