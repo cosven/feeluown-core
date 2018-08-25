@@ -26,6 +26,7 @@ setup(
         'fuocore',
         'fuocore.local',
         'fuocore.netease',
+        'fuocore.xiami',
         'fuocore.qqmusic',
         'fuocore.protocol',
         'fuocore.protocol.handlers',
