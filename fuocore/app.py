@@ -15,8 +15,8 @@ from fuocore.aio_tcp_server import TcpServer
 from fuocore import MpvPlayer
 from fuocore import LiveLyric
 from fuocore.furi import parse_furi
-from fuocore.protocol.parser import CmdParser
-from fuocore.protocol.handlers import exec_cmd
+from fuocore.protocol import CmdParser
+from fuocore.protocol import exec_cmd
 
 logger = logging.getLogger(__name__)
 

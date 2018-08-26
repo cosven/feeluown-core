@@ -29,7 +29,6 @@ setup(
         'fuocore.xiami',
         'fuocore.qqmusic',
         'fuocore.protocol',
-        'fuocore.protocol.handlers',
         ],
     package_data={
         '': []
