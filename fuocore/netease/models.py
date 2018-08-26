@@ -75,6 +75,7 @@ class NSongModel(SongModel, NBaseModel):
         )
 
     def _find_in_local(self):
+        # TODO: make this a API in SongModel
         path = os.path.join(MUSIC_LIBRARY_PATH, self.filename)
         if os.path.exists(path):
             logger.debug('find local file for {}'.format(self))
@@ -95,7 +96,7 @@ class NSongModel(SongModel, NBaseModel):
 
             As netease song url will be expired after a period of time,
             we can not use static url here. Currently, we assume that the
-            expiration time is 100 seconds, after the url expires, it
+            expiration time is 20 minutes, after the url expires, it
             will be automaticly refreshed.
         """
         local_path = self._find_in_local()
@@ -105,13 +106,13 @@ class NSongModel(SongModel, NBaseModel):
         if not self._url:
             self._refresh_url()
         elif time.time() > self._expired_at:
-            logger.debug('song({}) url is expired, refresh...'.format(self))
+            logger.info('song({}) url is expired, refresh...'.format(self))
             self._refresh_url()
         return self._url
 
     @url.setter
     def url(self, value):
-        self._expired_at = time.time() + 60 * 60 * 1  # one hour
+        self._expired_at = time.time() + 60 * 20 * 1  # 20 minutes
         self._url = value
 
     @property
