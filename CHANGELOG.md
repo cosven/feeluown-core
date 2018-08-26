@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2.0.3 (2018-08-26)
+- 在 setup.py 中加入 fuocore.xiami 包 by @chen-chao
+
 ## 2.0.2 (2018-08-24)
 - 加上对虾米音乐的支持 @cyliuu
 - protocol 模块小幅重构
