@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.1a0 (WIP)
+- 将 fuocore.protocol 包移动到 feeluown 中
+- 删除 fuocore.furi 模块
+- 删除 fuocore.main 入口，安装包时不会生成 `feeluown_core_test` 命令
+
 ## 2.0.3 (2018-08-26)
 - 在 setup.py 中加入 fuocore.xiami 包 by @chen-chao
 

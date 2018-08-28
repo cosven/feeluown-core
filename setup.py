@@ -50,8 +50,5 @@ setup(
         'mock',
     ],
     entry_points={
-        'console_scripts': [
-            'feeluown_core_test = fuocore.main:main',
-        ],
     },
 )
