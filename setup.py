@@ -28,7 +28,6 @@ setup(
         'fuocore.netease',
         'fuocore.xiami',
         'fuocore.qqmusic',
-        'fuocore.protocol',
         ],
     package_data={
         '': []
@@ -50,8 +49,5 @@ setup(
         'mock',
     ],
     entry_points={
-        'console_scripts': [
-            'feeluown_core_test = fuocore.main:main',
-        ],
     },
 )
