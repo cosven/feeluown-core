@@ -28,7 +28,6 @@ setup(
         'fuocore.netease',
         'fuocore.xiami',
         'fuocore.qqmusic',
-        'fuocore.protocol',
         ],
     package_data={
         '': []
