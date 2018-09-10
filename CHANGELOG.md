@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 2.1a0 (WIP)
+## 2.1a0 (2018-9-10)
 - 将 fuocore.protocol 包移动到 feeluown 中
 - 删除 fuocore.furi 模块
 - 删除 fuocore.main 入口，安装包时不会生成 `feeluown_core_test` 命令
