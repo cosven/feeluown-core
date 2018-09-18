@@ -18,7 +18,7 @@ setup(
     # NOTE: 理论上，使用 fuocore.__version__ 作为包版本可以更好的保持一致性。
     # 但目前导入 fuocore 包时，会执行 mpv.py 中部分代码，
     # 执行过程可能会有一些副作用。
-    version='2.1a0',
+    version='2.1a1',
     description='feeluown core',
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
