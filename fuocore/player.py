@@ -169,7 +169,7 @@ class Playlist(object):
         return [song for song in self._songs
                 if song not in self._bad_songs]
 
-    def _get_good_song(self, base=0, random=False, direction=1):
+    def _get_good_song(self, base=0, random_=False, direction=1):
         """从播放列表中获取一首可以播放的歌曲
 
         :param base: base index
@@ -201,7 +201,7 @@ class Playlist(object):
         for song in song_list:
             if song not in self._bad_songs:
                 good_songs.append(song)
-        if random:
+        if random_:
             return random.choice(good_songs)
         else:
             return good_songs[0]
@@ -214,7 +214,7 @@ class Playlist(object):
             return self._get_good_song()
 
         if self.playback_mode == PlaybackMode.random:
-            next_song = self._get_good_song(random=True)
+            next_song = self._get_good_song(random_=True)
         elif self.playback_mode == PlaybackMode.one_loop:
             current_index = self._songs.index(self.current_song)
             next_song = self._get_good_song(base=current_index)
