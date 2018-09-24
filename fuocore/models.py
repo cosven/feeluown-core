@@ -238,4 +238,5 @@ class UserModel(BaseModel):
     """
     class Meta:
         model_type = ModelType.user.value
-        fields = ['name', 'playlists', 'fav_playlists']
+        fields = ['name', 'playlists', 'fav_playlists', 'fav_songs',
+                  'fav_albums', 'fav_artists']

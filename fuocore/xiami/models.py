@@ -40,6 +40,12 @@ class XBaseModel(BaseModel):
         return value
 
 
+def _deserialize(data, schema_cls):
+    schema = schema_cls(strict=True)
+    obj, _ = schema.load(data)
+    return obj
+
+
 class XSongModel(SongModel, XBaseModel):
 
     @classmethod
@@ -47,9 +53,7 @@ class XSongModel(SongModel, XBaseModel):
         data = cls._api.song_detail(identifier)
         if data is None:
             return None
-        schema = SongSchema(strict=True)
-        song, _ = schema.load(data)
-        return song
+        return _deserialize(data, SongSchema)
 
     def _refresh_url(self):
         song = self.get(self.identifier)
@@ -92,10 +96,7 @@ class XAlbumModel(AlbumModel, XBaseModel):
         data = cls._api.album_detail(identifier)
         if data is None:
             return None
-
-        schema = AlbumSchema(strict=True)
-        album, _ = schema.load(data)
-        return album
+        return _deserialize(data, AlbumSchema)
 
 
 class XArtistModel(ArtistModel, XBaseModel):
@@ -106,10 +107,7 @@ class XArtistModel(ArtistModel, XBaseModel):
         data = cls._api.artist_detail(identifier)
         if data is None:
             return None
-
-        schema = ArtistSchema(strict=True)
-        artist, _ = schema.load(data)
-        return artist
+        return _deserialize(data, ArtistSchema)
 
     @property
     def songs(self):
@@ -117,9 +115,8 @@ class XArtistModel(ArtistModel, XBaseModel):
             self._songs = []
             data_songs = self._api.artist_songs(self.identifier) or []
             if data_songs:
-                schema = NestedSongSchema(strict=True)
                 for data_song in data_songs:
-                    song, _ = schema.load(data_song)
+                    song = _deserialize(data_song, NestedSongSchema)
                     self._songs.append(song)
         return self._songs
 
@@ -129,6 +126,8 @@ class XArtistModel(ArtistModel, XBaseModel):
 
 
 class XPlaylistModel(PlaylistModel, XBaseModel):
+    _detail_fields = ('songs', 'desc')
+
     class Meta:
         fields = ('uid', )
 
@@ -138,10 +137,7 @@ class XPlaylistModel(PlaylistModel, XBaseModel):
         data = cls._api.playlist_detail(identifier)
         if data is None:
             return None
-
-        schema = PlaylistSchema(strict=True)
-        playlist, _ = schema.load(data)
-        return playlist
+        return _deserialize(data, PlaylistSchema)
 
     def add(self, song_id, **kwargs):
         rv = self._api.update_playlist_song(song_id, self.identifier, 'add')
@@ -173,9 +169,7 @@ class XUserModel(UserModel, XBaseModel):
         user_data = cls._api.user_detail(identifier)
         if user_data is None:
             return None
-        schema = UserSchema(strict=True)
-        user, _ = schema.load(user_data)
-        return user
+        return _deserialize(user_data, UserSchema)
 
     @property
     def playlists(self):
@@ -185,12 +179,11 @@ class XUserModel(UserModel, XBaseModel):
         """
         if self._playlists is None:
             self._playlists = []
-            schema = PlaylistSchema(strict=True)
             playlists_data = self._api.user_playlists(self.identifier)
             if not playlists_data:
                 return
             for playlist_data in playlists_data:
-                playlist = schema.load(playlist_data)
+                playlist = _deserialize(playlist_data, PlaylistSchema)
                 self._playlists.append(playlist)
         return self._playlists
 
@@ -201,19 +194,37 @@ class XUserModel(UserModel, XBaseModel):
     @property
     def fav_playlists(self):
         if self._fav_playlists is None:
+            playlists_data = self._api.user_favorite_playlists(self.identifier)
             self._fav_playlists = []
-            schema = PlaylistSchema(strict=True)
-            playlists_data = self._api.user_fav_playlists(self.identifier)
             if not playlists_data:
                 return
             for playlist_data in playlists_data:
-                playlist = schema.load(playlist_data)
+                playlist = _deserialize(playlist_data, PlaylistSchema)
                 self._fav_playlists.append(playlist)
         return self._fav_playlists
 
     @fav_playlists.setter
     def fav_playlists(self, value):
         self._fav_playlists = value
+
+    @property
+    def fav_songs(self):
+        """
+        FIXME: 支持获取所有的收藏歌曲
+        """
+        if self._fav_songs is None:
+            songs_data = self._api.user_favorite_songs(self.identifier)
+            self._fav_songs = []
+            if not songs_data:
+                return
+            for song_data in songs_data:
+                song = _deserialize(song_data, NestedSongSchema)
+                self._fav_songs.append(song)
+        return self._fav_songs
+
+    @fav_songs.setter
+    def fav_songs(self, value):
+        self._fav_songs = value
 
 
 def search(keyword, **kwargs):

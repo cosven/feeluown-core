@@ -60,7 +60,7 @@ class SongSchema(Schema):
     identifier = fields.Int(load_from='songId', required=True)
     title = fields.Str(load_from='songName', required=True)
     # FIXME: 有的歌曲没有 length 字段
-    duration = fields.Str(load_from='length', required=True)
+    duration = fields.Str(load_from='length', missing='0')
 
     url = fields.Str(load_from='listenFile', missing='')
     # files = fields.List(fields.Dict, load_from='listenFiles', missing=[])
@@ -152,6 +152,7 @@ class SongSearchSchema(Schema):
 class UserSchema(Schema):
     identifier = fields.Int(load_from='userId')
     name = fields.Str(load_from='nickName')
+    access_token = fields.Str(load_from='accessToken')
 
     @post_load
     def create_model(self, data):
