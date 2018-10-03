@@ -4,4 +4,4 @@
 .. glossary::
 
    provider
-     a platform that provide music metadata
+     a music platform that provide music metadata

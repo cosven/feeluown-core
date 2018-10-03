@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class Signal(object):
-    """提供 signal/slot 编程模式
+    """provider signal/slot design pattern
 
-    TODO: 这个类需要改进，尤其是接口设计和健壮性方面
+    similar as pyqt signal/slot
     """
     def __init__(self, name='', *sig):
         self.sig = sig

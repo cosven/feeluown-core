@@ -9,6 +9,17 @@ logger = logging.getLogger(__name__)
 
 
 class LiveLyric(object):
+    """live lyric
+
+    LiveLyric listens to song changed signal and position changed signal
+    and emit sentence changed signal. It also has a ``current_sentence`` property.
+
+    Usage::
+
+        live_lyric = LiveLyric()
+        player.song_changed.connect(live_lyric.on_song_changed)
+        player.position_change.connect(live_lyric.on_position_changed)
+    """
     def __init__(self):
         self.sentence_changed = Signal(str)
 
@@ -21,6 +32,7 @@ class LiveLyric(object):
 
     @property
     def current_sentence(self):
+        """get current lyric sentence"""
         return self._current_sentence
 
     @current_sentence.setter
@@ -30,6 +42,7 @@ class LiveLyric(object):
 
     # TODO: performance optimization?
     def on_position_changed(self, position):
+        """bind position changed signal with this"""
         if not self._lyric:
             return
 
@@ -39,6 +52,7 @@ class LiveLyric(object):
             self._pos = pos
 
     def on_song_changed(self, song):
+        """bind song changed signal with this"""
         if song.lyric is None:
             self._lyric = None
             self._pos_s_map = {}

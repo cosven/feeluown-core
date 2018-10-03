@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-播放器模块
-----------
+fuocore.player
+--------------
 
-该模块提供了 :class:`.AbstractPlayer` 抽象基类，并基于 mpv(libmpv) 播放器实现了
-:class:`.MpvPlayer`，随之也提供了 :class:`.Playlist` 用于管理播放列表。
+This module difines :class:`.AbstractPlayer` ，and implement a :class:`./MpvPlayer`
+based on mpv. In addition, it defines :class:`.Playlist` class, which is used
+by the player to manage playlist.
 
-
-**简单使用示例**
+**Simple Usage**
 
 .. sourcecode:: python
 
@@ -24,7 +24,7 @@ import logging
 import random
 
 from mpv import MPV, MpvEventID, MpvEventEndFile, \
-    _mpv_set_property_string
+        _mpv_set_property_string
 
 from fuocore.dispatch import Signal
 
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 class State(IntEnum):
     """
-    播放器的状态
+    Player states.
     """
     stopped = 0
     paused = 1
@@ -43,12 +43,12 @@ class State(IntEnum):
 
 class PlaybackMode(IntEnum):
     """
-    播放列表的歌曲播放顺序
+    Playlist playback mode.
     """
-    one_loop = 0  #: 单曲循环
-    sequential = 1  #: 顺序播放
-    loop = 2  #: 循环播放
-    random = 3  #: 随机播放
+    one_loop = 0  #: One Loop
+    sequential = 1  #: Sequential
+    loop = 2  #: Loop
+    random = 3  #: Random
 
 
 class Playlist(object):
@@ -64,10 +64,16 @@ class Playlist(object):
         :param songs: list of :class:`fuocore.models.SongModel`
         :param playback_mode: :class:`fuocore.player.PlaybackMode`
         """
+        #: store value for ``current_song`` property
         self._current_song = None
-        self._bad_songs = []  # songs whose url is invalid
+
+        #: songs whose url is invalid
+        self._bad_songs = []
+
+        #: store value for ``songs`` property
         self._songs = songs or []
 
+        #: store value for ``playback_mode`` property
         self._playback_mode = playback_mode
 
         #: playback mode changed signal
@@ -88,7 +94,7 @@ class Playlist(object):
             self._bad_songs.append(song)
 
     def add(self, song):
-        """Insert a song after current song
+        """Insert a song after current song. O(n)
 
         If current song is None, append to end.
         """
@@ -103,7 +109,7 @@ class Playlist(object):
         logger.debug('Add %s to player playlist', song)
 
     def remove(self, song):
-        """Remove song from playlist.
+        """Remove song from playlist. O(n)
 
         If song is current song, remove the song and play next. Otherwise,
         just remove it.
@@ -124,25 +130,26 @@ class Playlist(object):
             self._bad_songs.remove(song)
 
     def clear(self):
-        """清空播放列表"""
+        """remove all songs from playlists"""
 
         self.current_song = None
         self._songs = []
         self._bad_songs.clear()
 
     def list(self):
+        """get all songs in playlists"""
         return self._songs
 
     @property
     def current_song(self):
         """
-        获取当前歌曲，当它为空时返回 None
+        current playing song, return None if there is no current song
         """
         return self._current_song
 
     @current_song.setter
     def current_song(self, song):
-        """change current song, emit song changed singal"""
+        """change current song"""
         self._last_song = self.current_song
         if song is None:
             self._current_song = None
@@ -208,7 +215,7 @@ class Playlist(object):
 
     @property
     def next_song(self):
-        """下一首用来播放的歌曲（根据播放模式来计算的）"""
+        """next song for player, calculated based on playback_mode"""
         # 如果没有正在播放的歌曲，找列表里面第一首能播放的
         if self.current_song is None:
             return self._get_good_song()
@@ -231,7 +238,10 @@ class Playlist(object):
 
     @property
     def previous_song(self):
-        """上一首歌曲"""
+        """previous song for player to play
+
+        NOTE: not the last played song
+        """
         if self.current_song is None:
             return self._get_good_song(direction=-1)
 
@@ -256,15 +266,24 @@ class AbstractPlayer(metaclass=ABCMeta):
         self._state = State.stopped
         self._duration = None
 
+        #: player position changed signal
         self.position_changed = Signal()
+
+        #: player state changed signal
         self.state_changed = Signal()
+
+        #: current song finished signal
         self.song_finished = Signal()
+
+        #: duration changed signal
         self.duration_changed = Signal()
+
+        #: media change signal
         self.media_changed = Signal()
 
     @property
     def state(self):
-        """player state
+        """Player state
 
         :return: :class:`.State`
         """
@@ -272,6 +291,11 @@ class AbstractPlayer(metaclass=ABCMeta):
 
     @state.setter
     def state(self, value):
+        """set player state, emit state changed signal
+
+        outer object should not set state directly,
+        use ``pause`` / ``resume`` / ``stop`` / ``play`` method instead.
+        """
         self._state = value
         self.state_changed.emit(value)
 

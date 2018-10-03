@@ -8,7 +8,7 @@ fuocore 是 feeluown core 的缩写，它是 feeluown 的核心模块。
 2. ``播放器模块`` ：音乐播放器
 3. ``歌词模块`` ：歌词解析
 
-另外，为了实现一些功能，fuocore 也实现了几个基础组件
+另外，fuocore 也包含了几个工具类
 
 1. asyncio/threading tcp server
 2. signal/slot
@@ -84,9 +84,9 @@ fuocore 是 feeluown core 的缩写，它是 feeluown 的核心模块。
    这个设计对开发者来说有利有弊，这样设计的缘由 :ref:`research-model`
    欢迎大家对此进行讨论，提出更好的方案。
 
-provider (WIP)
-''''''''''''''
-每个音乐提供方都对应一个 provider，provider 是我们访问资源音乐的入口。
+provider
+''''''''
+每个音乐提供方都对应一个 provider，provider 是我们访问具体一个音乐平台资源音乐的入口。
 
 举个栗子，如果我们要从网易云音乐中搜索音乐：
 
@@ -95,7 +95,7 @@ provider (WIP)
    from fuocore.netease import provider
    result = provider.search('keyword')
 
-再举另外一个栗子，如果我们知道一首歌曲的 id，我们可以通过下面的方式来获取音乐详细信息：
+再举另外一个栗子，如果我们知道网易云音乐一首歌曲的 id，我们可以通过下面的方式来获取音乐详细信息：
 
 .. code:: python
 
@@ -117,8 +117,8 @@ provider (WIP)
 
 播放器模块
 ----------
-暂时略
+暂时略，可以参考播放器 :doc:`./api`
 
 歌词模块
 --------
-暂时略
+暂时略，可以参考歌词模块 :doc:`./api`

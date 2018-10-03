@@ -4,7 +4,7 @@
 fuocore.model
 ~~~~~~~~~~~~~
 
-这个模块对音乐相关模型进行了定义，声明了各模型的属性。
+This modules defines several music models.
 """
 
 from enum import IntEnum
@@ -121,6 +121,12 @@ class Model(object, metaclass=ModelMeta):
 
 
 class BaseModel(Model):
+    """Base Model
+
+    :param identifier: model object identifier, unique in each provider
+    :param source: model object provider identifier
+    """
+
     class Meta:
         model_type = ModelType.dummy.value
         fields = ['source', 'identifier']
@@ -137,7 +143,7 @@ class BaseModel(Model):
 
     @classmethod
     def get(cls, identifier):
-        """获取 Model 详细信息
+        """get model details by identifier
 
         NOTE: 字段值如果是 None 的话，说明之前这个字段没有被初始化过。
         所以在调用 get 接口之后，需要将每个字段初始化为非 None。
@@ -146,10 +152,18 @@ class BaseModel(Model):
 
     @classmethod
     def list(cls, identifier_list):
+        """batch get model detail by identifier list"""
         raise NotImplementedError
 
 
 class ArtistModel(BaseModel):
+    """Artist Model
+
+    :param str name: artist name
+    :param str cover: artist cover image url
+    :param list songs: artist songs
+    :param str desc: artist description
+    """
     class Meta:
         model_type = ModelType.artist.value
         fields = ['name', 'cover', 'songs', 'desc']
@@ -159,6 +173,14 @@ class ArtistModel(BaseModel):
 
 
 class AlbumModel(BaseModel):
+    """Album Model
+
+    :param str name: album name
+    :param str cover: album cover image url
+    :param list songs: album songs
+    :param list artists: album artists
+    :param str desc: album description
+    """
     class Meta:
         model_type = ModelType.album.value
 
@@ -172,12 +194,27 @@ class AlbumModel(BaseModel):
 
 
 class LyricModel(BaseModel):
+    """Lyric Model
+
+    :param SongModel song: song which lyric belongs to
+    :param str content: lyric content
+    :param str trans_content: translated lyric content
+    """
     class Meta:
         model_type = ModelType.lyric.value
         fields = ['song', 'content', 'trans_content']
 
 
 class SongModel(BaseModel):
+    """Song Model
+
+    :param str title: song title
+    :param str url: song url (http url or local filepath)
+    :param float duration: song duration
+    :param AlbumModel album: album which song belong to
+    :param list artists: song artists :class:`.ArtistModel`
+    :param LyricModel lyric: song lyric
+    """
     class Meta:
         model_type = ModelType.song.value
         # TODO: 支持低/中/高不同质量的音乐文件
@@ -205,6 +242,13 @@ class SongModel(BaseModel):
 
 
 class PlaylistModel(BaseModel):
+    """Playlist Model
+
+    :param name: playlist name
+    :param cover: playlist cover image url
+    :param desc: playlist description
+    :param songs: playlist songs
+    """
     class Meta:
         model_type = ModelType.playlist.value
         fields = ['name', 'cover', 'songs', 'desc']
@@ -213,13 +257,22 @@ class PlaylistModel(BaseModel):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
 
     def add_song(self, song_id, allow_exist=True):
+        """add song to playlist"""
         pass
 
     def remove_song(self, song_id, allow_not_exist=True):
+        """remove songs from playlist"""
         pass
 
 
 class SearchModel(BaseModel):
+    """Search Model
+
+    :param q: search query string
+    :param songs: songs in search result
+
+    TODO: support album and artist
+    """
     class Meta:
         model_type = ModelType.dummy.value
 
@@ -232,9 +285,14 @@ class SearchModel(BaseModel):
 
 
 class UserModel(BaseModel):
-    """
-    playlists: 创建的歌单
-    fav_playlists: 收藏的歌单
+    """User Model
+
+    :param name: user name
+    :param playlists: playlists created by user
+    :param fav_playlists: playlists collected by user
+    :param fav_songs: songs collected by user
+    :param fav_albums: albums collected by user
+    :param fav_artists: artists collected by user
     """
     class Meta:
         model_type = ModelType.user.value
