@@ -121,10 +121,13 @@ class Model(object, metaclass=ModelMeta):
 
 
 class BaseModel(Model):
-    """Base Model
+    """Base model for music resource.
 
     :param identifier: model object identifier, unique in each provider
     :param source: model object provider identifier
+
+    :cvar allow_get: whether model has a valid get method
+    :cvar allow_list: whether model has a valid list method
     """
 
     class Meta:
@@ -143,16 +146,15 @@ class BaseModel(Model):
 
     @classmethod
     def get(cls, identifier):
-        """get model details by identifier
+        """Model get method
 
-        NOTE: 字段值如果是 None 的话，说明之前这个字段没有被初始化过。
-        所以在调用 get 接口之后，需要将每个字段初始化为非 None。
+        Model should return a valid object if the identifier is available.
         """
         raise NotImplementedError
 
     @classmethod
     def list(cls, identifier_list):
-        """batch get model detail by identifier list"""
+        """Model batch get method"""
         raise NotImplementedError
 
 

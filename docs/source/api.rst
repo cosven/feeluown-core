@@ -1,7 +1,8 @@
 对外接口
 =========
 
-.. automodule:: fuocore.models
+这部分文档覆盖了 fuocore 对外提供的所有模块和接口。
+
 .. autoclass:: fuocore.models.BaseModel
     :members:
 .. autoclass:: fuocore.models.SongModel
@@ -19,16 +20,9 @@
 .. autoclass:: fuocore.models.SearchModel
     :members:
 
-
-----------------------
-
-.. automodule:: fuocore.provider
 .. autoclass:: fuocore.provider.AbstractProvider
    :members:
 
-----------------------
-
-.. automodule:: fuocore.player
 .. autoclass:: fuocore.player.State
    :members:
    :undoc-members:
