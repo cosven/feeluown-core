@@ -137,6 +137,9 @@ class LocalProvider(AbstractProvider):
     def name(self):
         return '本地音乐'
 
+    def auth(self):
+        pass
+
     @log_exectime
     def search(self, keyword, **kwargs):
         limit = kwargs.get('limit', 10)

@@ -4,10 +4,9 @@
 fuocore.provider
 ~~~~~~~~~~~~~~~~
 
-provider 意为音乐提供方
 """
-
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from fuocore.models import (
     SongModel,
     ArtistModel,
@@ -31,6 +30,9 @@ class AbstractProvider(ABC):
     Lyric = LyricModel
     User = UserModel
 
+    def __init__(self):
+        self._user = None
+
     @property
     @abstractmethod
     def identifier(self):
@@ -40,3 +42,17 @@ class AbstractProvider(ABC):
     @abstractmethod
     def name(self):
         """provider name"""
+
+    @contextmanager
+    def auth_as(self, user):
+        """auth as a user temporarily"""
+        old_user = self._user
+        self.auth(user)
+        try:
+            yield
+        finally:
+            self.auth(old_user)
+
+    @abstractmethod
+    def auth(self, user):
+        """use provider as a specific user"""

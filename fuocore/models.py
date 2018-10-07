@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-fuocore.model
-~~~~~~~~~~~~~
+fuocore.models
+~~~~~~~~~~~~~~
 
 This modules defines several music models.
 """

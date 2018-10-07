@@ -1,4 +1,4 @@
-架构设计
+模块设计
 ========
 
 fuocore 是 feeluown core 的缩写，它是 feeluown 的核心模块。

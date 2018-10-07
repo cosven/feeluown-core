@@ -1,5 +1,5 @@
-API
-===
+对外接口
+=========
 
 .. automodule:: fuocore.models
 .. autoclass:: fuocore.models.BaseModel
@@ -20,6 +20,14 @@ API
     :members:
 
 
+----------------------
+
+.. automodule:: fuocore.provider
+.. autoclass:: fuocore.provider.AbstractProvider
+   :members:
+
+----------------------
+
 .. automodule:: fuocore.player
 .. autoclass:: fuocore.player.State
    :members:
@@ -29,6 +37,10 @@ API
    :undoc-members:
 .. autoclass:: fuocore.player.Playlist
    :members:
+
+
+----------------------
+
 
 .. automodule:: fuocore.live_lyric
 .. autoclass:: fuocore.live_lyric.LiveLyric
