@@ -140,7 +140,7 @@ class XPlaylistModel(PlaylistModel, XBaseModel):
         return _deserialize(data, PlaylistSchema)
 
     def add(self, song_id, **kwargs):
-        rv = self._api.update_playlist_song(song_id, self.identifier, 'add')
+        rv = self._api.update_playlist_song(self.identifier, song_id, 'add')
         if rv:
             song = XSongModel.get(song_id)
             self.songs.append(song)
@@ -148,8 +148,7 @@ class XPlaylistModel(PlaylistModel, XBaseModel):
         return rv
 
     def remove(self, song_id, allow_not_exist=True):
-        rv = self._api.update_playlist_song(song_id, self.identifier, 'del')
-        # XXX: make it O(1) if you want
+        rv = self._api.update_playlist_song(self.identifier, song_id, 'del')
         for song in self.songs:
             if song.identifier == song_id:
                 self.songs.remove(song)
@@ -162,6 +161,8 @@ class XSearchModel(SearchModel, XBaseModel):
 
 class XUserModel(UserModel, XBaseModel):
     class Meta:
+        allow_fav_songs_add = True
+        allow_fav_songs_remove = True
         fields = ('access_token', )
 
     @classmethod
@@ -225,6 +226,12 @@ class XUserModel(UserModel, XBaseModel):
     @fav_songs.setter
     def fav_songs(self, value):
         self._fav_songs = value
+
+    def add_to_fav_songs(self, song_id):
+        return self._api.update_favorite_song(song_id, 'add')
+
+    def remove_from_fav_songs(self, song_id):
+        return self._api.update_favorite_song(song_id, 'del')
 
 
 def search(keyword, **kwargs):

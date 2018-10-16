@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2.1.1 (WIP)
+- 给 library 添加 `list_song_standby` 接口
+
 ## 2.1 (2018-10-08)
 - 修复 XUserModel 的问题
 - 完善接口文档

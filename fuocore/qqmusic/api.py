@@ -67,8 +67,9 @@ class API(object):
             'from': 'myqq',
             'channel': 10007100,
         }
+        # FIXME: set timeout to 2s as the responseis time is quite long
         response = requests.get(url, params=params, headers=self._headers,
-                                timeout=self._timeout)
+                                timeout=2)
         soup = BeautifulSoup(response.content, 'html.parser')
         media = soup.select('#h5audio_media')
         if media:
@@ -79,9 +80,13 @@ class API(object):
         path = '/soso/fcgi-bin/client_search_cp'
         url = api_base_url + path
         params = {
+            # w,n,page are required parameters
             'w': keyword,
             'n': limit,
             'page': page,
+
+            # positional parameters
+            'cr': 1,  # copyright?
         }
         response = requests.get(url, params=params, timeout=self._timeout)
         content = response.text[9:-1]

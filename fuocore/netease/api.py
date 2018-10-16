@@ -22,39 +22,6 @@ uri_v1 = 'http://music.163.com/weapi/v1'
 logger = logging.getLogger(__name__)
 
 
-class Xiami(object):
-    '''
-    refrence: https://github.com/listen1/listen1
-    '''
-    def __init__(self):
-        self._headers = {
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip,deflate,sdch',
-            'Accept-Language': 'zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4',
-            'Connection': 'keep-alive',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Host': 'api.xiami.com',
-            'Referer': 'http://m.xiami.com/',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2)'
-                          ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome'
-                          '/33.0.1750.152 Safari/537.36',
-        }
-        pass
-
-    def search(self, keyword):
-        search_url = 'http://api.xiami.com/web?v=2.0&app_key=1&key={0}'\
-                     '&page=1&limit=50&_ksTS=1459930568781_153&callback=jsonp154'\
-                     '&r=search/songs'.format(keyword)
-        try:
-            res = requests.get(search_url, headers=self._headers)
-            json_string = res.content[9:-1]
-            data = json.loads(json_string.decode('utf-8'))
-            return data['data'].get('songs')
-        except Exception as e:
-            logger.error(str(e))
-        return []
-
-
 class API(object):
     def __init__(self):
         super().__init__()
@@ -68,7 +35,6 @@ class API(object):
         }
         self._cookies = dict(appver="1.2.1", os="osx")
         self._http = None
-        self.xiami_assister = Xiami()
 
     @property
     def cookies(self):
@@ -435,24 +401,6 @@ class API(object):
             'encSecKey': enc_aes_key,
         }
         return payload
-
-    def get_xiami_song(self, title, artist_name):
-        songs = self.xiami_assister.search(title)
-        if not songs:
-            return None
-
-        target_song = songs[0]  # respect xiami search result
-        max_match_ratio = 0.5
-        for song in songs:
-            if song['song_name'].lower() == title.lower():
-                if song['artist_name'] == artist_name:
-                    target_song = song
-                    break
-                ratio = SequenceMatcher(None, song['artist_name'], artist_name).ratio()
-                if ratio > max_match_ratio:
-                    max_match_ratio = ratio
-                    target_song = song
-        return target_song['listen_file']
 
 
 api = API()
