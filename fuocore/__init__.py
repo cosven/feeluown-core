@@ -9,7 +9,7 @@ from fuocore.live_lyric import LiveLyric  # noqa
 from .library import Library  # noqa
 
 
-__version__ = '2.1'
+__version__ = '2.1.1.dev0'
 
 
 __all__ = [

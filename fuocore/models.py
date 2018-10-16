@@ -91,10 +91,14 @@ class ModelMeta(type):
             model_name = _TYPE_NAME_MAP[ModelType(model_type)]
             setattr(provider, model_name, klass)
         fields = list(set(fields))
+
+        # DEPRECATED attribute _meta
         klass._meta = ModelMetadata(model_type=model_type,
                                     provider=provider,
                                     fields=fields,
                                     **meta_kv)
+        # use meta attribute instead of _meta
+        klass.meta = klass._meta
         return klass
 
 
@@ -126,11 +130,13 @@ class BaseModel(Model):
     :param identifier: model object identifier, unique in each provider
     :param source: model object provider identifier
 
-    :cvar allow_get: whether model has a valid get method
-    :cvar allow_list: whether model has a valid list method
+    :cvar allow_get: meta var, whether model has a valid get method
+    :cvar allow_list: meta var, whether model has a valid list method
     """
 
     class Meta:
+        allow_get = True
+        allow_list = False
         model_type = ModelType.dummy.value
         fields = ['source', 'identifier']
 
@@ -221,7 +227,7 @@ class SongModel(BaseModel):
         model_type = ModelType.song.value
         # TODO: 支持低/中/高不同质量的音乐文件
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
-                  'duration', ]
+                  'duration',]
 
     @property
     def artists_name(self):
@@ -258,11 +264,11 @@ class PlaylistModel(BaseModel):
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
 
-    def add_song(self, song_id, allow_exist=True):
+    def add(self, song_id, allow_exist=True):
         """add song to playlist"""
         pass
 
-    def remove_song(self, song_id, allow_not_exist=True):
+    def remove(self, song_id, allow_not_exist=True):
         """remove songs from playlist"""
         pass
 
@@ -297,6 +303,45 @@ class UserModel(BaseModel):
     :param fav_artists: artists collected by user
     """
     class Meta:
+        allow_fav_songs_add = False
+        allow_fav_songs_remove = False
+        allow_fav_playlists_add = False
+        allow_fav_playlists_remove = False
+        allow_fav_albums_add = False
+        allow_fav_albums_remove = False
+        allow_fav_artists_add = False
+        allow_fav_artists_remove = False
+
         model_type = ModelType.user.value
         fields = ['name', 'playlists', 'fav_playlists', 'fav_songs',
                   'fav_albums', 'fav_artists']
+
+    def add_to_fav_songs(self, song_id):
+        """add song to favorite songs, return True if success
+
+        :param song_id: song identifier
+        :return: Ture if success else False
+        :rtype: boolean
+        """
+        pass
+
+    def remove_from_fav_songs(self, song_id):
+        pass
+
+    def add_to_fav_playlists(self, playlist_id):
+        pass
+
+    def remove_from_fav_playlists(self, playlist_id):
+        pass
+
+    def add_to_fav_albums(self, album_id):
+        pass
+
+    def remove_from_fav_albums(self, album_id):
+        pass
+
+    def add_to_fav_artist(self, aritst_id):
+        pass
+
+    def remove_from_fav_artists(self, artist_id):
+        pass

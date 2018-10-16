@@ -65,14 +65,7 @@ class NSongModel(SongModel, NBaseModel):
         if songs and songs[0]['url']:
             self.url = songs[0]['url']
         else:
-            self.url = self._find_in_xiami() or ''
-
-    def _find_in_xiami(self):
-        logger.debug('try to find {} equivalent in xiami'.format(self))
-        return self._api.get_xiami_song(
-            title=self.title,
-            artist_name=self.artists_name
-        )
+            self.url = ''
 
     def _find_in_local(self):
         # TODO: make this a API in SongModel
@@ -89,8 +82,6 @@ class NSongModel(SongModel, NBaseModel):
         """
         We will always check if this song file exists in local library,
         if true, we return the url of the local file.
-        If a song does not exists in netease library, we will *try* to
-        find a equivalent in xiami temporarily.
 
         .. note::
 

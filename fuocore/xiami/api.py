@@ -276,6 +276,18 @@ class API(object):
         # TODO: 支持获取更多
         return rv['data']['data']['songs']
 
+    def update_favorite_song(self, song_id, op):
+        """
+        :param str op: `add` or `del`
+        """
+        op = 'un' if op == 'del' else ''
+        action = 'mtop.alimusic.fav.songfavoriteservice.{}favoritesong'.format(op)
+        payload = {
+            'songId': song_id
+        }
+        code, msg, rv = self.request(action, payload)
+        return rv['data']['data']['status'] == 'true'
+
     def update_playlist_song(self, playlist_id, song_id, op):
         """从播放列表删除或者增加一首歌曲
 
