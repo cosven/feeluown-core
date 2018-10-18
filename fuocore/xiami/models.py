@@ -179,29 +179,27 @@ class XUserModel(UserModel, XBaseModel):
         如果不是用户本人，则不能获取用户默认精选集
         """
         if self._playlists is None:
-            self._playlists = []
             playlists_data = self._api.user_playlists(self.identifier)
-            if not playlists_data:
-                return
+            playlists = []
             for playlist_data in playlists_data:
                 playlist = _deserialize(playlist_data, PlaylistSchema)
-                self._playlists.append(playlist)
+                playlists.append(playlist)
+            self._playlists = playlists
         return self._playlists
 
     @playlists.setter
     def playlists(self, value):
-        self._playlists = value
+        self._playlists = value  # pylint: disable=all
 
     @property
     def fav_playlists(self):
         if self._fav_playlists is None:
             playlists_data = self._api.user_favorite_playlists(self.identifier)
-            self._fav_playlists = []
-            if not playlists_data:
-                return
+            fav_playlists = []
             for playlist_data in playlists_data:
                 playlist = _deserialize(playlist_data, PlaylistSchema)
-                self._fav_playlists.append(playlist)
+                fav_playlists.append(playlist)
+            self._fav_playlists = fav_playlists
         return self._fav_playlists
 
     @fav_playlists.setter
