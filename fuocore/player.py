@@ -20,6 +20,7 @@ by the player to manage playlist.
 
 from abc import ABCMeta, abstractmethod
 from enum import IntEnum
+import locale
 import logging
 import random
 
@@ -395,6 +396,8 @@ class MpvPlayer(AbstractPlayer):
     """
     def __init__(self, audio_device=b'auto', *args, **kwargs):
         super(MpvPlayer, self).__init__()
+        # https://github.com/cosven/FeelUOwn/issues/246
+        locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True)
