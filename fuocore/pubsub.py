@@ -104,7 +104,10 @@ def handle(conn, addr, gateway, *args, **kwargs):
 def run(host='0.0.0.0', port=23334):
     gateway = Gateway()
     server = TcpServer(handle_func=handle, host=host, port=port)
-    Thread(target=server.run, args=(gateway,)).start()
+    t = Thread(target=server.run, args=(gateway,), name='TcpServerThread')
+    server.thread = t
+    t.setDaemon(True)
+    t.start()
     logger.info('Fuo pubsub server running  at {host}:{port}'.format(
         host=host, port=port))
     return gateway, server
@@ -113,7 +116,6 @@ def run(host='0.0.0.0', port=23334):
 if __name__ == '__main__':
     import time
     gateway, server = run()
-    print('pubsub is running.')
     gateway.add_topic('topic.live_lyric')
     while True:
         time.sleep(1)

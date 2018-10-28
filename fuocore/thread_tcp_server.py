@@ -59,7 +59,7 @@ class TcpServer(object):
                 else:
                     logger.debug('%s:%d connected.' % addr)
                     Thread(target=self.handle_func, args=(conn, addr, *args),
-                           kwargs=kwargs).start()
+                           kwargs=kwargs, name='TcpClientThread').start()
             logger.debug('Tcp server is stopped.')
 
     def close(self):
