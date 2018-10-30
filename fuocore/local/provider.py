@@ -13,16 +13,17 @@ from fuocore.utils import log_exectime
 
 from fuocore.local.schemas import EasyMP3MetadataSongSchema
 from fuocore.models import (
-    BaseModel, SearchModel, SongModel, AlbumModel, ArtistModel
+    BaseModel, SearchModel, SongModel, AlbumModel, ArtistModel,
 )
 
 
+SOURCE = 'local'
 logger = logging.getLogger(__name__)
 MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
 
 
 def scan_directory(directory, exts=None, depth=2):
-    exts = exts or ['mp3']
+    exts = exts or ['mp3', 'fuo']
     if depth < 0:
         return []
 
@@ -50,7 +51,7 @@ def create_song(fpath):
     except MutagenError as e:
         logger.error('Mutagen parse metadata failed, ignore.')
         logger.debug(str(e))
-        return
+        return None
 
     schema = EasyMP3MetadataSongSchema(strict=True)
     metadata_dict = dict(metadata)
@@ -68,66 +69,96 @@ def create_song(fpath):
     return song
 
 
-class LocalProvider(AbstractProvider):
-    def __init__(self, library_paths=None, depth=2):
-        # TODO: 避免在初始化的时候进行 scan
-        self._library_paths = library_paths
+@log_exectime
+def scan(paths, depth=2):
+    """scan media files in all paths
+    """
+    song_exts = ['mp3', 'ogg', 'wma']
+    exts = song_exts
+    depth = depth if depth <= 3 else 3
+    media_files = []
+    for directory in paths:
+        logger.debug('正在扫描目录(%s)...', directory)
+        media_files.extend(scan_directory(directory, exts, depth))
+    songs = []
+    for fpath in media_files:
+        song = create_song(fpath)
+        if song is not None:
+            songs.append(song)
+        else:
+            logger.warning('%s can not be recognized', fpath)
+    logger.debug('扫描到 %d 首歌曲', len(songs))
+    return songs
 
-        self._songs = []
 
-        self._identifier_song_map = dict()
-        self._identifier_album_map = dict()
-        self._identifier_artist_map = dict()
+class Scanner:
+    def __init__(self, paths=None, depth=2):
+        self.__songs = []
 
-        self.library_paths = library_paths or [MUSIC_LIBRARY_PATH]
+        #: identifier song map: {id: song, ...}
+        self._songs = dict()
 
-    @property
-    def library_paths(self):
-        return self._library_paths
+        #: identifier album map: {id: album, ...}
+        self._albums = dict()
 
-    @library_paths.setter
-    def library_paths(self, library_paths):
-        self._library_paths = library_paths
-        self._songs = self.scan()
-        self.setup_library()
+        #: identifier artist map: {id: artist, ...}
+        self._artists = dict()
 
-    def setup_library(self):
-        self._identifier_song_map.clear()
-        self._identifier_album_map.clear()
-        self._identifier_artist_map.clear()
-
-        if not self._identifier_song_map:
-            for song in self._songs:
-                self._identifier_song_map[song.identifier] = song
-                if song.album is not None:
-                    album = song.album
-                    self._identifier_album_map[album.identifier] = album
-                if song.artists is not None:
-                    for artist in song.artists:
-                        self._identifier_artist_map[artist.identifier] = artist
-
-    @log_exectime
-    def scan(self, exts=['mp3'], depth=2):
-        """scan media files in all library_paths
-        """
-        depth = depth if depth <= 3 else 3
-        media_files = []
-        for directory in self._library_paths:
-            logger.debug('正在扫描目录({})...'.format(directory))
-            media_files.extend(scan_directory(directory, exts, depth))
-        songs = []
-        for fpath in media_files:
-            song = create_song(fpath)
-            if song is not None:
-                songs.append(song)
-            else:
-                logger.warning('{} can not be recognized'.format(fpath))
-        logger.debug('扫描到 {} 首歌曲'.format(len(songs)))
-        return songs
+        #: music resource paths to be scanned, list
+        self.depth = depth
+        self.paths = paths or [MUSIC_LIBRARY_PATH]
 
     @property
     def songs(self):
-        return self._songs
+        return self._songs.values()
+
+    @property
+    def albums(self):
+        return self._albums.values()
+
+    @property
+    def artists(self):
+        return self._artists.values()
+
+    @property
+    def paths(self):
+        return self._paths
+
+    @paths.setter
+    def paths(self, paths):
+        self._paths = paths
+        self.__songs = scan(self.paths, self.depth)
+        self.setup_library()
+
+    def setup_library(self):
+        self._songs.clear()
+        self._albums.clear()
+        self._artists.clear()
+
+        for song in self.__songs:
+            if song.identifier in self._songs:
+                continue
+            self._songs[song.identifier] = song
+            if song.album is not None:
+                album = song.album
+                if album.identifier not in self._albums:
+                    self._albums[album.identifier] = album
+                album.songs.append(song)
+            if song.artists is not None:
+                for artist in song.artists:
+                    artist.songs.append(song)
+                    if artist.identifier not in self._artists:
+                        self._artists[artist.identifier] = artist
+                    if song.album is not None:
+                        artist.albums.append(song.album)
+                        song.album.artists.append(artist)
+
+
+class LocalProvider(AbstractProvider):
+
+    def __init__(self, paths=None, depth=2):
+        super().__init__()
+        self.scanner = Scanner(paths=paths or [], depth=depth)
 
     @property
     def identifier(self):
@@ -137,14 +168,15 @@ class LocalProvider(AbstractProvider):
     def name(self):
         return '本地音乐'
 
-    def auth(self):
-        pass
+    @property
+    def songs(self):
+        return list(self.scanner.songs)
 
     @log_exectime
     def search(self, keyword, **kwargs):
         limit = kwargs.get('limit', 10)
         repr_song_map = dict()
-        for song in self.songs:
+        for song in self.api.songs:
             key = song.title + ' ' + song.artists_name + str(song.identifier)
             repr_song_map[key] = song
         choices = repr_song_map.keys()
@@ -160,28 +192,29 @@ class LocalProvider(AbstractProvider):
 provider = LocalProvider()
 
 
-class NBaseModel(BaseModel):
+class LBaseModel(BaseModel):
     class Meta:
         provider = provider
+        scanner = provider.scanner
 
 
-class LSongModel(SongModel, BaseModel):
+class LSongModel(SongModel, LBaseModel):
     @classmethod
     def get(cls, identifier):
-        return cls._meta.provider._identifier_song_map.get(identifier)
+        return cls.meta.scanner.songs.get(identifier)
 
     @classmethod
-    def list(cls, identifiers):
-        return map(cls._meta.provider._identifier_song_map.get, identifiers)
+    def list(cls, identifier_list):
+        return map(cls.meta.scanner.songs.get, identifier_list)
 
 
-class LAlbumModel(AlbumModel, BaseModel):
-    @classmethod
-    def get(cls, identifier):
-        return cls._meta.provider._identifier_album_map.get(identifier)
-
-
-class LArtistModel(ArtistModel, BaseModel):
+class LAlbumModel(AlbumModel, LBaseModel):
     @classmethod
     def get(cls, identifier):
-        return cls._meta.provider._identifier_artist_map.get(identifier)
+        return cls.meta.scanner.albums.get(identifier)
+
+
+class LArtistModel(ArtistModel, LBaseModel):
+    @classmethod
+    def get(cls, identifier):
+        return cls.meta.scanner.artists.get(identifier)

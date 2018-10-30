@@ -156,12 +156,10 @@ class BaseModel(Model):
 
         Model should return a valid object if the identifier is available.
         """
-        raise NotImplementedError
 
     @classmethod
     def list(cls, identifier_list):
         """Model batch get method"""
-        raise NotImplementedError
 
 
 class ArtistModel(BaseModel):
@@ -174,7 +172,7 @@ class ArtistModel(BaseModel):
     """
     class Meta:
         model_type = ModelType.artist.value
-        fields = ['name', 'cover', 'songs', 'desc']
+        fields = ['name', 'cover', 'songs', 'desc', 'albums']
 
     def __str__(self):
         return 'fuo://{}/artists/{}'.format(self.source, self.identifier)
@@ -231,7 +229,7 @@ class SongModel(BaseModel):
 
     @property
     def artists_name(self):
-        return ','.join((artist.name for artist in self.artists))
+        return ','.join((artist.name for artist in self.artists or []))
 
     @property
     def album_name(self):
@@ -264,12 +262,18 @@ class PlaylistModel(BaseModel):
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
 
-    def add(self, song_id, allow_exist=True):
-        """add song to playlist"""
+    def add(self, song_id):
+        """add song to playlist, return true if succeed.
+
+        If the song was in playlist already, return true.
+        """
         pass
 
-    def remove(self, song_id, allow_not_exist=True):
-        """remove songs from playlist"""
+    def remove(self, song_id):
+        """remove songs from playlist, return true if succeed
+
+        If song is not in playlist, return true.
+        """
         pass
 
 

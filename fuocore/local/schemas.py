@@ -27,6 +27,7 @@ class ArtistSchema(BaseSchema):
     name = fields.Str(required=True)
     cover = fields.Str()  # NOTE: 可能需要单独一个 Schema
     songs = fields.List(fields.Nested('SongSchema'))
+    albums = fields.List(fields.Nested('AlbumSchema'))
 
     @post_load
     def create_model(self, data):
@@ -70,19 +71,35 @@ class EasyMP3MetadataSongSchema(Schema):
         title = title_list[0] if title_list else 'Unknown'
         artist_name_list = data.get('artist_name_list', [])
         album_name_list = data.get('album_name_list', [])
-        identifier = str(elfhash(base64.b64encode(bytes(data['url'], 'utf-8'))))
+        artists_name = ','.join(artist_name_list)
+        album_name = album_name_list[0] if album_name_list else ''
+        # NOTE: use {title}-{artists_name}-{album_name} as song identifier
+        identifier_str = '{} - {} - {}'.format(title, artists_name, album_name)
+        identifier = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
         song_data = {
             'source': SOURCE,
             'identifier': identifier,
             'title': title,
             'duration': data['duration'],
-            'url': data['url'],
-            'artists': [{'name': name, 'identifier': name, 'source': SOURCE}
-                        for name in artist_name_list]
+            'url': data['url']
         }
         if album_name_list:
             song_data['album'] = {'name': album_name_list[0],
                                   'identifier': album_name_list[0],
-                                  'source': SOURCE}
+                                  'source': SOURCE,
+                                  'artists': [],
+                                  'songs': []}
+
+        if artist_name_list:
+            artists = []
+            for artist_name in artist_name_list:
+                artist = {'identifier': elfhash(base64.b64encode(bytes(artist_name, 'utf-8'))),
+                          'name': artist_name,
+                          'source': SOURCE,
+                          'albums': [],
+                          'songs': []}
+                artists.append(artist)
+            song_data['artists'] = artists
+
         song, _ = SongSchema(strict=True).load(song_data)
         return song

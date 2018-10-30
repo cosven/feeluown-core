@@ -53,6 +53,6 @@ class AbstractProvider(ABC):
         finally:
             self.auth(old_user)
 
-    @abstractmethod
     def auth(self, user):
         """use provider as a specific user"""
+        self._user = user
