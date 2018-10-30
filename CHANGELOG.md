@@ -2,6 +2,7 @@
 
 ## 2.1.1 (WIP)
 - 给 library 添加 `list_song_standby` 接口
+- **BREAKING CHANGE**: 修改本地音乐 ID 计算方法
 
 ## 2.1 (2018-10-08)
 - 修复 XUserModel 的问题
