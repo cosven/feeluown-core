@@ -120,13 +120,7 @@ class Scanner:
     def artists(self):
         return self._artists.values()
 
-    @property
-    def paths(self):
-        return self._paths
-
-    @paths.setter
-    def paths(self, paths):
-        self._paths = paths
+    def run(self):
         self.__songs = scan(self.paths, self.depth)
         self.setup_library()
 
@@ -156,9 +150,19 @@ class Scanner:
 
 class LocalProvider(AbstractProvider):
 
-    def __init__(self, paths=None, depth=2):
+    def __init__(self):
         super().__init__()
-        self.scanner = Scanner(paths=paths or [], depth=depth)
+
+        self._songs = []
+        self._albums = []
+        self._artists = []
+
+    def scan(self, paths=None, depth=2):
+        scanner = Scanner(paths or [], depth=depth)
+        scanner.run()
+        self._songs = list(scanner.songs)
+        self._albums = list(scanner.albums)
+        self._artists = list(scanner.artists)
 
     @property
     def identifier(self):
@@ -170,7 +174,15 @@ class LocalProvider(AbstractProvider):
 
     @property
     def songs(self):
-        return list(self.scanner.songs)
+        return self._songs
+
+    @property
+    def artists(self):
+        return self._artists
+
+    @property
+    def album(self):
+        return self._albums
 
     @log_exectime
     def search(self, keyword, **kwargs):
@@ -195,26 +207,25 @@ provider = LocalProvider()
 class LBaseModel(BaseModel):
     class Meta:
         provider = provider
-        scanner = provider.scanner
 
 
 class LSongModel(SongModel, LBaseModel):
     @classmethod
     def get(cls, identifier):
-        return cls.meta.scanner.songs.get(identifier)
+        return cls.meta.provider.songs.get(identifier)
 
     @classmethod
     def list(cls, identifier_list):
-        return map(cls.meta.scanner.songs.get, identifier_list)
+        return map(cls.meta.provider.songs.get, identifier_list)
 
 
 class LAlbumModel(AlbumModel, LBaseModel):
     @classmethod
     def get(cls, identifier):
-        return cls.meta.scanner.albums.get(identifier)
+        return cls.meta.provider.albums.get(identifier)
 
 
 class LArtistModel(ArtistModel, LBaseModel):
     @classmethod
     def get(cls, identifier):
-        return cls.meta.scanner.artists.get(identifier)
+        return cls.meta.provider.artists.get(identifier)
