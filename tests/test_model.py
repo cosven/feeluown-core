@@ -6,6 +6,9 @@ from fuocore.models import Model
 class FakeProvider(object):
     name = 'fake'
 
+    def set_model_cls(self, *args, **kwags):
+        pass
+
 
 provider = FakeProvider()
 

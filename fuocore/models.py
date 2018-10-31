@@ -22,16 +22,6 @@ class ModelType(IntEnum):
     user = 17
 
 
-_TYPE_NAME_MAP = {
-    ModelType.song: 'Song',
-    ModelType.artist: 'Artist',
-    ModelType.album: 'Album',
-    ModelType.playlist: 'Playlist',
-    ModelType.lyric: 'Lyric',
-    ModelType.user: 'User',
-}
-
-
 class ModelMetadata(object):
     def __init__(self,
                  model_type=ModelType.dummy.value,
@@ -88,8 +78,7 @@ class ModelMeta(type):
         provider = meta_kv.pop('provider', None)
         model_type = meta_kv.pop('model_type', ModelType.dummy.value)
         if provider and ModelType(model_type) != ModelType.dummy:
-            model_name = _TYPE_NAME_MAP[ModelType(model_type)]
-            setattr(provider, model_name, klass)
+            provider.set_model_cls(model_type, klass)
         fields = list(set(fields))
 
         # DEPRECATED attribute _meta

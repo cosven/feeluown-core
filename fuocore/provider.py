@@ -15,7 +15,21 @@ from fuocore.models import (
     LyricModel,
 
     UserModel,
+
+    ModelType,
 )
+
+
+
+
+_TYPE_NAME_MAP = {
+    ModelType.song: 'Song',
+    ModelType.artist: 'Artist',
+    ModelType.album: 'Album',
+    ModelType.playlist: 'Playlist',
+    ModelType.lyric: 'Lyric',
+    ModelType.user: 'User',
+}
 
 
 class AbstractProvider(ABC):
@@ -32,6 +46,15 @@ class AbstractProvider(ABC):
 
     def __init__(self):
         self._user = None
+
+
+    def get_model_cls(self, model_type):
+        name = _TYPE_NAME_MAP[model_type]
+        return getattr(self, name)
+
+    def set_model_cls(self, model_type, model_cls):
+        name = _TYPE_NAME_MAP[model_type]
+        setattr(self, name, model_cls)
 
     @property
     @abstractmethod
