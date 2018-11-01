@@ -188,7 +188,7 @@ class LocalProvider(AbstractProvider):
     def search(self, keyword, **kwargs):
         limit = kwargs.get('limit', 10)
         repr_song_map = dict()
-        for song in self.api.songs:
+        for song in self.songs:
             key = song.title + ' ' + song.artists_name + str(song.identifier)
             repr_song_map[key] = song
         choices = repr_song_map.keys()
