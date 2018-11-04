@@ -31,8 +31,6 @@ def propress_hook(d):
     * filename: The final filename (always present)
     * tmpfilename: The filename we're currently writing to
     """
-    if d['downloading'] == 'downloading':
-        logger.info('downloading and write to {}'.format(d['filename']))
     if d['status'] == 'finished':
         logger.info('Done downloading, now converting ...')
 
