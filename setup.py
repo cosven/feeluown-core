@@ -9,6 +9,7 @@ requires = [
     'beautifulsoup4>=4.5.3',
     'marshmallow>=2.13.5',
     'mutagen>=1.37',
+    'youtube-dl>=2018.09.08'
     'fuzzywuzzy',
 ]
 
