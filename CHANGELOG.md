@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 2.1.1 (WIP)
+## 2.2a0 (2018-11-06)
 - 给 library 添加 `list_song_standby` 接口
 - **BREAKING CHANGE**: 修改本地音乐 ID 计算方法
 
