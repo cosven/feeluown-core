@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 2.2a1 (WIP)
+
+- 播放器相关 API 修改
+
+  1. 单曲循环时，`playlist.next_song` 返回的歌曲是下一首，
+     而不是当前歌曲；之前是返回当前歌曲。
+  2. 单曲循环时，`player.play_next` 方法会切换到下一首；
+     之前是播放当前歌曲。
+  3. `playlist.add` 总是把歌曲添加到播放列表末尾；以前是插入到当前歌曲后面。
+  4. 删除 player playlist setter，目前不支持用户设置 playlist
+
 ## 2.2a0 (2018-11-06)
 - 给 library 添加 `list_song_standby` 接口
 - **BREAKING CHANGE**: 修改本地音乐 ID 计算方法

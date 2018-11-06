@@ -53,7 +53,7 @@ class LiveLyric(object):
 
     def on_song_changed(self, song):
         """bind song changed signal with this"""
-        if song.lyric is None:
+        if song is None or song.lyric is None:
             self._lyric = None
             self._pos_s_map = {}
         else:

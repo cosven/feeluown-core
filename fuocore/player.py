@@ -95,18 +95,10 @@ class Playlist(object):
             self._bad_songs.append(song)
 
     def add(self, song):
-        """Insert a song after current song. O(n)
-
-        If current song is None, append to end.
-        """
+        """往播放列表末尾添加一首歌曲"""
         if song in self._songs:
             return
-
-        if self._current_song is None:
-            self._songs.append(song)
-        else:
-            index = self._songs.index(self._current_song)
-            self._songs.insert(index + 1, song)
+        self._songs.append(song)
         logger.debug('Add %s to player playlist', song)
 
     def remove(self, song):
@@ -150,7 +142,12 @@ class Playlist(object):
 
     @current_song.setter
     def current_song(self, song):
-        """change current song"""
+        """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
+
+        .. note::
+
+            该方法理论上只应该被 Player 对象调用。
+        """
         self._last_song = self.current_song
         if song is None:
             self._current_song = None
@@ -170,12 +167,6 @@ class Playlist(object):
     def playback_mode(self, playback_mode):
         self._playback_mode = playback_mode
         self.playback_mode_changed.emit(playback_mode)
-
-    @property
-    def _good_songs(self):
-        """可以用来播放的歌曲（不在 _bad_song 集合中的歌曲）"""
-        return [song for song in self._songs
-                if song not in self._bad_songs]
 
     def _get_good_song(self, base=0, random_=False, direction=1):
         """从播放列表中获取一首可以播放的歌曲
@@ -223,13 +214,10 @@ class Playlist(object):
 
         if self.playback_mode == PlaybackMode.random:
             next_song = self._get_good_song(random_=True)
-        elif self.playback_mode == PlaybackMode.one_loop:
-            current_index = self._songs.index(self.current_song)
-            next_song = self._get_good_song(base=current_index)
         else:
             current_index = self._songs.index(self.current_song)
             if current_index == len(self._songs) - 1:
-                if self.playback_mode == PlaybackMode.loop:
+                if self.playback_mode in (PlaybackMode.loop, PlaybackMode.one_loop):
                     next_song = self._get_good_song()
                 elif self.playback_mode == PlaybackMode.sequential:
                     next_song = None
@@ -244,13 +232,10 @@ class Playlist(object):
         NOTE: not the last played song
         """
         if self.current_song is None:
-            return self._get_good_song(direction=-1)
+            return self._get_good_song(base=-1, direction=-1)
 
         if self.playback_mode == PlaybackMode.random:
             previous_song = self._get_good_song(direction=-1)
-        elif self.playback_mode == PlaybackMode.one_loop:
-            current_index = self._songs.index(self.current_song)
-            previous_song = self._get_good_song(base=current_index, direction=-1)
         else:
             current_index = self._songs.index(self.current_song)
             previous_song = self._get_good_song(base=current_index - 1, direction=-1)
@@ -302,6 +287,12 @@ class AbstractPlayer(metaclass=ABCMeta):
 
     @property
     def current_song(self):
+        """当前正在播放的歌曲
+
+        .. warning:
+
+           即使
+        """
         return self._playlist.current_song
 
     @property
@@ -312,10 +303,6 @@ class AbstractPlayer(metaclass=ABCMeta):
         """
         return self._playlist
 
-    @playlist.setter
-    def playlist(self, playlist):
-        self._playlist = playlist
-
     @property
     def position(self):
         """player position, the units is seconds"""
@@ -323,7 +310,7 @@ class AbstractPlayer(metaclass=ABCMeta):
 
     @position.setter
     def position(self, position):
-        self._position = position
+        """set player position, the units is seconds"""
 
     @property
     def volume(self):
@@ -418,7 +405,7 @@ class MpvPlayer(AbstractPlayer):
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv.event_callbacks.append(self._on_event)
-        self.song_finished.connect(self.play_next)
+        self.song_finished.connect(self._on_song_finished)
         logger.info('Player initialize finished.')
 
     def shutdown(self):
@@ -439,23 +426,36 @@ class MpvPlayer(AbstractPlayer):
         self.media_changed.emit(url)
 
     def play_song(self, song):
-        if self.playlist.current_song is not None and \
-                self.playlist.current_song == song:
-            logger.warning('the song to be played is same as current song')
-            return
+        """播放指定歌曲
 
-        url = song.url
-        if url:
-            self._playlist.current_song = song
+        如果目标歌曲与当前歌曲不相同，则修改播放列表当前歌曲，
+        播放列表会发出 song_changed 信号，player 监听到信号后调用 play 方法，
+        到那时才会真正的播放新的歌曲。如果和当前播放歌曲相同，则忽略。
+
+        .. note::
+
+            调用方不应该直接调用 playlist.current_song = song 来切换歌曲
+        """
+        if song is not None and song == self.current_song:
+            logger.warning('The song is already under playing.')
         else:
-            logger.warning("Invalid song: song url can't be None or ''")
-            self._playlist.mark_as_bad(song)
+            self._playlist.current_song = song
 
     def play_next(self):
+        """播放下一首歌曲
+
+        .. note::
+
+            这里不能使用 ``play_song(playlist.next_song)`` 方法来切换歌曲，
+            ``play_song`` 和 ``playlist.current_song = song`` 是有区别的。
+        """
         self.playlist.current_song = self.playlist.next_song
 
     def play_previous(self):
         self.playlist.current_song = self.playlist.previous_song
+
+    def replay(self):
+        self.playlist.current_song = self.current_song
 
     def resume(self):
         self._mpv.pause = False
@@ -498,17 +498,26 @@ class MpvPlayer(AbstractPlayer):
 
     def _on_duration_changed(self, duration):
         """listening to mpv duration change event"""
-        logger.info('player receive duration changed signal')
+        logger.info('Player receive duration changed signal')
         self.duration = duration
 
     def _on_song_changed(self, song):
-        logger.debug('player received song changed signal')
+        """播放列表 current_song 发生变化后的回调
+
+        判断变化后的歌曲是否有效的，有效则播放，否则将它标记为无效歌曲。
+        如果变化后的歌曲是 None，则停止播放。
+        """
+        logger.debug('Player received song changed signal')
         if song is not None:
-            logger.info('Will play song: %s' % self._playlist.current_song)
-            self.play(song.url)
+            logger.info('Try to play song: %s' % song)
+            if song.url:
+                self.play(song.url)
+            else:
+                self._playlist.mark_as_bad(song)
+                self.play_next()
         else:
             self.stop()
-            logger.info('playlist provide no song anymore.')
+            logger.info('No good song in player playlist anymore.')
 
     def _on_event(self, event):
         if event['event_id'] == MpvEventID.END_FILE:
@@ -516,3 +525,9 @@ class MpvPlayer(AbstractPlayer):
             logger.debug('Current song finished. reason: %d' % reason)
             if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
                 self.song_finished.emit()
+
+    def _on_song_finished(self):
+        if self._playlist.playback_mode == PlaybackMode.one_loop:
+            self.replay()
+        else:
+            self.play_next()

@@ -232,6 +232,8 @@ class SongModel(BaseModel):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa
 
     def __eq__(self, other):
+        if not isinstance(other, SongModel):
+            return False
         return all([other.source == self.source,
                     other.identifier == self.identifier])
 
