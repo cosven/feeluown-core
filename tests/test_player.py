@@ -67,6 +67,7 @@ class TestPlayer(TestCase):
         self.player.stop()
         self.assertEqual(self.player.state, State.stopped)
 
+    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
     def test_set_volume(self):
         self.player.volume = 30
         self.assertEqual(self.player.volume, 30)
