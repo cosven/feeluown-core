@@ -52,27 +52,20 @@ class API(object):
 
     def request(self, method, action, query=None, timeout=3):
         # logger.info('method=%s url=%s data=%s' % (method, action, query))
-        try:
-            if method == "GET":
-                res = self.http.get(action, headers=self.headers,
-                                    cookies=self._cookies, timeout=timeout)
-            elif method == "POST":
-                res = self.http.post(action, data=query, headers=self.headers,
-                                     cookies=self._cookies, timeout=timeout)
-            elif method == "POST_UPDATE":
-                res = self.http.post(action, data=query, headers=self.headers,
-                                     cookies=self._cookies, timeout=timeout)
-                self._cookies.update(res.cookies.get_dict())
-            if res is not None:
-                content = res.content
-                content_str = content.decode('utf-8')
-                content_dict = json.loads(content_str)
-                return content_dict
-            else:
-                return None
-        except Exception as e:
-            logger.error(str(e))
-            return None
+        if method == "GET":
+            res = self.http.get(action, headers=self.headers,
+                                cookies=self._cookies, timeout=timeout)
+        elif method == "POST":
+            res = self.http.post(action, data=query, headers=self.headers,
+                                 cookies=self._cookies, timeout=timeout)
+        elif method == "POST_UPDATE":
+            res = self.http.post(action, data=query, headers=self.headers,
+                                 cookies=self._cookies, timeout=timeout)
+            self._cookies.update(res.cookies.get_dict())
+        content = res.content
+        content_str = content.decode('utf-8')
+        content_dict = json.loads(content_str)
+        return content_dict
 
     def login(self, username, pw_encrypt, phone=False):
         action = 'http://music.163.com/api/login/'

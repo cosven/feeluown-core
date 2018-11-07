@@ -101,6 +101,16 @@ class Playlist(object):
         self._songs.append(song)
         logger.debug('Add %s to player playlist', song)
 
+    def insert(self, song):
+        """在当前歌曲后插入一首歌曲"""
+        if song in self._songs:
+            return
+        if self._current_song is None:
+            self._songs.append(song)
+        else:
+            index = self._songs.index(self._current_song)
+            self._songs.insert(index + 1, song)
+
     def remove(self, song):
         """Remove song from playlist. O(n)
 
@@ -111,8 +121,12 @@ class Playlist(object):
             if self._current_song is None:
                 self._songs.remove(song)
             elif song == self._current_song:
+                next_song = self.next_song
+                # 随机模式下或者歌单只剩一首歌曲，下一首可能和当前歌曲相同
+                if next_song == self.current_song:
+                    self.current_song = None
+                    self._songs.remove(song)
                 self.current_song = self.next_song
-                self._songs.remove(song)
             else:
                 self._songs.remove(song)
             logger.debug('Remove {} from player playlist'.format(song))
@@ -155,7 +169,7 @@ class Playlist(object):
         elif song in self._songs:
             self._current_song = song
         else:
-            self.add(song)
+            self.insert(song)
             self._current_song = song
         self.song_changed.emit(song)
 
@@ -382,7 +396,7 @@ class MpvPlayer(AbstractPlayer):
     TODO: make me singleton
     """
     def __init__(self, audio_device=b'auto', *args, **kwargs):
-        super(MpvPlayer, self).__init__()
+        super(MpvPlayer, self).__init__(*args, **kwargs)
         # https://github.com/cosven/FeelUOwn/issues/246
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = MPV(ytdl=False,
@@ -390,9 +404,6 @@ class MpvPlayer(AbstractPlayer):
                         input_vo_keyboard=True)
 
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
-
-        self._playlist = Playlist()
-        self._playlist.song_changed.connect(self._on_song_changed)
 
     def initialize(self):
         self._mpv.observe_property(
@@ -405,6 +416,7 @@ class MpvPlayer(AbstractPlayer):
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv.event_callbacks.append(self._on_event)
+        self._playlist.song_changed.connect(self._on_song_changed)
         self.song_finished.connect(self._on_song_finished)
         logger.info('Player initialize finished.')
 
