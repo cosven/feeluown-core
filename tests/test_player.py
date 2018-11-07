@@ -154,9 +154,11 @@ class TestPlayerAndPlaylist(TestCase):
 
     def setUp(self):
         self.player = MpvPlayer()
+        self.playlist = self.player.playlist
         self.player.initialize()
 
     def tearDown(self):
+        self.playlist.clear()
         self.player.shutdown()
 
     @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
@@ -174,3 +176,14 @@ class TestPlayerAndPlaylist(TestCase):
 
         self.player.play_previous()
         self.assertTrue(playlist.current_song, s1)
+
+    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    def test_remove_current_song_2(self):
+        """当播放列表只有一首歌时，移除它"""
+        s1 = FakeValidSongModel()
+        self.playlist.current_song = s1
+        time.sleep(0.1)  # 让 Mpv 真正的开始播放
+        self.assertTrue(self.player.state, State.playing)
+        self.playlist.remove(s1)
+        self.assertEqual(len(self.playlist), 0)
+        self.assertEqual(self.player.state, State.stopped)
