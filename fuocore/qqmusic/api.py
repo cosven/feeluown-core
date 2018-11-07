@@ -73,7 +73,7 @@ class API(object):
         soup = BeautifulSoup(response.content, 'html.parser')
         media = soup.select('#h5audio_media')
         if media:
-            return media[0]['src']
+            return media[0].get('src')
         return None
 
     def search(self, keyword, limit=20, page=1):
