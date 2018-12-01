@@ -116,7 +116,6 @@ class NSongModel(SongModel, NBaseModel):
         lyric = lrc.get('lyric', '')
         self._lyric = LyricModel(
             identifier=self.identifier,
-            source=self.source,
             content=lyric
         )
         return self._lyric
@@ -241,8 +240,7 @@ def search(keyword, **kwargs):
             schema = NeteaseSongSchema(strict=True)
             s, _ = schema.load(song)
             songs.append(s)
-    return NSearchModel(q=keyword, songs=songs,
-                        source=provider.identifier)
+    return NSearchModel(q=keyword, songs=songs)
 
 
 # import loop

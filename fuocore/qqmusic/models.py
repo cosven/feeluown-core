@@ -1,22 +1,21 @@
 from fuocore.models import (
     BaseModel,
     SongModel,
-    LyricModel,
     PlaylistModel,
     AlbumModel,
     ArtistModel,
     SearchModel,
-    UserModel,
 )
 
 from .provider import provider
 
 
 class QQBaseModel(BaseModel):
-    _provider = provider
-    api = provider.api
-
+    _api = provider.api
     _detail_fields = ()
+
+    class Meta:
+        provider = provider
 
     @classmethod
     def get(cls, identifier):
@@ -33,6 +32,13 @@ class QQBaseModel(BaseModel):
         return value
 
 
+
+def _deserialize(data, schema_cls):
+    schema = schema_cls(strict=True)
+    obj, _ = schema.load(data)
+    return obj
+
+
 class QQSongModel(SongModel, QQBaseModel):
 
     class Meta:
@@ -42,7 +48,7 @@ class QQSongModel(SongModel, QQBaseModel):
     def url(self):
         if self._url is not None:
             return self._url
-        url = self.api.get_song_url(self.mid)
+        url = self._api.get_song_url(self.mid)
         if url is not None:
             self._url = url
         else:
@@ -55,11 +61,25 @@ class QQSongModel(SongModel, QQBaseModel):
 
 
 class QQAlbumModel(AlbumModel, QQBaseModel):
-    pass
+    _detail_fields = ('songs', 'desc')
 
+    @classmethod
+    def get(cls, identifier):
+        data_album = cls._api.album_detail(identifier)
+        album = _deserialize(data_album, QQAlbumSchema)
+        return album
 
 class QQArtistModel(ArtistModel, QQBaseModel):
-    pass
+    _detail_fields = ('songs', 'desc')
+
+    class Meta:
+        allow_get = True
+
+    @classmethod
+    def get(cls, identifier):
+        data_artist = cls._api.artist_detail(identifier)
+        artist = _deserialize(data_artist, QQArtistSchema)
+        return artist
 
 
 class QQPlaylistModel(PlaylistModel, QQBaseModel):
@@ -74,19 +94,13 @@ def search(keyword, **kwargs):
     data_songs = provider.api.search(keyword)
     songs = []
     for data_song in data_songs:
-        album = QQAlbumModel(identifier=data_song['albumid'],
-                             name=data_song['albumname'])
-        artists = []
-        for data_artist in data_song['singer']:
-            artist = QQArtistModel(identifier=data_artist['id'],
-                                   name=data_artist['name'])
-            artists.append(artist)
-        song = QQSongModel(identifier=data_song['songid'],
-                           source=provider.identifier,
-                           mid=data_song['songmid'],
-                           title=data_song['songname'],
-                           duration=data_song['interval'] * 1000,
-                           album=album,
-                           artists=artists)
+        song = _deserialize(data_song, QQSongSchema)
         songs.append(song)
     return QQSearchModel(songs=songs)
+
+
+from .schemas import (
+    QQArtistSchema,
+    QQAlbumSchema,
+    QQSongSchema,
+)  # noqa

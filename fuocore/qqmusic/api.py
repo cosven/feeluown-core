@@ -77,6 +77,11 @@ class API(object):
         return None
 
     def search(self, keyword, limit=20, page=1):
+        """
+
+        >>> songs = API().search('周杰伦')
+        >>> print(songs[0]['songname'])
+        """
         path = '/soso/fcgi-bin/client_search_cp'
         url = api_base_url + path
         params = {
@@ -92,3 +97,29 @@ class API(object):
         content = response.text[9:-1]
         songs = json.loads(content)['data']['song']['list']
         return songs
+
+    def artist_detail(self, artist_id):
+        """获取歌手详情"""
+        path = '/v8/fcg-bin/fcg_v8_singer_track_cp.fcg'
+        url = api_base_url + path
+        params = {
+            'singerid': artist_id,
+            'songstatus': 1,
+            'order': 'listen',
+            'begin': 0,
+            'num': 50,
+            'from': 'h5',
+            'platform': 'h5page',
+        }
+        resp = requests.get(url, params=params, timeout=self._timeout)
+        rv = resp.json()
+        return rv['data']
+
+    def album_detail(self, album_id):
+        url = api_base_url + '/v8/fcg-bin/fcg_v8_album_info_cp.fcg'
+        params = {
+            'albumid': album_id,
+            'format': 'json'
+        }
+        resp = requests.get(url, params=params)
+        return resp.json()['data']

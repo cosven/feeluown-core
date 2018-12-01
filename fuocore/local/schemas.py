@@ -2,23 +2,13 @@
 import base64
 
 from marshmallow import Schema, post_load, fields
-
-from fuocore.models import (
-    AlbumModel,
-    ArtistModel,
-    SongModel,
-)
-from fuocore.utils import elfhash
-
 from marshmallow import Schema, fields, post_load
 
-
-SOURCE = 'local'
+from fuocore.utils import elfhash
 
 
 class BaseSchema(Schema):
     identifier = fields.Field(required=True)
-    source = fields.Str(required=True, missing=SOURCE)
     desc = fields.Str()
 
 
@@ -31,7 +21,7 @@ class ArtistSchema(BaseSchema):
 
     @post_load
     def create_model(self, data):
-        return ArtistModel(**data)
+        return LArtistModel(**data)
 
 
 class AlbumSchema(BaseSchema):
@@ -42,7 +32,7 @@ class AlbumSchema(BaseSchema):
 
     @post_load
     def create_model(self, data):
-        return AlbumModel(**data)
+        return LAlbumModel(**data)
 
 
 class SongSchema(BaseSchema):
@@ -54,7 +44,7 @@ class SongSchema(BaseSchema):
 
     @post_load
     def create_model(self, data):
-        return SongModel(**data)
+        return LSongModel(**data)
 
 
 class EasyMP3MetadataSongSchema(Schema):
@@ -77,7 +67,6 @@ class EasyMP3MetadataSongSchema(Schema):
         identifier_str = '{} - {} - {}'.format(title, artists_name, album_name)
         identifier = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
         song_data = {
-            'source': SOURCE,
             'identifier': identifier,
             'title': title,
             'duration': data['duration'],
@@ -86,7 +75,6 @@ class EasyMP3MetadataSongSchema(Schema):
         if album_name_list:
             song_data['album'] = {'name': album_name_list[0],
                                   'identifier': album_name_list[0],
-                                  'source': SOURCE,
                                   'artists': [],
                                   'songs': []}
 
@@ -95,7 +83,6 @@ class EasyMP3MetadataSongSchema(Schema):
             for artist_name in artist_name_list:
                 artist = {'identifier': elfhash(base64.b64encode(bytes(artist_name, 'utf-8'))),
                           'name': artist_name,
-                          'source': SOURCE,
                           'albums': [],
                           'songs': []}
                 artists.append(artist)
@@ -103,3 +90,10 @@ class EasyMP3MetadataSongSchema(Schema):
 
         song, _ = SongSchema(strict=True).load(song_data)
         return song
+
+
+from .provider import (
+    LAlbumModel,
+    LArtistModel,
+    LSongModel,
+)

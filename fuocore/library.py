@@ -78,12 +78,15 @@ class Library(object):
         """
         def get_score(standby):
             score = 1
+            # 分数占比关系：
+            # title + album > artist
+            # artist > title > album
             if song.artists_name != standby.artists_name:
-                score -= 0.3
+                score -= 0.4
             if song.title != standby.title:
-                score -= 0.2
+                score -= 0.3
             if song.album_name != standby.album_name:
-                score -= 0.1
+                score -= 0.2
             return score
 
         valid_sources = [p.identifier for p in self.list() if p.identifier != song.source]

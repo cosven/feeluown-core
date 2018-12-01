@@ -1,11 +1,4 @@
-from marshmallow import Schema as _Schema, fields, post_load
-
-
-SOURCE = 'xiami'
-
-
-class Schema(_Schema):
-    source = fields.Str(missing=SOURCE)
+from marshmallow import Schema, fields, post_load
 
 
 class ArtistSchema(Schema):
@@ -76,7 +69,6 @@ class SongSchema(Schema):
     @post_load
     def create_model(self, data):
         album = XAlbumModel(identifier=data['album_id'],
-                            source=data['source'],
                             name=data['album_name'],
                             cover=data['album_cover'])
         # files = data['files']
@@ -90,7 +82,6 @@ class SongSchema(Schema):
                           url=data['url'],
                           duration=int(data['duration']),
                           album=album,
-                          source=data['source'],
                           artists=data['artists'])
         return song
 

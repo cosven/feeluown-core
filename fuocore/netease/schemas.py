@@ -1,11 +1,4 @@
-from marshmallow import Schema as _Schema, post_load, fields
-
-
-SOURCE = 'netease'
-
-
-class Schema(_Schema):
-    source = fields.Str(missing=SOURCE)
+from marshmallow import Schema, post_load, fields
 
 
 class NeteaseSongSchema(Schema):

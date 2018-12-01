@@ -86,6 +86,7 @@ class ModelMeta(type):
                                     provider=provider,
                                     fields=fields,
                                     **meta_kv)
+        klass.source = provider.identifier if provider is not None else None
         # use meta attribute instead of _meta
         klass.meta = klass._meta
         return klass
@@ -127,7 +128,7 @@ class BaseModel(Model):
         allow_get = True
         allow_list = False
         model_type = ModelType.dummy.value
-        fields = ['source', 'identifier']
+        fields = ['identifier']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

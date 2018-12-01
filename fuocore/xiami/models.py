@@ -78,7 +78,6 @@ class XSongModel(SongModel, XBaseModel):
         content = self._api.song_lyric(self.identifier)
         self.lyric = LyricModel(
             identifier=self.identifier,
-            source=self.source,
             content=content
         )
         return self._lyric

@@ -11,13 +11,11 @@ from mutagen.mp3 import EasyMP3
 from fuocore.provider import AbstractProvider
 from fuocore.utils import log_exectime
 
-from fuocore.local.schemas import EasyMP3MetadataSongSchema
 from fuocore.models import (
     BaseModel, SearchModel, SongModel, AlbumModel, ArtistModel,
 )
 
 
-SOURCE = 'local'
 logger = logging.getLogger(__name__)
 MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
 
@@ -198,7 +196,7 @@ class LocalProvider(AbstractProvider):
             # if score > 80, keyword is almost included in song key
             if score > 80:
                 result_songs.append(repr_song_map[each])
-        return SearchModel(q=keyword, source='local', songs=result_songs)
+        return LSearchModel(q=keyword, songs=result_songs)
 
 
 provider = LocalProvider()
@@ -229,3 +227,10 @@ class LArtistModel(ArtistModel, LBaseModel):
     @classmethod
     def get(cls, identifier):
         return cls.meta.provider.artists.get(identifier)
+
+
+class LSearchModel(SearchModel, LBaseModel):
+    pass
+
+
+from fuocore.local.schemas import EasyMP3MetadataSongSchema
