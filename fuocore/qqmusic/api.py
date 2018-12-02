@@ -77,11 +77,6 @@ class API(object):
         return None
 
     def search(self, keyword, limit=20, page=1):
-        """
-
-        >>> songs = API().search('周杰伦')
-        >>> print(songs[0]['songname'])
-        """
         path = '/soso/fcgi-bin/client_search_cp'
         url = api_base_url + path
         params = {

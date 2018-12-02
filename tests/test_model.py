@@ -4,6 +4,7 @@ from fuocore.models import Model
 
 
 class FakeProvider(object):
+    identifier = 'fake'
     name = 'fake'
 
     def set_model_cls(self, *args, **kwags):
