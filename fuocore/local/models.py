@@ -38,11 +38,11 @@ class LSongModel(SongModel, LBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider._identifier_song_map.get(identifier)
+        return cls.meta.provider.identifier_song_map.get(identifier)
 
     @classmethod
     def list(cls, identifier_list):
-        return map(cls.meta.provider._identifier_song_map.get, identifier_list)
+        return map(cls.meta.provider.identifier_song_map.get, identifier_list)
 
 
 class LAlbumModel(AlbumModel, LBaseModel):
@@ -50,7 +50,7 @@ class LAlbumModel(AlbumModel, LBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider._identifier_album_map.get(identifier)
+        return cls.meta.provider.identifier_album_map.get(identifier)
 
 
 class LArtistModel(ArtistModel, LBaseModel):
@@ -58,7 +58,7 @@ class LArtistModel(ArtistModel, LBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider._identifier_artist_map.get(identifier)
+        return cls.meta.provider.identifier_artist_map.get(identifier)
 
 
 class LSearchModel(SearchModel, LBaseModel):

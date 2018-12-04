@@ -171,8 +171,8 @@ class Scanner:
                 else:
                     self._artists[album_artist.identifier].albums.append(album)
         for artist in self._artists.values():
-            if artist.albums:
-                artist.albums.sort(key=lambda x: (x.songs[0].date is None, x.songs[0].date), reverse=True)
+            # if artist.albums:
+            #     artist.albums.sort(key=lambda x: (x.songs[0].date is None, x.songs[0].date), reverse=True)
             if artist.songs:
                 artist.songs.sort(key=lambda x: x.title)
 
@@ -182,9 +182,12 @@ class LocalProvider(AbstractProvider):
     def __init__(self):
         super().__init__()
 
-        self._songs = dict()
-        self._albums = dict()
-        self._artists = dict()
+        self._identifier_song_map = dict()
+        self._identifier_album_map = dict()
+        self._identifier_artist_map = dict()
+        self._songs = []
+        self._albums = []
+        self._artists = []
 
     def scan(self, paths=None, depth=2):
         scanner = Scanner(paths or [], depth=depth)
@@ -203,6 +206,18 @@ class LocalProvider(AbstractProvider):
     @property
     def name(self):
         return '本地音乐'
+
+    @property
+    def identifier_song_map(self):
+        return self._identifier_song_map
+
+    @property
+    def identifier_artist_map(self):
+        return self._identifier_artist_map
+
+    @property
+    def identifier_album_map(self):
+        return self._identifier_album_map
 
     @property
     def songs(self):
