@@ -5,8 +5,8 @@ TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐�
 这些小部分理论都可以从中拆除。
 """
 
-import copy
 import logging
+import pickle
 import os
 
 from fuzzywuzzy import process
@@ -21,6 +21,7 @@ from fuocore.utils import log_exectime
 
 logger = logging.getLogger(__name__)
 MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
+CACHE_DIR = os.path.expanduser('~') + '/.FeelUOwn/data'
 
 
 def scan_directory(directory, exts=None, depth=2):
@@ -73,32 +74,56 @@ def create_song(fpath):
     return song
 
 
-@log_exectime
-def scan(paths, depth=2):
-    """scan media files in all paths
-    """
-    song_exts = ['mp3', 'ogg', 'wma', 'm4a']
-    exts = song_exts
-    depth = depth if depth <= 3 else 3
-    media_files = []
-    for directory in paths:
-        logger.debug('正在扫描目录(%s)...', directory)
-        media_files.extend(scan_directory(directory, exts, depth))
-    songs = []
-    for fpath in media_files:
-        song = create_song(fpath)
-        if song is not None:
-            songs.append(song)
-        else:
-            logger.warning('%s can not be recognized', fpath)
-    logger.debug('扫描到 %d 首歌曲', len(songs))
-    return songs
-
-
 class Scanner:
     def __init__(self, paths=None, depth=2):
-        self.__songs = []
+        self._songs = []
 
+        #: music resource paths to be scanned, list
+        self.depth = depth
+        self.paths = paths or [MUSIC_LIBRARY_PATH]
+
+    @property
+    def songs(self):
+        return self._songs
+
+    @log_exectime
+    def run(self):
+        """scan media files in all paths
+        """
+        song_exts = ['mp3', 'ogg', 'wma', 'm4a']
+        exts = song_exts
+        depth = self.depth if self.depth <= 3 else 3
+        media_files = []
+        for directory in self.paths:
+            logger.debug('正在扫描目录(%s)...', directory)
+            media_files.extend(scan_directory(directory, exts, depth))
+
+        # db_name = CACHE_DIR + '/local_song_info.db'
+        # try:
+        #     with open(db_name, 'rb') as file_object:
+        #         historty_media_files, songs = pickle.load(file_object)
+        #         if (set(historty_media_files) == set(media_files)):
+        #             self._songs = songs
+        #             return
+        # except Exception as e:
+        #     logger.warning(str(e))
+
+        self._songs = []
+        for fpath in media_files:
+            song = create_song(fpath)
+            if song is not None:
+                self._songs.append(song)
+            else:
+                logger.warning('%s can not be recognized', fpath)
+        logger.debug('扫描到 %d 首歌曲', len(self._songs))
+
+        # with open(db_name, 'wb') as file_object:
+        #     if media_files:
+        #         pickle.dump((media_files, self._songs), file_object)
+
+
+class DataBase:
+    def __init__(self):
         #: identifier song map: {id: song, ...}
         self._songs = dict()
 
@@ -107,10 +132,6 @@ class Scanner:
 
         #: identifier artist map: {id: artist, ...}
         self._artists = dict()
-
-        #: music resource paths to be scanned, list
-        self.depth = depth
-        self.paths = paths or [MUSIC_LIBRARY_PATH]
 
     @property
     def songs(self):
@@ -124,52 +145,53 @@ class Scanner:
     def artists(self):
         return self._artists.values()
 
-    def run(self):
-        self.__songs = scan(self.paths, self.depth)
-        self.setup_library()
-
-    @log_exectime
-    def setup_library(self):
-        # FIXME: 函数太长，请重构我！
+    def run(self, songs):
         self._songs.clear()
         self._albums.clear()
         self._artists.clear()
 
-        for song in self.__songs:
+        self.setup_library(songs)
+        self.analyze_library()
+
+    def setup_library(self, scanner_songs):
+        for song in scanner_songs:
             if song.identifier in self._songs:
                 continue
             self._songs[song.identifier] = song
-            # 增加ablum.songs的信息
+
             if song.album is not None:
                 album = song.album
                 if album.identifier not in self._albums:
-                    import copy
-                    self._albums[album.identifier] = copy.deepcopy(album)
-                    self._albums[album.identifier].songs = [song]
-                else:
-                    self._albums[album.identifier].songs.append(song)
-            # 增加artist.songs的信息
+                    album_data = {'identifier': album.identifier,
+                                  'name': album.name,
+                                  'songs': []}
+                    if album.artists:
+                        album_data['artists'] = [{'identifier': album.artists[0].identifier,
+                                                  'name': album.artists[0].name}]
+                    self._albums[album.identifier], _ = LocalAlbumSchema(strict=True).load(album_data)
+                self._albums[album.identifier].songs.append(song)
+
             if song.artists is not None:
                 for artist in song.artists:
                     if artist.identifier not in self._artists:
-                        self._artists[artist.identifier] = copy.deepcopy(artist)
-                        self._artists[artist.identifier].albums = []
-                        self._artists[artist.identifier].songs = [song]
-                    else:
-                        self._artists[artist.identifier].songs.append(song)
+                        artist_data = {'identifier': artist.identifier,
+                                       'name': artist.name,
+                                       'songs': [],
+                                       'albums': []}
+                        self._artists[artist.identifier], _ = LocalArtistSchema(strict=True).load(artist_data)
+                    self._artists[artist.identifier].songs.append(song)
 
-        # 更新专辑歌曲排序,更新艺术家专辑信息,更新歌曲专辑信息
+    def analyze_library(self):
         for album in self._albums.values():
-            # 增加artists.albums, 必须在这里进行(如果在song中进行会导致artist.albums重复)
             if album.artists:
-                # 专辑艺术家只能有一个!
                 album_artist = album.artists[0]
                 if album_artist.identifier not in self._artists:
-                    self._artists[album_artist.identifier] = copy.deepcopy(album_artist)
-                    self._artists[album_artist.identifier].albums = [album]
-                    self._artists[album_artist.identifier].songs = []
-                else:
-                    self._artists[album_artist.identifier].albums.append(album)
+                    album_artist_data = {'identifier': album_artist.identifier,
+                                         'name': album_artist.name,
+                                         'songs': [],
+                                         'albums': []}
+                    self._artists[album_artist.identifier], _ = LocalArtistSchema(strict=True).load(album_artist_data)
+                self._artists[album_artist.identifier].albums.append(album)
         for artist in self._artists.values():
             # if artist.albums:
             #     artist.albums.sort(key=lambda x: (x.songs[0].date is None, x.songs[0].date), reverse=True)
@@ -182,22 +204,19 @@ class LocalProvider(AbstractProvider):
     def __init__(self):
         super().__init__()
 
-        self._identifier_song_map = dict()
-        self._identifier_album_map = dict()
-        self._identifier_artist_map = dict()
+        self.library = DataBase()
         self._songs = []
         self._albums = []
         self._artists = []
 
-    def scan(self, paths=None, depth=2):
+    def scan(self, paths=None, depth=3):
         scanner = Scanner(paths or [], depth=depth)
         scanner.run()
-        self._identifier_song_map = scanner._songs
-        self._identifier_album_map = scanner._albums
-        self._identifier_artist_map = scanner._artists
-        self._songs = list(scanner.songs)
-        self._albums = list(scanner.albums)
-        self._artists = list(scanner.artists)
+
+        self.library.run(scanner.songs)
+        self._songs = list(self.library.songs)
+        self._albums = list(self.library.albums)
+        self._artists = list(self.library.artists)
 
     @property
     def identifier(self):
@@ -206,18 +225,6 @@ class LocalProvider(AbstractProvider):
     @property
     def name(self):
         return '本地音乐'
-
-    @property
-    def identifier_song_map(self):
-        return self._identifier_song_map
-
-    @property
-    def identifier_artist_map(self):
-        return self._identifier_artist_map
-
-    @property
-    def identifier_album_map(self):
-        return self._identifier_album_map
 
     @property
     def songs(self):
@@ -250,6 +257,7 @@ class LocalProvider(AbstractProvider):
 
 provider = LocalProvider()
 
-
-from fuocore.local.schemas import EasyMP3MetadataSongSchema
+from .schemas import LocalAlbumSchema
+from .schemas import LocalArtistSchema
+from .schemas import EasyMP3MetadataSongSchema
 from .models import LSearchModel
