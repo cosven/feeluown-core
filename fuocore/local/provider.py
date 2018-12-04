@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐库的构建等小部分，
+这些小部分理论都可以从中拆除。
+"""
+
+import copy
 import logging
 import os
 
@@ -7,13 +13,10 @@ from fuzzywuzzy import process
 from marshmallow.exceptions import ValidationError
 from mutagen import MutagenError
 from mutagen.mp3 import EasyMP3
+from mutagen.easymp4 import EasyMP4
 
 from fuocore.provider import AbstractProvider
 from fuocore.utils import log_exectime
-
-from fuocore.models import (
-    BaseModel, SearchModel, SongModel, AlbumModel, ArtistModel,
-)
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +48,10 @@ def create_song(fpath):
     model.
     """
     try:
-        metadata = EasyMP3(fpath)
+        if fpath.endswith('mp3') or fpath.endswith('ogg') or fpath.endswith('wma'):
+            metadata = EasyMP3(fpath)
+        elif fpath.endswith('m4a'):
+            metadata = EasyMP4(fpath)
     except MutagenError as e:
         logger.error('Mutagen parse metadata failed, ignore.')
         logger.debug(str(e))
@@ -71,7 +77,7 @@ def create_song(fpath):
 def scan(paths, depth=2):
     """scan media files in all paths
     """
-    song_exts = ['mp3', 'ogg', 'wma']
+    song_exts = ['mp3', 'ogg', 'wma', 'm4a']
     exts = song_exts
     depth = depth if depth <= 3 else 3
     media_files = []
@@ -122,7 +128,9 @@ class Scanner:
         self.__songs = scan(self.paths, self.depth)
         self.setup_library()
 
+    @log_exectime
     def setup_library(self):
+        # FIXME: 函数太长，请重构我！
         self._songs.clear()
         self._albums.clear()
         self._artists.clear()
@@ -131,19 +139,42 @@ class Scanner:
             if song.identifier in self._songs:
                 continue
             self._songs[song.identifier] = song
+            # 增加ablum.songs的信息
             if song.album is not None:
                 album = song.album
                 if album.identifier not in self._albums:
-                    self._albums[album.identifier] = album
-                album.songs.append(song)
+                    import copy
+                    self._albums[album.identifier] = copy.deepcopy(album)
+                    self._albums[album.identifier].songs = [song]
+                else:
+                    self._albums[album.identifier].songs.append(song)
+            # 增加artist.songs的信息
             if song.artists is not None:
                 for artist in song.artists:
-                    artist.songs.append(song)
                     if artist.identifier not in self._artists:
-                        self._artists[artist.identifier] = artist
-                    if song.album is not None:
-                        artist.albums.append(song.album)
-                        song.album.artists.append(artist)
+                        self._artists[artist.identifier] = copy.deepcopy(artist)
+                        self._artists[artist.identifier].albums = []
+                        self._artists[artist.identifier].songs = [song]
+                    else:
+                        self._artists[artist.identifier].songs.append(song)
+
+        # 更新专辑歌曲排序,更新艺术家专辑信息,更新歌曲专辑信息
+        for album in self._albums.values():
+            # 增加artists.albums, 必须在这里进行(如果在song中进行会导致artist.albums重复)
+            if album.artists:
+                # 专辑艺术家只能有一个!
+                album_artist = album.artists[0]
+                if album_artist.identifier not in self._artists:
+                    self._artists[album_artist.identifier] = copy.deepcopy(album_artist)
+                    self._artists[album_artist.identifier].albums = [album]
+                    self._artists[album_artist.identifier].songs = []
+                else:
+                    self._artists[album_artist.identifier].albums.append(album)
+        for artist in self._artists.values():
+            if artist.albums:
+                artist.albums.sort(key=lambda x: (x.songs[0].date is None, x.songs[0].date), reverse=True)
+            if artist.songs:
+                artist.songs.sort(key=lambda x: x.title)
 
 
 class LocalProvider(AbstractProvider):
@@ -151,13 +182,16 @@ class LocalProvider(AbstractProvider):
     def __init__(self):
         super().__init__()
 
-        self._songs = []
-        self._albums = []
-        self._artists = []
+        self._songs = dict()
+        self._albums = dict()
+        self._artists = dict()
 
     def scan(self, paths=None, depth=2):
         scanner = Scanner(paths or [], depth=depth)
         scanner.run()
+        self._identifier_song_map = scanner._songs
+        self._identifier_album_map = scanner._albums
+        self._identifier_artist_map = scanner._artists
         self._songs = list(scanner.songs)
         self._albums = list(scanner.albums)
         self._artists = list(scanner.artists)
@@ -179,7 +213,7 @@ class LocalProvider(AbstractProvider):
         return self._artists
 
     @property
-    def album(self):
+    def albums(self):
         return self._albums
 
     @log_exectime
@@ -202,35 +236,5 @@ class LocalProvider(AbstractProvider):
 provider = LocalProvider()
 
 
-class LBaseModel(BaseModel):
-    class Meta:
-        provider = provider
-
-
-class LSongModel(SongModel, LBaseModel):
-    @classmethod
-    def get(cls, identifier):
-        return cls.meta.provider.songs.get(identifier)
-
-    @classmethod
-    def list(cls, identifier_list):
-        return map(cls.meta.provider.songs.get, identifier_list)
-
-
-class LAlbumModel(AlbumModel, LBaseModel):
-    @classmethod
-    def get(cls, identifier):
-        return cls.meta.provider.albums.get(identifier)
-
-
-class LArtistModel(ArtistModel, LBaseModel):
-    @classmethod
-    def get(cls, identifier):
-        return cls.meta.provider.artists.get(identifier)
-
-
-class LSearchModel(SearchModel, LBaseModel):
-    pass
-
-
 from fuocore.local.schemas import EasyMP3MetadataSongSchema
+from .models import LSearchModel
