@@ -100,16 +100,17 @@ class Scanner:
             logger.debug('正在扫描目录(%s)...', directory)
             media_files.extend(scan_directory(directory, exts, depth))
 
-        # db_name = CACHE_DIR + '/local_song_info.db'
-        # try:
-        #     with open(db_name, 'rb') as file_object:
-        #         historty_media_files, songs = pickle.load(file_object)
-        #         if (set(historty_media_files) == set(media_files)):
-        #             self._songs = songs
-        #             return
-        # except Exception as e:
-        #     logger.warning(str(e))
+        db_name = CACHE_DIR + '/local_song_info.db'
+        try:
+            with open(db_name, 'rb') as file_object:
+                historty_media_files, songs = pickle.load(file_object)
+                if (set(historty_media_files) == set(media_files)):
+                    self._songs = songs
+                    return
+        except Exception as e:
+            logger.warning(str(e))
 
+        self._songs = []
         for fpath in media_files:
             song = create_song(fpath)
             if song is not None:
@@ -118,9 +119,9 @@ class Scanner:
                 logger.warning('%s can not be recognized', fpath)
         logger.debug('扫描到 %d 首歌曲', len(self._songs))
 
-        # with open(db_name, 'wb') as file_object:
-        #     if media_files:
-        #         pickle.dump((media_files, self._songs), file_object)
+        with open(db_name, 'wb') as file_object:
+            if media_files:
+                pickle.dump((media_files, self._songs), file_object)
 
 
 class DataBase:
@@ -182,7 +183,7 @@ class DataBase:
 
     def analyze_library(self):
         for album in self._albums.values():
-            # album.songs.sort(key=lambda x: (int(x.disc.split('/')[0]), int(x.track.split('/')[0])))
+            album.songs.sort(key=lambda x: (int(x.disc.split('/')[0]), int(x.track.split('/')[0])))
             if album.artists is not None:
                 album_artist = album.artists[0]
                 if album_artist.identifier not in self._artists:
@@ -194,8 +195,8 @@ class DataBase:
                 self._artists[album_artist.identifier].albums.append(album)
 
         for artist in self._artists.values():
-            # if artist.albums is not []:
-            #     artist.albums.sort(key=lambda x: (x.songs[0].date is None, x.songs[0].date), reverse=True)
+            if artist.albums is not []:
+                artist.albums.sort(key=lambda x: (x.songs[0].date is None, x.songs[0].date), reverse=True)
             if artist.songs is not []:
                 artist.songs.sort(key=lambda x: x.title)
 

@@ -65,14 +65,13 @@ class EasyMP3MetadataSongSchema(Schema):
     artists_name = fields.Str(required=True, load_from='artist', missing='')
     album_name = fields.Str(required=True, load_from='album', missing='')
     album_artist_name = fields.Str(required=True, load_from='albumartist', missing='')
-    # track = fields.Str(load_from='tracknumber')
-    # disc = fields.Str(load_from='discnumber')
-    # date = fields.Str()
-    # genre = fields.Str()
+    track = fields.Str(load_from='tracknumber')
+    disc = fields.Str(load_from='discnumber')
+    date = fields.Str()
+    genre = fields.Str()
 
     @post_load
     def create_model(self, data):
-        # FIXME: 逻辑太多，请重构我，重构之前这里不应该添加新功能
         # NOTE: use {title}-{artists_name}-{album_name} as song identifier
         identifier_str = '{} - {} - {} - {}'.format(data['title'], data['artists_name'], data['album_name'],
                                                     data['duration'])
@@ -90,13 +89,13 @@ class EasyMP3MetadataSongSchema(Schema):
             for artist_name in artist_names:
                 artist_data = {'name': artist_name}
                 artist, _ = LocalArtistSchema(strict=True).load(artist_data)
-            song.artists.append(artist)
+                song.artists.append(artist)
 
-        # song.genre = data.get('genre', None)
-        # if song.album is not None:
-        #     song.disc = data.get('disc', '1/1')
-        #     song.track = data.get('track', '1/1')
-        #     song.date = data.get('date', None)
+        song.genre = data.get('genre', None)
+        if song.album is not None:
+            song.disc = data.get('disc', '1/1')
+            song.track = data.get('track', '1/1')
+            song.date = data.get('date', None)
         return song
 
 
