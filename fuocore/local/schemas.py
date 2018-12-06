@@ -8,7 +8,7 @@ from fuocore.utils import elfhash
 
 
 class BaseSchema(Schema):
-    identifier = fields.Field(required=True)
+    identifier = fields.Field(required=True, missing=None)
     desc = fields.Str()
 
 
@@ -21,6 +21,8 @@ class LocalArtistSchema(BaseSchema):
 
     @post_load
     def create_model(self, data):
+        if data['identifier'] is None:
+            data['identifier'] = str(elfhash(base64.b64encode(bytes(data['name'], 'utf-8'))))
         return LArtistModel(**data)
 
 
@@ -28,11 +30,20 @@ class LocalAlbumSchema(BaseSchema):
     name = fields.Str(required=True)
     img = fields.Str()
     songs = fields.List(fields.Nested('LocalSongSchema'), missing=None)
-    artists = fields.List(fields.Nested(LocalArtistSchema), missing=[])
+    artists = fields.List(fields.Nested(LocalArtistSchema), missing=None)
+
+    artists_name = fields.Str()
 
     @post_load
     def create_model(self, data):
-        return LAlbumModel(**data)
+        if data['identifier'] is None:
+            identifier_str = '{} - {}'.format(data['name'], data['artists_name'])
+            data['identifier'] = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
+        album = LAlbumModel(**data)
+        if album.artists is None and data['artists_name']:
+            album_artist, _ = LocalArtistSchema(strict=True).load({'name': data['artists_name']})
+            album.artists = [album_artist]
+        return album
 
 
 class LocalSongSchema(BaseSchema):
@@ -40,7 +51,7 @@ class LocalSongSchema(BaseSchema):
     url = fields.Str(required=True)
     duration = fields.Float(required=True)  # mileseconds
     album = fields.Nested(LocalAlbumSchema, missing=None)
-    artists = fields.List(fields.Nested(LocalArtistSchema), missing=[])
+    artists = fields.List(fields.Nested(LocalArtistSchema), missing=None)
 
     @post_load
     def create_model(self, data):
@@ -49,49 +60,43 @@ class LocalSongSchema(BaseSchema):
 class EasyMP3MetadataSongSchema(Schema):
     """EasyMP3 metadata"""
     url = fields.Str(required=True)
-    title_list = fields.List(fields.Str(), load_from='title', required=True)
     duration = fields.Float(required=True)
-    artist_list = fields.List(fields.Str(), load_from='artist')
-    # genre_list = fields.List(fields.Str(), load_from='genre')
-    album_list = fields.List(fields.Str(), load_from='album')
-    album_artist_list = fields.List(fields.Str(), load_from='albumartist')
+    title = fields.Str(required=True, missing='Unknown')
+    artists_name = fields.Str(required=True, load_from='artist', missing='')
+    album_name = fields.Str(required=True, load_from='album', missing='')
+    album_artist_name = fields.Str(required=True, load_from='albumartist', missing='')
+    # track = fields.Str(load_from='tracknumber')
+    # disc = fields.Str(load_from='discnumber')
+    # date = fields.Str()
+    # genre = fields.Str()
 
     @post_load
     def create_model(self, data):
         # FIXME: 逻辑太多，请重构我，重构之前这里不应该添加新功能
-        title = data['title_list'][0] if data.get('title_list') else 'Unknown'
-        artists_name = data['artist_list'][0] if data.get('artist_list') else ''
-        album_name = data['album_list'][0] if data.get('album_list') else ''
         # NOTE: use {title}-{artists_name}-{album_name} as song identifier
-        song_identifier_str = '{} - {} - {} - {}'.format(title, artists_name, album_name, data['duration'])
-        song_identifier = str(elfhash(base64.b64encode(bytes(song_identifier_str, 'utf-8'))))
-        song_data = {
-            'identifier': song_identifier,
-            'title': title,
-            'duration': data['duration'],
-            'url': data['url']
-        }
+        identifier_str = '{} - {} - {} - {}'.format(data['title'], data['artists_name'], data['album_name'],
+                                                    data['duration'])
+        data['identifier'] = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
+        song, _ = LocalSongSchema(strict=True).load(data)
 
-        if album_name:
-            album_artist_name = data['album_artist_list'][0] if data.get('album_artist_list') else ''
-            album_identifier_str = '{} - {}'.format(album_name, album_artist_name)
-            album_identifier = str(elfhash(base64.b64encode(bytes(album_identifier_str, 'utf-8'))))
-            song_data['album'] = {'identifier': album_identifier,
-                                  'name': album_name}
-            if album_artist_name:
-                album_artist_identifier = str(elfhash(base64.b64encode(bytes(album_artist_name, 'utf-8'))))
-                song_data['album']['artists'] = [{'identifier': album_artist_identifier,
-                                                  'name': album_artist_name}]
+        if song.album is None and data['album_name']:
+            album_data = {'name': data['album_name'],
+                          'artists_name': data['album_artist_name']}
+            song.album, _ = LocalAlbumSchema(strict=True).load(album_data)
 
-        if artists_name:
-            song_data['artists'] = []
-            artist_names = [artist.strip() for artist in re.split(r'[,&]', artists_name)]
+        if song.artists is None and data['artists_name']:
+            song.artists = []
+            artist_names = [artist.strip() for artist in re.split(r'[,&]', data['artists_name'])]
             for artist_name in artist_names:
-                artist_identifier = str(elfhash(base64.b64encode(bytes(artist_name, 'utf-8'))))
-                song_data['artists'].append({'identifier': artist_identifier,
-                                             'name': artist_name})
+                artist_data = {'name': artist_name}
+                artist, _ = LocalArtistSchema(strict=True).load(artist_data)
+            song.artists.append(artist)
 
-        song, _ = LocalSongSchema(strict=True).load(song_data)
+        # song.genre = data.get('genre', None)
+        # if song.album is not None:
+        #     song.disc = data.get('disc', '1/1')
+        #     song.track = data.get('track', '1/1')
+        #     song.date = data.get('date', None)
         return song
 
 

@@ -60,8 +60,10 @@ def create_song(fpath):
 
     schema = EasyMP3MetadataSongSchema(strict=True)
     metadata_dict = dict(metadata)
+    for key in metadata.keys():
+        metadata_dict[key] = metadata_dict[key][0]
     if 'title' not in metadata_dict:
-        title = [fpath.rsplit('/')[-1].split('.')[0], ]
+        title = fpath.rsplit('/')[-1].split('.')[0]
         metadata_dict['title'] = title
     metadata_dict.update(dict(
         url=fpath,
@@ -108,7 +110,6 @@ class Scanner:
         # except Exception as e:
         #     logger.warning(str(e))
 
-        self._songs = []
         for fpath in media_files:
             song = create_song(fpath)
             if song is not None:
@@ -164,10 +165,8 @@ class DataBase:
                 if album.identifier not in self._albums:
                     album_data = {'identifier': album.identifier,
                                   'name': album.name,
+                                  'artists_name': album.artists[0].name if album.artists else '',
                                   'songs': []}
-                    if album.artists:
-                        album_data['artists'] = [{'identifier': album.artists[0].identifier,
-                                                  'name': album.artists[0].name}]
                     self._albums[album.identifier], _ = LocalAlbumSchema(strict=True).load(album_data)
                 self._albums[album.identifier].songs.append(song)
 
@@ -183,7 +182,8 @@ class DataBase:
 
     def analyze_library(self):
         for album in self._albums.values():
-            if album.artists:
+            # album.songs.sort(key=lambda x: (int(x.disc.split('/')[0]), int(x.track.split('/')[0])))
+            if album.artists is not None:
                 album_artist = album.artists[0]
                 if album_artist.identifier not in self._artists:
                     album_artist_data = {'identifier': album_artist.identifier,
@@ -192,10 +192,11 @@ class DataBase:
                                          'albums': []}
                     self._artists[album_artist.identifier], _ = LocalArtistSchema(strict=True).load(album_artist_data)
                 self._artists[album_artist.identifier].albums.append(album)
+
         for artist in self._artists.values():
-            # if artist.albums:
+            # if artist.albums is not []:
             #     artist.albums.sort(key=lambda x: (x.songs[0].date is None, x.songs[0].date), reverse=True)
-            if artist.songs:
+            if artist.songs is not []:
                 artist.songs.sort(key=lambda x: x.title)
 
 

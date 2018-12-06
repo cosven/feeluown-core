@@ -30,7 +30,7 @@ class LBaseModel(BaseModel):
                 setattr(self, field, getattr(obj, field))
             value = object.__getattribute__(self, name)
         elif name in cls._detail_fields and not value:
-            logger.warning('Field %s value is not None, but is %s' % (name, value))
+            logger.debug('Field %s value is not None, but is %s' % (name, value))
         return value
 
 
