@@ -1,98 +1,105 @@
 # -*- coding: utf-8 -*-
+import re
 import base64
 
-from marshmallow import Schema, post_load, fields
 from marshmallow import Schema, fields, post_load
 
 from fuocore.utils import elfhash
 
 
 class BaseSchema(Schema):
-    identifier = fields.Field(required=True)
+    identifier = fields.Field(required=True, missing=None)
     desc = fields.Str()
 
 
-class ArtistSchema(BaseSchema):
+class LocalArtistSchema(BaseSchema):
     # TODO: 添加一个 alias 字段？
     name = fields.Str(required=True)
     cover = fields.Str()  # NOTE: 可能需要单独一个 Schema
-    songs = fields.List(fields.Nested('SongSchema'))
-    albums = fields.List(fields.Nested('AlbumSchema'))
+    songs = fields.List(fields.Nested('LocalSongSchema'), missing=None)
+    albums = fields.List(fields.Nested('LocalAlbumSchema'), missing=None)
 
     @post_load
     def create_model(self, data):
+        if data['identifier'] is None:
+            data['identifier'] = str(elfhash(base64.b64encode(bytes(data['name'], 'utf-8'))))
         return LArtistModel(**data)
 
 
-class AlbumSchema(BaseSchema):
+class LocalAlbumSchema(BaseSchema):
     name = fields.Str(required=True)
     img = fields.Str()
-    songs = fields.List(fields.Nested('SongSchema'))
-    artists = fields.List(fields.Nested(ArtistSchema))
+    songs = fields.List(fields.Nested('LocalSongSchema'), missing=None)
+    artists = fields.List(fields.Nested(LocalArtistSchema), missing=None)
+
+    artists_name = fields.Str()
 
     @post_load
     def create_model(self, data):
-        return LAlbumModel(**data)
+        if data['identifier'] is None:
+            identifier_str = '{} - {}'.format(data['name'], data['artists_name'])
+            data['identifier'] = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
+        album = LAlbumModel(**data)
+        if album.artists is None and data['artists_name']:
+            album_artist, _ = LocalArtistSchema(strict=True).load({'name': data['artists_name']})
+            album.artists = [album_artist]
+        return album
 
 
-class SongSchema(BaseSchema):
+class LocalSongSchema(BaseSchema):
     title = fields.Str(required=True)
     url = fields.Str(required=True)
     duration = fields.Float(required=True)  # mileseconds
-    album = fields.Nested(AlbumSchema)
-    artists = fields.List(fields.Nested(ArtistSchema))
+    album = fields.Nested(LocalAlbumSchema, missing=None)
+    artists = fields.List(fields.Nested(LocalArtistSchema), missing=None)
 
     @post_load
     def create_model(self, data):
         return LSongModel(**data)
 
-
 class EasyMP3MetadataSongSchema(Schema):
     """EasyMP3 metadata"""
     url = fields.Str(required=True)
-    title_list = fields.List(fields.Str(), load_from='title', required=True)
     duration = fields.Float(required=True)
-    artist_name_list = fields.List(fields.Str(), load_from='artist')
-    album_name_list = fields.List(fields.Str(), load_from='album')
+    title = fields.Str(required=True, missing='Unknown')
+    artists_name = fields.Str(required=True, load_from='artist', missing='')
+    album_name = fields.Str(required=True, load_from='album', missing='')
+    album_artist_name = fields.Str(required=True, load_from='albumartist', missing='')
+    track = fields.Str(load_from='tracknumber')
+    disc = fields.Str(load_from='discnumber')
+    date = fields.Str()
+    genre = fields.Str()
 
     @post_load
-    def create_song_model(self, data):
-        title_list = data.get('title_list', [])
-        title = title_list[0] if title_list else 'Unknown'
-        artist_name_list = data.get('artist_name_list', [])
-        album_name_list = data.get('album_name_list', [])
-        artists_name = ','.join(artist_name_list)
-        album_name = album_name_list[0] if album_name_list else ''
+    def create_model(self, data):
         # NOTE: use {title}-{artists_name}-{album_name} as song identifier
-        identifier_str = '{} - {} - {}'.format(title, artists_name, album_name)
-        identifier = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
-        song_data = {
-            'identifier': identifier,
-            'title': title,
-            'duration': data['duration'],
-            'url': data['url']
-        }
-        if album_name_list:
-            song_data['album'] = {'name': album_name_list[0],
-                                  'identifier': album_name_list[0],
-                                  'artists': [],
-                                  'songs': []}
+        identifier_str = '{} - {} - {} - {}'.format(data['title'], data['artists_name'], data['album_name'],
+                                                    data['duration'])
+        data['identifier'] = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
+        song, _ = LocalSongSchema(strict=True).load(data)
 
-        if artist_name_list:
-            artists = []
-            for artist_name in artist_name_list:
-                artist = {'identifier': elfhash(base64.b64encode(bytes(artist_name, 'utf-8'))),
-                          'name': artist_name,
-                          'albums': [],
-                          'songs': []}
-                artists.append(artist)
-            song_data['artists'] = artists
+        if song.album is None and data['album_name']:
+            album_data = {'name': data['album_name'],
+                          'artists_name': data['album_artist_name']}
+            song.album, _ = LocalAlbumSchema(strict=True).load(album_data)
 
-        song, _ = SongSchema(strict=True).load(song_data)
+        if song.artists is None and data['artists_name']:
+            song.artists = []
+            artist_names = [artist.strip() for artist in re.split(r'[,&]', data['artists_name'])]
+            for artist_name in artist_names:
+                artist_data = {'name': artist_name}
+                artist, _ = LocalArtistSchema(strict=True).load(artist_data)
+                song.artists.append(artist)
+
+        song.genre = data.get('genre', None)
+        if song.album is not None:
+            song.disc = data.get('disc', '1/1')
+            song.track = data.get('track', '1/1')
+            song.date = data.get('date', None)
         return song
 
 
-from .provider import (
+from .models import (
     LAlbumModel,
     LArtistModel,
     LSongModel,
