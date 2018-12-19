@@ -4,7 +4,25 @@
 fuocore.models
 ~~~~~~~~~~~~~~
 
-This modules defines several music models.
+这个模块定义了音乐资源的模型，如歌曲模型： ``SongModel`` , 歌手模型： ``ArtistModel`` 。
+它们都类似这样::
+
+    class XyzModel(BaseModel):
+        class Meta:
+            model_type = ModelType.xyz
+            fields = ['a', 'b', 'c']
+
+        @property
+        def ab(self):
+            return self.a + self.b
+
+同时，为了减少实现这些模型时带来的重复代码，这里还实现了：
+
+- ModelMeta: Model 元类，进行一些黑科技处理：比如解析 Model Meta 类
+- ModelMetadata: Model meta 属性对应的类
+- BaseModel: 基类
+
+ModelMetadata, ModelMeta, BaseModel 几个类是互相依赖的。
 """
 
 from enum import IntEnum
@@ -27,6 +45,7 @@ class ModelMetadata(object):
                  model_type=ModelType.dummy.value,
                  provider=None,
                  fields=None,
+                 fields_display=None,
                  allow_get=False,
                  allow_batch=False,
                  **kwargs):
@@ -37,34 +56,51 @@ class ModelMetadata(object):
         """
         self.model_type = model_type
         self.provider = provider
-        self.fields = fields
+        self.fields = fields or []
+        self.fields_display = fields_display or []
         self.allow_get = allow_get
         self.allow_batch = allow_batch
         for key, value in kwargs.items():
             setattr(self, key, value)
 
 
+class display_property:
+    """Model 的展示字段的描述器"""
+    def __init__(self, name):
+        self.name_real = name
+        self.name_display = name + '_display'
+        self.value_display = None
+
+    def __get__(self, instance, _=None):
+        if instance.use_display:
+            return getattr(instance, self.name_real)
+        return self.value_display
+
+    def __set__(self, instance, value):
+        self.value_display = value
+
+
 class ModelMeta(type):
     def __new__(cls, name, bases, attrs):
-        # get all meta
+        # 获取 Model 当前以及父类中的 Meta 信息
+        # 如果 Meta 中相同字段的属性，子类的值可以覆盖父类的
         _metas = []
         for base in bases:
             base_meta = getattr(base, '_meta', None)
             if base_meta is not None:
                 _metas.append(base_meta)
-
-        # similar with djang/peewee model meta
         Meta = attrs.pop('Meta', None)
         if Meta:
             _metas.append(Meta)
 
-        fields = list()
-        meta_kv = {}
+        fields = []
+        fields_display = []
+        meta_kv = {}  # 实例化 ModelMetadata 的 kv 对
         for _meta in _metas:
-            inherited_fields = getattr(_meta, 'fields', [])
-            fields.extend(inherited_fields)
+            fields.extend(getattr(_meta, 'fields', []))
+            fields_display.extend(getattr(_meta, 'fields_display', []))
             for k, v in _meta.__dict__.items():
-                if k.startswith('_') or k in ('fields', ):
+                if k.startswith('_') or k in ('fields', 'fields_display'):
                     continue
                 if k == 'model_type':
                     if ModelType(v) != ModelType.dummy:
@@ -80,11 +116,17 @@ class ModelMeta(type):
         if provider and ModelType(model_type) != ModelType.dummy:
             provider.set_model_cls(model_type, klass)
         fields = list(set(fields))
+        fields_display = list(set(fields_display))
+
+        for field in fields_display:
+            setattr(klass, field + '_display', display_property(field))
 
         # DEPRECATED attribute _meta
+        # TODO: remove this in verion 2.3
         klass._meta = ModelMetadata(model_type=model_type,
                                     provider=provider,
                                     fields=fields,
+                                    fields_display=fields_display,
                                     **meta_kv)
         klass.source = provider.identifier if provider is not None else None
         # use meta attribute instead of _meta
@@ -92,17 +134,19 @@ class ModelMeta(type):
         return klass
 
 
-class Model(object, metaclass=ModelMeta):
+class Model(metaclass=ModelMeta):
     """base class for data models
+
     Usage::
 
         class User(Model):
             class Meta:
                 fields = ['name', 'title']
+
         user = UserModel(name='xxx')
         assert user.name == 'xxx'
         user2 = UserModel(user)
-        assert user2.name = 'xxx'
+        assert user2.name == 'xxx'
     """
 
     def __init__(self, obj=None, **kwargs):
@@ -118,7 +162,6 @@ class BaseModel(Model):
     """Base model for music resource.
 
     :param identifier: model object identifier, unique in each provider
-    :param source: model object provider identifier
 
     :cvar allow_get: meta var, whether model has a valid get method
     :cvar allow_list: meta var, whether model has a valid list method
@@ -133,12 +176,23 @@ class BaseModel(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.use_display = kwargs.get('use_display', True)
+
     def __eq__(self, other):
         if not isinstance(other, BaseModel):
             return False
         return all([other.source == self.source,
                     other.identifier == self.identifier,
-                    other._meta.model_type == self._meta.model_type])
+                    other.meta.model_type == self.meta.model_type])
+
+    @classmethod
+    def create_by_display(cls, identifier, **kwargs):
+        model = cls(identifier=identifier)
+        model.use_display = False
+        for k, v in kwargs.items():
+            if k in cls.meta.fields_display:
+                setattr(model, k + '_display', v)
+        return model
 
     @classmethod
     def get(cls, identifier):
@@ -215,7 +269,7 @@ class SongModel(BaseModel):
         model_type = ModelType.song.value
         # TODO: 支持低/中/高不同质量的音乐文件
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
-                  'duration',]
+                  'duration']
 
     @property
     def artists_name(self):
