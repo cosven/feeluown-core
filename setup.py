@@ -19,7 +19,7 @@ setup(
     # 但目前导入 fuocore 包时，会执行 mpv.py 中部分代码，
     # 执行过程可能会有一些副作用。
     # NOTE: 记得更新 docs/source/conf.py 中文档版本
-    version='2.2b1',
+    version='2.2',
     description='feeluown core',
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
