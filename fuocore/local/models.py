@@ -22,6 +22,8 @@ class LBaseModel(BaseModel):
 
 
 class LSongModel(SongModel, LBaseModel):
+    class Meta:
+        fields_no_get = ('lyric', )
 
     @classmethod
     def get(cls, identifier):

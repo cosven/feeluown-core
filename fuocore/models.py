@@ -50,6 +50,7 @@ class ModelMetadata(object):
                  provider=None,
                  fields=None,
                  fields_display=None,
+                 fields_no_get=None,
                  allow_get=False,
                  allow_batch=False,
                  **kwargs):
@@ -62,6 +63,7 @@ class ModelMetadata(object):
         self.provider = provider
         self.fields = fields or []
         self.fields_display = fields_display or []
+        self.fields_no_get = fields_no_get or []
         self.allow_get = allow_get
         self.allow_batch = allow_batch
         for key, value in kwargs.items():
@@ -97,14 +99,15 @@ class ModelMeta(type):
         if Meta:
             _metas.append(Meta)
 
-        fields = []
-        fields_display = []
+        kind_fields_map = {'fields': [],
+                           'fields_display': [],
+                           'fields_no_get': []}
         meta_kv = {}  # 实例化 ModelMetadata 的 kv 对
         for _meta in _metas:
-            fields.extend(getattr(_meta, 'fields', []))
-            fields_display.extend(getattr(_meta, 'fields_display', []))
+            for kind, fields in kind_fields_map.items():
+                fields.extend(getattr(_meta, kind, []))
             for k, v in _meta.__dict__.items():
-                if k.startswith('_') or k in ('fields', 'fields_display'):
+                if k.startswith('_') or k in kind_fields_map:
                     continue
                 if k == 'model_type':
                     if ModelType(v) != ModelType.dummy:
@@ -119,8 +122,10 @@ class ModelMeta(type):
         model_type = meta_kv.pop('model_type', ModelType.dummy.value)
         if provider and ModelType(model_type) != ModelType.dummy:
             provider.set_model_cls(model_type, klass)
-        fields = list(set(fields))
-        fields_display = list(set(fields_display))
+
+        fields_all = list(set(kind_fields_map['fields']))
+        fields_display = list(set(kind_fields_map['fields_display']))
+        fields_no_get = list(set(kind_fields_map['fields_no_get']))
 
         for field in fields_display:
             setattr(klass, field + '_display', display_property(field))
@@ -129,8 +134,9 @@ class ModelMeta(type):
         # TODO: remove this in verion 2.3
         klass._meta = ModelMetadata(model_type=model_type,
                                     provider=provider,
-                                    fields=fields,
+                                    fields=fields_all,
                                     fields_display=fields_display,
+                                    fields_no_get=fields_no_get,
                                     **meta_kv)
         klass.source = provider.identifier if provider is not None else None
         # use meta attribute instead of _meta
@@ -175,7 +181,15 @@ class BaseModel(Model):
         allow_get = True
         allow_list = False
         model_type = ModelType.dummy.value
+
+        #: Model 所有字段，子类可以通过设置该字段以添加其它字段
         fields = ['identifier']
+
+        #: Model 用来展示的字段
+        fields_display = []
+
+        #: 不触发 get 的 Model 字段
+        fields_no_get = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -192,15 +206,17 @@ class BaseModel(Model):
 
     def __getattribute__(self, name):
         """
-        获取 model 某一属性时，如果该属性值为 None 且该属性是 field，
-        我们认为这个字段还没有被初始化，这时，我们尝试通过获取 model
+        获取 model 某一属性时，如果该属性值为 None 且该属性是 field
+        且该属性允许触发 get 方法，这时，我们尝试通过获取 model
         详情来初始化这个字段，于此同时，还会重新给除 identifier
-        外的所有 fields 重新赋值。
+        外的所 fields 重新赋值。
         """
         cls = type(self)
         cls_name = cls.__name__
         value = object.__getattribute__(self, name)
-        if name in cls.meta.fields and value is None:
+        if name in cls.meta.fields \
+           and name not in cls.meta.fields_no_get \
+           and value is None:
             if cls.meta.allow_get:
                 logger.info("Model {} {}'s value is None, try to get detail."
                             .format(repr(self), name))
