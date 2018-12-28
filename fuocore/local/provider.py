@@ -173,7 +173,7 @@ class DataBase:
             except Exception as e:
                 logger.exception('Sort album songs failed.')
 
-            if album.artists is not None:
+            if album.artists:
                 album_artist = album.artists[0]
                 if album_artist.identifier not in self._artists:
                     album_artist_data = {'identifier': album_artist.identifier,

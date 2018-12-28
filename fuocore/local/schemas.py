@@ -7,17 +7,23 @@ from marshmallow import Schema, fields, post_load
 from fuocore.utils import elfhash
 
 
+DEFAULT_TITLE = DEFAULT_ARTIST_NAME = DEFAULT_ALBUM_NAME = 'Unknown'
+
+
 class BaseSchema(Schema):
     identifier = fields.Field(required=True, missing=None)
-    desc = fields.Str()
+
+    # 本地歌曲目前都不支持描述和封面，将它们设置为空字符串
+    desc = fields.Str(missing='')
+    cover = fields.Str(missing='')
 
 
 class LocalArtistSchema(BaseSchema):
     # TODO: 添加一个 alias 字段？
     name = fields.Str(required=True)
     cover = fields.Str()  # NOTE: 可能需要单独一个 Schema
-    songs = fields.List(fields.Nested('LocalSongSchema'), missing=None)
-    albums = fields.List(fields.Nested('LocalAlbumSchema'), missing=None)
+    songs = fields.List(fields.Nested('LocalSongSchema'), missing=[])
+    albums = fields.List(fields.Nested('LocalAlbumSchema'), missing=[])
 
     @post_load
     def create_model(self, data):
@@ -29,8 +35,8 @@ class LocalArtistSchema(BaseSchema):
 class LocalAlbumSchema(BaseSchema):
     name = fields.Str(required=True)
     img = fields.Str()
-    songs = fields.List(fields.Nested('LocalSongSchema'), missing=None)
-    artists = fields.List(fields.Nested(LocalArtistSchema), missing=None)
+    songs = fields.List(fields.Nested('LocalSongSchema'), missing=[])
+    artists = fields.List(fields.Nested(LocalArtistSchema), missing=[])
 
     artists_name = fields.Str()
 
@@ -57,14 +63,18 @@ class LocalSongSchema(BaseSchema):
     def create_model(self, data):
         return LSongModel(**data)
 
+
 class EasyMP3MetadataSongSchema(Schema):
     """EasyMP3 metadata"""
     url = fields.Str(required=True)
     duration = fields.Float(required=True)
-    title = fields.Str(required=True, missing='Unknown')
-    artists_name = fields.Str(required=True, load_from='artist', missing='')
-    album_name = fields.Str(required=True, load_from='album', missing='')
-    album_artist_name = fields.Str(required=True, load_from='albumartist', missing='')
+    title = fields.Str(required=True, missing=DEFAULT_TITLE)
+    artists_name = fields.Str(required=True, load_from='artist',
+                              missing=DEFAULT_ARTIST_NAME)
+    album_name = fields.Str(required=True, load_from='album',
+                            missing=DEFAULT_ALBUM_NAME)
+    album_artist_name = fields.Str(required=True, load_from='albumartist',
+                                   missing=DEFAULT_ARTIST_NAME)
     track = fields.Str(load_from='tracknumber')
     disc = fields.Str(load_from='discnumber')
     date = fields.Str()
@@ -73,17 +83,17 @@ class EasyMP3MetadataSongSchema(Schema):
     @post_load
     def create_model(self, data):
         # NOTE: use {title}-{artists_name}-{album_name} as song identifier
-        identifier_str = '{} - {} - {} - {}'.format(data['title'], data['artists_name'], data['album_name'],
-                                                    data['duration'])
+        identifier_str = '{} - {} - {} - {}'.format(
+            data['title'], data['artists_name'], data['album_name'], data['duration'])
         data['identifier'] = str(elfhash(base64.b64encode(bytes(identifier_str, 'utf-8'))))
         song, _ = LocalSongSchema(strict=True).load(data)
 
-        if song.album is None and data['album_name']:
+        if data['album_name']:
             album_data = {'name': data['album_name'],
                           'artists_name': data['album_artist_name']}
             song.album, _ = LocalAlbumSchema(strict=True).load(album_data)
 
-        if song.artists is None and data['artists_name']:
+        if data['artists_name']:
             song.artists = []
             artist_names = [artist.strip() for artist in re.split(r'[,&]', data['artists_name'])]
             for artist_name in artist_names:
@@ -96,6 +106,7 @@ class EasyMP3MetadataSongSchema(Schema):
             song.disc = data.get('disc', '1/1')
             song.track = data.get('track', '1/1')
             song.date = data.get('date', None)
+
         return song
 
 

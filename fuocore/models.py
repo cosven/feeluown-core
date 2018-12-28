@@ -24,8 +24,10 @@ fuocore.models
 
 ModelMetadata, ModelMeta, BaseModel 几个类是互相依赖的。
 """
-import logging
+
 from enum import IntEnum
+import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -303,7 +305,7 @@ class SongModel(BaseModel):
         # TODO: 支持低/中/高不同质量的音乐文件
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
                   'duration']
-        fields_display = ['title', 'artists_name', 'album_name', 'duration']
+        fields_display = ['title', 'artists_name', 'album_name', 'duration_ms']
 
     @property
     def artists_name(self):
@@ -312,6 +314,13 @@ class SongModel(BaseModel):
     @property
     def album_name(self):
         return self.album.name if self.album is not None else ''
+
+    @property
+    def duration_ms(self):
+        if self.duration is not None:
+            seconds = self.duration / 1000
+            m, s = seconds / 60, seconds % 60
+        return '{:02}:{:02}'.format(int(m), int(s))
 
     @property
     def filename(self):
