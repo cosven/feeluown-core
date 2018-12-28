@@ -200,7 +200,8 @@ class BaseModel(Model):
         value = object.__getattribute__(self, name)
         if name in cls.meta.fields and value is None:
             if cls.meta.allow_get:
-                logger.info('Field %s value is None, try to get detail.' % name)
+                logger.info("Model {} {}'s value is None, try to get detail."
+                            .format(repr(self), name))
                 obj = cls.get(self.identifier)
                 if obj is not None:
                     for field in cls.meta.fields:

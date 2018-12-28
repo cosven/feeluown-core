@@ -18,8 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class XBaseModel(BaseModel):
-    # FIXME: remove _detail_fields and _api to Meta
-    _detail_fields = ()
     _api = provider.api
 
     class Meta:
@@ -75,7 +73,6 @@ class XSongModel(SongModel, XBaseModel):
 
 
 class XAlbumModel(AlbumModel, XBaseModel):
-    _detail_fields = ('songs', 'artists', 'desc')
 
     @classmethod
     def get(cls, identifier):
@@ -86,7 +83,6 @@ class XAlbumModel(AlbumModel, XBaseModel):
 
 
 class XArtistModel(ArtistModel, XBaseModel):
-    _detail_fields = ('cover', 'desc')
 
     @classmethod
     def get(cls, identifier):
@@ -112,7 +108,6 @@ class XArtistModel(ArtistModel, XBaseModel):
 
 
 class XPlaylistModel(PlaylistModel, XBaseModel):
-    _detail_fields = ('songs', 'desc')
 
     class Meta:
         fields = ('uid', )

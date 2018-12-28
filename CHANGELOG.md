@@ -2,7 +2,9 @@
 
 ## 2.3a0 (WIP)
 - Model 支持 `create_by_display` 工厂函数
-  - 给 BaseModel 添加 `__getattribute__` 函数
+  - 给 BaseModel 添加 `__getattribute__` 方法
+  - 给 NBaseModel 和 XBaseModel 移除 `__getattribute__` 方法和
+    `_detail_fields` 类属性
 
 ## 2.2 (2018-12-28)
 - 发一个 2.2 的正式版（经过测试，相对稳定）

@@ -22,7 +22,6 @@ MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
 
 class NBaseModel(BaseModel):
     # FIXME: remove _detail_fields and _api to Meta
-    _detail_fields = ()
     _api = provider.api
 
     class Meta:
@@ -113,7 +112,6 @@ class NSongModel(SongModel, NBaseModel):
 
 
 class NAlbumModel(AlbumModel, NBaseModel):
-    _detail_fields = ('cover', 'songs', 'artists', )
 
     @classmethod
     def get(cls, identifier):
@@ -135,7 +133,6 @@ class NAlbumModel(AlbumModel, NBaseModel):
 
 
 class NArtistModel(ArtistModel, NBaseModel):
-    _detail_fields = ('songs', 'cover')
 
     @classmethod
     def get(cls, identifier):
@@ -157,7 +154,6 @@ class NArtistModel(ArtistModel, NBaseModel):
 
 
 class NPlaylistModel(PlaylistModel, NBaseModel):
-    _detail_fields = ('songs', )
 
     class Meta:
         fields = ('uid')
@@ -166,6 +162,10 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
     def get(cls, identifier):
         data = cls._api.playlist_detail(identifier)
         playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
+
+        # 当歌单的描述是空时，desc 的值为 None，这里手动设置为空
+        if playlist.desc is None:
+            playlist.desc = ''
         return playlist
 
     def add(self, song_id, allow_exist=True):
@@ -194,8 +194,6 @@ class NSearchModel(SearchModel, NBaseModel):
 
 
 class NUserModel(UserModel, NBaseModel):
-    _detail_fields = ('playlists', 'fav_playlists')
-
     class Meta:
         fields = ('cookies', )
 
