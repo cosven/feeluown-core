@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.3a0 (WIP)
+- Model 支持 `create_by_display` 工厂函数
+  - 给 BaseModel 添加 `__getattribute__` 函数
+
 ## 2.2b1 (2018-12-02)
 - QQ 音乐支持显示歌手和专辑详情
 - 设计变化：

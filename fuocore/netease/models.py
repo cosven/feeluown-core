@@ -29,19 +29,6 @@ class NBaseModel(BaseModel):
         allow_get = True
         provider = provider
 
-    def __getattribute__(self, name):
-        cls = type(self)
-        value = object.__getattribute__(self, name)
-        if name in cls._detail_fields and value is None:
-            logger.debug('Field %s value is None, get model detail first.' % name)
-            obj = cls.get(self.identifier)
-            for field in cls._detail_fields:
-                setattr(self, field, getattr(obj, field))
-            value = object.__getattribute__(self, name)
-        elif name in cls._detail_fields and not value:
-            logger.warning('Field %s value is not None, but is %s' % (name, value))
-        return value
-
 
 class NSongModel(SongModel, NBaseModel):
     @classmethod

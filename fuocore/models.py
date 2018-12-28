@@ -24,8 +24,10 @@ fuocore.models
 
 ModelMetadata, ModelMeta, BaseModel 几个类是互相依赖的。
 """
-
+import logging
 from enum import IntEnum
+
+logger = logging.getLogger(__name__)
 
 
 class ModelType(IntEnum):
@@ -69,10 +71,10 @@ class display_property:
     def __init__(self, name):
         self.name_real = name
         self.name_display = name + '_display'
-        self.value_display = None
+        self.value_display = ""
 
     def __get__(self, instance, _=None):
-        if instance.use_display:
+        if instance.gotten:
             return getattr(instance, self.name_real)
         return self.value_display
 
@@ -176,7 +178,8 @@ class BaseModel(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.use_display = kwargs.get('use_display', True)
+        #: 是否已经调用过 gotten，通常也意味着字段是否都已经初始化
+        self.gotten = kwargs.get('gotten', True)
 
     def __eq__(self, other):
         if not isinstance(other, BaseModel):
@@ -185,10 +188,39 @@ class BaseModel(Model):
                     other.identifier == self.identifier,
                     other.meta.model_type == self.meta.model_type])
 
+    def __getattribute__(self, name):
+        """
+        获取 model 某一属性时，如果该属性值为 None 且该属性是 field，
+        我们认为这个字段还没有被初始化，这时，我们尝试通过获取 model
+        详情来初始化这个字段，于此同时，还会重新给除 identifier
+        外的所有 fields 重新赋值。
+        """
+        cls = type(self)
+        cls_name = cls.__name__
+        value = object.__getattribute__(self, name)
+        if name in cls.meta.fields and value is None:
+            if cls.meta.allow_get:
+                logger.info('Field %s value is None, try to get detail.' % name)
+                obj = cls.get(self.identifier)
+                if obj is not None:
+                    for field in cls.meta.fields:
+                        if field in ('identifier', ):
+                            continue
+                        # 这里不能使用 getattr，否则有可能会无限 get
+                        fv = object.__getattribute__(obj, field)
+                        setattr(self, field, fv)
+                    self.gotten = True
+                else:
+                    logger.warning('Model {} get return None'.format(cls_name))
+            else:
+                logger.warning("Model {} does't allow get".format(cls_name))
+            value = object.__getattribute__(self, name)
+        return value
+
     @classmethod
     def create_by_display(cls, identifier, **kwargs):
         model = cls(identifier=identifier)
-        model.use_display = False
+        model.gotten = False
         for k, v in kwargs.items():
             if k in cls.meta.fields_display:
                 setattr(model, k + '_display', v)
@@ -196,9 +228,9 @@ class BaseModel(Model):
 
     @classmethod
     def get(cls, identifier):
-        """Model get method
+        """获取 model 详情
 
-        Model should return a valid object if the identifier is available.
+        这个方法必须尽量初始化所有字段，确保它们的值不是 None。
         """
 
     @classmethod
@@ -270,6 +302,7 @@ class SongModel(BaseModel):
         # TODO: 支持低/中/高不同质量的音乐文件
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
                   'duration']
+        fields_display = ['title', 'artists_name', 'album_name', 'duration']
 
     @property
     def artists_name(self):
