@@ -20,25 +20,15 @@ class LBaseModel(BaseModel):
         allow_get = True
         provider = provider
 
-    def __getattribute__(self, name):
-        cls = type(self)
-        value = object.__getattribute__(self, name)
-        if name in cls._detail_fields and value is None:
-            logger.debug('Field %s value is None, get model detail first.' % name)
-            obj = cls.get(self.identifier)
-            for field in cls._detail_fields:
-                setattr(self, field, getattr(obj, field))
-            value = object.__getattribute__(self, name)
-        elif name in cls._detail_fields and not value:
-            logger.debug('Field %s value is not None, but is %s' % (name, value))
-        return value
-
 
 class LSongModel(SongModel, LBaseModel):
+    class Meta:
+        fields = ('disc', 'genre', 'date', 'track', 'cover', 'desc')
+        fields_no_get = ('lyric', )
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider.library._songs.get(identifier)
+        return cls.meta.provider.library.get_song(identifier)
 
     @classmethod
     def list(cls, identifier_list):
@@ -50,7 +40,7 @@ class LAlbumModel(AlbumModel, LBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider.library._albums.get(identifier)
+        return cls.meta.provider.library.get_album(identifier)
 
 
 class LArtistModel(ArtistModel, LBaseModel):
@@ -58,7 +48,7 @@ class LArtistModel(ArtistModel, LBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider.library._artists.get(identifier)
+        return cls.meta.provider.library.get_artist(identifier)
 
 
 class LSearchModel(SearchModel, LBaseModel):

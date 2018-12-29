@@ -22,25 +22,11 @@ MUSIC_LIBRARY_PATH = os.path.expanduser('~') + '/Music'
 
 class NBaseModel(BaseModel):
     # FIXME: remove _detail_fields and _api to Meta
-    _detail_fields = ()
     _api = provider.api
 
     class Meta:
         allow_get = True
         provider = provider
-
-    def __getattribute__(self, name):
-        cls = type(self)
-        value = object.__getattribute__(self, name)
-        if name in cls._detail_fields and value is None:
-            logger.debug('Field %s value is None, get model detail first.' % name)
-            obj = cls.get(self.identifier)
-            for field in cls._detail_fields:
-                setattr(self, field, getattr(obj, field))
-            value = object.__getattribute__(self, name)
-        elif name in cls._detail_fields and not value:
-            logger.warning('Field %s value is not None, but is %s' % (name, value))
-        return value
 
 
 class NSongModel(SongModel, NBaseModel):
@@ -126,7 +112,6 @@ class NSongModel(SongModel, NBaseModel):
 
 
 class NAlbumModel(AlbumModel, NBaseModel):
-    _detail_fields = ('cover', 'songs', 'artists', )
 
     @classmethod
     def get(cls, identifier):
@@ -148,7 +133,6 @@ class NAlbumModel(AlbumModel, NBaseModel):
 
 
 class NArtistModel(ArtistModel, NBaseModel):
-    _detail_fields = ('songs', 'cover')
 
     @classmethod
     def get(cls, identifier):
@@ -170,8 +154,6 @@ class NArtistModel(ArtistModel, NBaseModel):
 
 
 class NPlaylistModel(PlaylistModel, NBaseModel):
-    _detail_fields = ('songs', )
-
     class Meta:
         fields = ('uid')
 
@@ -207,10 +189,9 @@ class NSearchModel(SearchModel, NBaseModel):
 
 
 class NUserModel(UserModel, NBaseModel):
-    _detail_fields = ('playlists', 'fav_playlists')
-
     class Meta:
         fields = ('cookies', )
+        fields_no_get = ('cookies', )
 
     @classmethod
     def get(cls, identifier):

@@ -76,7 +76,7 @@ class NeteasePlaylistSchema(Schema):
                     song.album.cover = None
                     song.album.songs = None
         if data.get('desc') is None:
-            data.pop('desc')
+            data['desc'] = ''
         return NPlaylistModel(**data)
 
 

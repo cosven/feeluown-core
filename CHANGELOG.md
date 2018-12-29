@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2.3a0 (WIP)
+- Model 支持 `create_by_display` 工厂函数
+  - 给 BaseModel 添加 `__getattribute__` 方法
+  - 给 NBaseModel 和 XBaseModel 移除 `__getattribute__` 方法和
+    `_detail_fields` 类属性
+- QQ 音乐 SongModel 支持 get 方法
+
 ## 2.2 (2018-12-28)
 - 发一个 2.2 的正式版（经过测试，相对稳定）
 
@@ -25,7 +32,6 @@
 ## 2.2a0 (2018-11-06)
 - 给 library 添加 `list_song_standby` 接口
 - **BREAKING CHANGE**: 修改本地音乐 ID 计算方法
-
 ## 2.1 (2018-10-08)
 - 修复 XUserModel 的问题
 - 完善接口文档

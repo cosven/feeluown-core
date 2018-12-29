@@ -31,6 +31,7 @@ class API(object):
         }
 
     def get_song_detail(self, song_id):
+        song_id = int(song_id)
         url = 'http://u.y.qq.com/cgi-bin/musicu.fcg'
         # 往 payload 添加字段，有可能还可以获取相似歌曲、歌单等
         payload = {
