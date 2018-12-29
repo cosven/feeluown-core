@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# pylint: disable=wrong-import-position
 """
 TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐库的构建等小部分，
 这些小部分理论都可以从中拆除。
@@ -7,7 +7,6 @@ TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐�
 
 import base64
 import logging
-import pickle
 import os
 import re
 
@@ -57,12 +56,12 @@ def create_artist(identifier, name):
 
 
 def create_album(identifier, name):
-    return LArtistModel(identifier=identifier,
-                        name=name,
-                        songs=[],
-                        artists=[],
-                        desc='',
-                        cover='',)
+    return LAlbumModel(identifier=identifier,
+                       name=name,
+                       songs=[],
+                       artists=[],
+                       desc='',
+                       cover='',)
 
 
 def add_song(fpath, g_songs, g_artists, g_albums):
@@ -107,11 +106,12 @@ def add_song(fpath, g_songs, g_artists, g_albums):
     album_artist_name = data['album_artist_name']
 
     # 生成 song model
-    song_id_str = ' - '.join([title, artists_name, album_name, duration])
+    song_id_str = ' - '.join([title, artists_name, album_name, str(int(duration))])
     song_id = gen_id(song_id_str)
-    if song_id in g_songs:
-        # 剩下 album, artists, lyric 三个字段没有初始化
+    if song_id not in g_songs:
+        # 剩下 album, lyric 三个字段没有初始化
         song = LSongModel(identifier=song_id,
+                          artists=[],
                           title=title,
                           url=fpath,
                           duration=duration,
@@ -123,9 +123,10 @@ def add_song(fpath, g_songs, g_artists, g_albums):
                           desc=data['desc'],
                           disc=data['disc'],
                           track=data['track'])
+        g_songs[song_id] = song
     else:
         song = g_songs[song_id]
-        logger.warning('duplicate song: {} {}'.format(song.url, fpath))
+        logger.warning('duplicate song: %s %s', song.url, fpath)
         return
 
     # 生成 album artist model
@@ -141,17 +142,19 @@ def add_song(fpath, g_songs, g_artists, g_albums):
     album_id = gen_id(album_id_str)
     if album_id not in g_albums:
         album = create_album(album_id, album_name)
+        g_albums[album_id] = album
     else:
         album = g_albums[album_id]
 
-    # 处理专辑的歌手信息，专辑歌手的专辑列表信息
+    # 处理专辑的歌手信息和歌曲信息，专辑歌手的专辑列表信息
     if album not in album_artist.albums:
         album_artist.albums.append(album)
     if album_artist not in album.artists:
         album.artists.append(album_artist)
+    if song not in album.songs:
+        album.songs.append(song)
 
     # 处理歌曲的歌手和专辑信息，以及歌手的歌曲列表
-    song.artists.append(album_artist)
     song.album = album
     for artist_name in artist_name_list:
         artist_id = gen_id(artist_name)
@@ -159,6 +162,7 @@ def add_song(fpath, g_songs, g_artists, g_albums):
             artist = g_artists[artist_id]
         else:
             artist = create_artist(identifier=artist_id, name=artist_name)
+            g_artists[artist_id] = artist
         if artist not in song.artists:
             song.artists.append(artist)
         if song not in artist.songs:
@@ -168,39 +172,43 @@ def add_song(fpath, g_songs, g_artists, g_albums):
 class Library:
     DEFAULT_MUSIC_FOLDER = os.path.expanduser('~') + '/Music'
 
-    def __init__(self, paths=None, depth=2):
+    def __init__(self):
         self._songs = {}
         self._albums = {}
         self._artists = {}
 
-        self.depth = depth
-        self.paths = paths or [Library.DEFAULT_MUSIC_FOLDER]
-
     def list_songs(self):
         return list(self._songs.values())
 
-    # TODO:
     def get_song(self, identifier):
         return self._songs.get(identifier)
 
+    def get_album(self, identifier):
+        return self._albums.get(identifier)
+
+    def get_artist(self, identifier):
+        return self._artists.get(identifier)
+
     @log_exectime
-    def scan(self):
+    def scan(self, paths=None, depth=2):
         """scan media files in all paths
         """
         song_exts = ['mp3', 'ogg', 'wma', 'm4a']
         exts = song_exts
-        depth = self.depth if self.depth <= 3 else 3
+        paths = paths or [Library.DEFAULT_MUSIC_FOLDER]
+        depth = depth if depth <= 3 else 3
         media_files = []
-        for directory in self.paths:
+        for directory in paths:
             logger.debug('正在扫描目录(%s)...', directory)
             media_files.extend(scan_directory(directory, exts, depth))
+        logger.info('共扫描到 %d 个音乐文件，准备将其录入本地音乐库', len(media_files))
 
         for fpath in media_files:
             add_song(fpath, self._songs, self._artists, self._albums)
-        logger.debug('扫描到 %d 首歌曲', len(self._songs))
+        logger.info('录入本地音乐库完毕')
 
     def sortout(self):
-        for album in self.albums.values():
+        for album in self._albums.values():
             try:
                 album.songs.sort(key=lambda x: (int(x.disc.split('/')[0]), int(x.track.split('/')[0])))
             except Exception as e:
@@ -221,7 +229,7 @@ class LocalProvider(AbstractProvider):
         self.library = Library()
 
     def scan(self, paths=None, depth=3):
-        self.library.scan()
+        self.library.scan(paths, depth)
         self.library.sortout()
 
     @property
@@ -234,7 +242,6 @@ class LocalProvider(AbstractProvider):
 
     @property
     def songs(self):
-        # DEPRECATED
         return self.library.list_songs()
 
     @log_exectime
@@ -257,4 +264,9 @@ class LocalProvider(AbstractProvider):
 provider = LocalProvider()
 
 from .schemas import EasyMP3MetadataSongSchema
-from .models import LSearchModel, LSongModel, LAlbumModel, LArtistModel
+from .models import (
+    LSearchModel,
+    LSongModel,
+    LAlbumModel,
+    LArtistModel,
+)

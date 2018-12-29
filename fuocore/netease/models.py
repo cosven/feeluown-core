@@ -154,7 +154,6 @@ class NArtistModel(ArtistModel, NBaseModel):
 
 
 class NPlaylistModel(PlaylistModel, NBaseModel):
-
     class Meta:
         fields = ('uid')
 
@@ -162,10 +161,6 @@ class NPlaylistModel(PlaylistModel, NBaseModel):
     def get(cls, identifier):
         data = cls._api.playlist_detail(identifier)
         playlist, _ = NeteasePlaylistSchema(strict=True).load(data)
-
-        # 当歌单的描述是空时，desc 的值为 None，这里手动设置为空
-        if playlist.desc is None:
-            playlist.desc = ''
         return playlist
 
     def add(self, song_id, allow_exist=True):
@@ -196,6 +191,7 @@ class NSearchModel(SearchModel, NBaseModel):
 class NUserModel(UserModel, NBaseModel):
     class Meta:
         fields = ('cookies', )
+        fields_no_get = ('cookies', )
 
     @classmethod
     def get(cls, identifier):

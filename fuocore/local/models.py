@@ -23,11 +23,12 @@ class LBaseModel(BaseModel):
 
 class LSongModel(SongModel, LBaseModel):
     class Meta:
+        fields = ('disc', 'genre', 'date', 'track', 'cover', 'desc')
         fields_no_get = ('lyric', )
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider.library._songs.get(identifier)
+        return cls.meta.provider.library.get_song(identifier)
 
     @classmethod
     def list(cls, identifier_list):
@@ -39,7 +40,7 @@ class LAlbumModel(AlbumModel, LBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider.library._albums.get(identifier)
+        return cls.meta.provider.library.get_album(identifier)
 
 
 class LArtistModel(ArtistModel, LBaseModel):
@@ -47,7 +48,7 @@ class LArtistModel(ArtistModel, LBaseModel):
 
     @classmethod
     def get(cls, identifier):
-        return cls.meta.provider.library._artists.get(identifier)
+        return cls.meta.provider.library.get_artist(identifier)
 
 
 class LSearchModel(SearchModel, LBaseModel):

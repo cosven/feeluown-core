@@ -44,6 +44,13 @@ class ModelType(IntEnum):
     user = 17
 
 
+class ModelStage(IntEnum):
+    """Model 所处的阶段，有大小关系"""
+    display = 4
+    inited = 8
+    gotten = 16
+
+
 class ModelMetadata(object):
     def __init__(self,
                  model_type=ModelType.dummy.value,
@@ -78,7 +85,7 @@ class display_property:
         self.value_display = ""
 
     def __get__(self, instance, _=None):
-        if instance.gotten:
+        if instance.stage >= ModelStage.inited:
             return getattr(instance, self.name_real)
         return self.value_display
 
@@ -194,8 +201,7 @@ class BaseModel(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        #: 是否已经调用过 gotten，通常也意味着字段是否都已经初始化
-        self.gotten = kwargs.get('gotten', True)
+        self.stage = kwargs.get('stage', ModelStage.inited)
 
     def __eq__(self, other):
         if not isinstance(other, BaseModel):
@@ -216,7 +222,8 @@ class BaseModel(Model):
         value = object.__getattribute__(self, name)
         if name in cls.meta.fields \
            and name not in cls.meta.fields_no_get \
-           and value is None:
+           and value is None \
+           and self.stage < ModelStage.gotten:
             if cls.meta.allow_get:
                 logger.info("Model {} {}'s value is None, try to get detail."
                             .format(repr(self), name))
@@ -228,7 +235,7 @@ class BaseModel(Model):
                         # 这里不能使用 getattr，否则有可能会无限 get
                         fv = object.__getattribute__(obj, field)
                         setattr(self, field, fv)
-                    self.gotten = True
+                    self.stage = ModelStage.gotten
                 else:
                     logger.warning('Model {} get return None'.format(cls_name))
             else:
@@ -239,7 +246,7 @@ class BaseModel(Model):
     @classmethod
     def create_by_display(cls, identifier, **kwargs):
         model = cls(identifier=identifier)
-        model.gotten = False
+        model.stage = ModelStage.display
         for k, v in kwargs.items():
             if k in cls.meta.fields_display:
                 setattr(model, k + '_display', v)
