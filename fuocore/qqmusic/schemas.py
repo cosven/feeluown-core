@@ -90,7 +90,7 @@ class QQSongDetailSchema(Schema):
     duration = fields.Float(load_from='interval', required=True)
     title = fields.Str(load_from='name', required=True)
     artists = fields.List(fields.Nested('_SongArtistSchema'), load_from='singer')
-    album = fields.Nested('_SongArtistSchema', required=True)
+    album = fields.Nested('_SongAlbumSchema', required=True)
 
     @post_load
     def create_model(self, data):

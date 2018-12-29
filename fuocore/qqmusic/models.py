@@ -63,6 +63,7 @@ class QQAlbumModel(AlbumModel, QQBaseModel):
         album = _deserialize(data_album, QQAlbumSchema)
         return album
 
+
 class QQArtistModel(ArtistModel, QQBaseModel):
     @classmethod
     def get(cls, identifier):
