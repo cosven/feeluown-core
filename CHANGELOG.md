@@ -5,6 +5,7 @@
   - 给 BaseModel 添加 `__getattribute__` 方法
   - 给 NBaseModel 和 XBaseModel 移除 `__getattribute__` 方法和
     `_detail_fields` 类属性
+- QQ 音乐 SongModel 支持 get 方法
 
 ## 2.2 (2018-12-28)
 - 发一个 2.2 的正式版（经过测试，相对稳定）

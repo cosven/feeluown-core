@@ -10,6 +10,15 @@ class _SongArtistSchema(Schema):
         return QQArtistModel(**data)
 
 
+class _SongAlbumSchema(Schema):
+    identifier = fields.Int(load_from='id', required=True)
+    name = fields.Str(load_from='name', required=True)
+
+    @post_load
+    def create_model(self, data):
+        return QQAlbumModel(**data)
+
+
 class QQSongSchema(Schema):
     identifier = fields.Int(load_from='songid', required=True)
     mid = fields.Str(load_from='songmid', required=True)
@@ -73,6 +82,25 @@ class QQAlbumSchema(Schema):
                              songs=data['songs'],
                              artists=[artist])
         return album
+
+
+class QQSongDetailSchema(Schema):
+    identifier = fields.Int(load_from='id', required=True)
+    mid = fields.Str(required=True)
+    duration = fields.Float(load_from='interval', required=True)
+    title = fields.Str(load_from='name', required=True)
+    artists = fields.List(fields.Nested('_SongArtistSchema'), load_from='singer')
+    album = fields.Nested('_SongArtistSchema', required=True)
+
+    @post_load
+    def create_model(self, data):
+        song = QQSongModel(identifier=data['identifier'],
+                           mid=data['mid'],
+                           duration=data['duration'],
+                           title=data['title'],
+                           artists=data.get('artists'),
+                           album=data.get('album'),)
+        return song
 
 
 from .models import (

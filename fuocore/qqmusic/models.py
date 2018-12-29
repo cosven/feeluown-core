@@ -15,22 +15,12 @@ class QQBaseModel(BaseModel):
     _detail_fields = ()
 
     class Meta:
+        allow_get = True
         provider = provider
 
     @classmethod
     def get(cls, identifier):
         raise NotImplementedError
-
-    def __getattribute__(self, name):
-        cls = type(self)
-        value = object.__getattribute__(self, name)
-        if name in cls._detail_fields and not value:
-            obj = cls.get(self.identifier)
-            for field in cls._detail_fields:
-                setattr(self, field, getattr(obj, field))
-            value = object.__getattribute__(self, name)
-        return value
-
 
 
 def _deserialize(data, schema_cls):
@@ -43,6 +33,12 @@ class QQSongModel(SongModel, QQBaseModel):
 
     class Meta:
         fields = ('mid', )
+
+    @classmethod
+    def get(cls, identifier):
+        data = cls._api.get_song_detail(identifier)
+        song = _deserialize(data, QQSongDetailSchema)
+        return song
 
     @property
     def url(self):
@@ -61,8 +57,6 @@ class QQSongModel(SongModel, QQBaseModel):
 
 
 class QQAlbumModel(AlbumModel, QQBaseModel):
-    _detail_fields = ('songs', 'desc')
-
     @classmethod
     def get(cls, identifier):
         data_album = cls._api.album_detail(identifier)
@@ -70,11 +64,6 @@ class QQAlbumModel(AlbumModel, QQBaseModel):
         return album
 
 class QQArtistModel(ArtistModel, QQBaseModel):
-    _detail_fields = ('songs', 'desc')
-
-    class Meta:
-        allow_get = True
-
     @classmethod
     def get(cls, identifier):
         data_artist = cls._api.artist_detail(identifier)
@@ -103,4 +92,5 @@ from .schemas import (
     QQArtistSchema,
     QQAlbumSchema,
     QQSongSchema,
+    QQSongDetailSchema,
 )  # noqa
