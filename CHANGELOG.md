@@ -2,6 +2,10 @@
 
 ## 2.3a1 (WIP)
 - 修复 QQ 音乐时间显示问题
+- 当一个字段属于 `fields_no_get` 并且值为 None 时，
+  `Model.__getattribute__` 中调用 get 时，不覆盖
+- 本地音乐 identifier 计算：去掉连接符，增大不同歌曲 `identifier_str` 的区别度
+- 修复：正确处理 QQ 音乐没有歌曲的专辑
 
 ## 2.3a0 (2018-12-29)
 - Model 支持 `create_by_display` 工厂函数
