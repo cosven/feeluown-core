@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## 2.3a0 (WIP)
+## 2.3a1 (WIP)
+- 修复 QQ 音乐时间显示问题
+
+## 2.3a0 (2018-12-29)
 - Model 支持 `create_by_display` 工厂函数
   - 给 BaseModel 添加 `__getattribute__` 方法
   - 给 NBaseModel 和 XBaseModel 移除 `__getattribute__` 方法和

@@ -34,7 +34,7 @@ class QQSongSchema(Schema):
     def create_model(self, data):
         song = QQSongModel(identifier=data['identifier'],
                            mid=data['mid'],
-                           duration=data['duration'],
+                           duration=data['duration'] * 1000,
                            title=data['title'],
                            artists=data.get('artists'))
         song.album = QQAlbumModel(identifier=data['album_id'],
@@ -96,7 +96,7 @@ class QQSongDetailSchema(Schema):
     def create_model(self, data):
         song = QQSongModel(identifier=data['identifier'],
                            mid=data['mid'],
-                           duration=data['duration'],
+                           duration=data['duration'] * 1000,
                            title=data['title'],
                            artists=data.get('artists'),
                            album=data.get('album'),)
