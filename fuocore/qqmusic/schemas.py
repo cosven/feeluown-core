@@ -70,7 +70,8 @@ class QQAlbumSchema(Schema):
     artist_id = fields.Int(load_from='singerid', required=True)
     artist_name = fields.Str(load_from='singername', required=True)
 
-    songs = fields.List(fields.Nested(QQSongSchema), load_from='list')
+    # 有的专辑歌曲列表为 null，比如：fuo://qqmusic/albums/8623
+    songs = fields.List(fields.Nested(QQSongSchema), load_from='list', allow_none=True)
 
     @post_load
     def create_model(self, data):
@@ -79,7 +80,7 @@ class QQAlbumSchema(Schema):
         album = QQAlbumModel(identifier=data['identifier'],
                              name=data['name'],
                              desc=data['desc'],
-                             songs=data['songs'],
+                             songs=data['songs'] or [],
                              artists=[artist])
         return album
 
