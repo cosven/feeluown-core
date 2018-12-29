@@ -1,7 +1,7 @@
 from collections import namedtuple
 from unittest import TestCase
 
-from fuocore.models import Model, BaseModel
+from fuocore.models import Model, BaseModel, display_property
 
 
 class FakeProvider:
@@ -73,3 +73,17 @@ class TestBaseModel(TestCase):
         song.album = Album(real_album_name)
         song.use_display = False
         self.assertEqual(song.album_name, real_album_name)
+
+
+class TestDisplayProperty(TestCase):
+    def test_display_basic_usage(self):
+        class A:
+            stage = 4
+            a_display = display_property('a')
+
+        a1 = A()
+        a2 = A()
+        self.assertEqual(a1.a_display, '')
+        a2.a_display = 'a2'
+        self.assertEqual(a1.a_display, '')
+        self.assertEqual(a2.a_display, 'a2')

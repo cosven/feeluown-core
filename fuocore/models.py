@@ -80,17 +80,18 @@ class ModelMetadata(object):
 class display_property:
     """Model 的展示字段的描述器"""
     def __init__(self, name):
+        #: display 属性对应的真正属性的名字
         self.name_real = name
-        self.name_display = name + '_display'
-        self.value_display = ""
+        #: 用来存储值的属性名
+        self.store_pname = '_display_store_' + name
 
     def __get__(self, instance, _=None):
         if instance.stage >= ModelStage.inited:
             return getattr(instance, self.name_real)
-        return self.value_display
+        return getattr(instance, self.store_pname, '')
 
     def __set__(self, instance, value):
-        self.value_display = value
+        setattr(instance, self.store_pname, value)
 
 
 class ModelMeta(type):
