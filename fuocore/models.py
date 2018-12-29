@@ -196,7 +196,7 @@ class BaseModel(Model):
         #: Model 用来展示的字段
         fields_display = []
 
-        #: 不触发 get 的 Model 字段
+        #: 不触发 get 的 Model 字段，这些字段往往 get 是获取不到的
         fields_no_get = []
 
     def __init__(self, *args, **kwargs):
@@ -235,7 +235,12 @@ class BaseModel(Model):
                             continue
                         # 这里不能使用 getattr，否则有可能会无限 get
                         fv = object.__getattribute__(obj, field)
-                        setattr(self, field, fv)
+                        # 如果字段属于 fields_no_get 且值为 None，则不覆盖
+                        # 比如 UserModel 的 cookies 的字段，cookies
+                        # 这类需要权限认证的信息往往不能在 get 时获取，
+                        # 而需要在特定上下文单独设置
+                        if not (fv is None and field in cls.meta.fields_no_get):
+                            setattr(self, field, fv)
                     self.stage = ModelStage.gotten
                 else:
                     logger.warning('Model {} get return None'.format(cls_name))
