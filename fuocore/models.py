@@ -51,6 +51,12 @@ class ModelStage(IntEnum):
     gotten = 16
 
 
+class ModelExistence(IntEnum):
+    no = -1
+    unknown = 0
+    yes = 1
+
+
 class ModelMetadata(object):
     def __init__(self,
                  model_type=ModelType.dummy.value,
@@ -202,7 +208,15 @@ class BaseModel(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        #: model 所处阶段。目前，通过构造函数初始化的 model
+        # 所处阶段为 inited，通过 get 得到的 model，所处阶段为 gotten，
+        # 通过 display 属性构造的 model，所处阶段为 display。
+        # 目前，此属性仅为 models 模块使用，不推荐外部依赖。
         self.stage = kwargs.get('stage', ModelStage.inited)
+
+        #: 歌曲是否存在。如果 Model allow_get，但 get 却不能获取到 model，
+        # 则该 model 不存在。
+        self.exists = ModelExistence.unknown
 
     def __eq__(self, other):
         if not isinstance(other, BaseModel):
@@ -242,7 +256,9 @@ class BaseModel(Model):
                         if not (fv is None and field in cls.meta.fields_no_get):
                             setattr(self, field, fv)
                     self.stage = ModelStage.gotten
+                    self.exists = ModelExistence.yes
                 else:
+                    self.exists = ModelExistence.no
                     logger.warning('Model {} get return None'.format(cls_name))
             else:
                 logger.warning("Model {} does't allow get".format(cls_name))
@@ -253,6 +269,7 @@ class BaseModel(Model):
     def create_by_display(cls, identifier, **kwargs):
         model = cls(identifier=identifier)
         model.stage = ModelStage.display
+        model.exists = ModelExistence.unknown
         for k, v in kwargs.items():
             if k in cls.meta.fields_display:
                 setattr(model, k + '_display', v)
