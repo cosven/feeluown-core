@@ -1,6 +1,7 @@
 # CHANGELOG
 
-## 2.3a1 (WIP)
+## 2.3 (2019-01-01)
+- 给 Model 添加 exists 字段
 - 修复 QQ 音乐时间显示问题
 - 当一个字段属于 `fields_no_get` 并且值为 None 时，
   `Model.__getattribute__` 中调用 get 时，不覆盖
