@@ -5,6 +5,7 @@ from fuocore.models import (
     AlbumModel,
     ArtistModel,
     SearchModel,
+    ModelStage,
 )
 
 from .provider import provider
@@ -12,11 +13,11 @@ from .provider import provider
 
 class QQBaseModel(BaseModel):
     _api = provider.api
-    _detail_fields = ()
 
     class Meta:
         allow_get = True
         provider = provider
+        fields = ('mid', )
 
     @classmethod
     def get(cls, identifier):
@@ -26,13 +27,13 @@ class QQBaseModel(BaseModel):
 def _deserialize(data, schema_cls):
     schema = schema_cls(strict=True)
     obj, _ = schema.load(data)
+    # XXX: 将 model 设置为 gotten，减少代码编写时的心智负担，
+    # 避免在调用 get 方法时进入无限递归。
+    obj.stage = ModelStage.gotten
     return obj
 
 
 class QQSongModel(SongModel, QQBaseModel):
-
-    class Meta:
-        fields = ('mid', )
 
     @classmethod
     def get(cls, identifier):
@@ -61,6 +62,7 @@ class QQAlbumModel(AlbumModel, QQBaseModel):
     def get(cls, identifier):
         data_album = cls._api.album_detail(identifier)
         album = _deserialize(data_album, QQAlbumSchema)
+        album.cover = cls._api.get_cover(album.mid, 2)
         return album
 
 
@@ -69,6 +71,7 @@ class QQArtistModel(ArtistModel, QQBaseModel):
     def get(cls, identifier):
         data_artist = cls._api.artist_detail(identifier)
         artist = _deserialize(data_artist, QQArtistSchema)
+        artist.cover = cls._api.get_cover(artist.mid, 1)
         return artist
 
 

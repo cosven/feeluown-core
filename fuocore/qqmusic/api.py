@@ -30,6 +30,14 @@ class API(object):
                           'Chrome/66.0.3359.181 Mobile Safari/537.36',
         }
 
+    def get_cover(self, mid, type_):
+        """获取专辑、歌手封面
+
+        :param type_: 专辑： 2，歌手：1
+        """
+        return 'http://y.gtimg.cn/music/photo_new/T00{}R800x800M000{}.jpg' \
+            .format(type_, mid)
+
     def get_song_detail(self, song_id):
         song_id = int(song_id)
         url = 'http://u.y.qq.com/cgi-bin/musicu.fcg'

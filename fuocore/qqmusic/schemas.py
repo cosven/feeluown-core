@@ -50,6 +50,7 @@ class QQArtistSchema(Schema):
     """歌手详情 Schema、歌曲歌手简要信息 Schema"""
 
     identifier = fields.Int(load_from='singer_id', required=True)
+    mid = fields.Str(load_from='singer_mid', required=True)
     name = fields.Str(load_from='singer_name', required=True)
 
     desc = fields.Str(load_from='SingerDesc')
@@ -64,6 +65,7 @@ class QQArtistSchema(Schema):
 
 class QQAlbumSchema(Schema):
     identifier = fields.Int(load_from='id', required=True)
+    mid = fields.Str(load_from='mid', required=True)
     name = fields.Str(required=True)
     desc = fields.Str(required=True)
 
@@ -78,6 +80,7 @@ class QQAlbumSchema(Schema):
         artist = QQArtistModel(identifier=data['artist_id'],
                                name=data['artist_name'])
         album = QQAlbumModel(identifier=data['identifier'],
+                             mid=data['mid'],
                              name=data['name'],
                              desc=data['desc'],
                              songs=data['songs'] or [],

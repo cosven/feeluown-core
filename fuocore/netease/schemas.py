@@ -11,6 +11,22 @@ class NeteaseSongSchema(Schema):
 
     @post_load
     def create_model(self, data):
+        album = data['album']
+        artists = data['artists']
+
+        # 在所有的接口中，song.album.songs 要么是一个空列表，
+        # 要么是 null，这里统一置为 None。
+        album.songs = None
+
+        # 在有的接口中（比如歌单列表接口），album cover 的值是不对的，
+        # 它会指向的是一个网易云默认的灰色图片，我们将其设置为 None，
+        # artist cover 也有类似的问题。
+        album.cover = None
+
+        if artists:
+            for artist in artists:
+                artist.cover = None
+
         return NSongModel(**data)
 
 
@@ -23,11 +39,6 @@ class NeteaseAlbumSchema(Schema):
 
     @post_load
     def create_model(self, data):
-        for song in data.get('songs', ()):
-            # song.album.songs 这里会返回空列表，设置为 None
-            if song.album:
-                song.album.cover = None
-                song.album.songs = None
         return NAlbumModel(**data)
 
 
@@ -39,11 +50,6 @@ class NeteaseArtistSchema(Schema):
 
     @post_load
     def create_model(self, data):
-        for song in data.get('songs', ()):
-            # song.album.songs 这里会返回空列表，设置为 None
-            if song.album:
-                song.album.cover = None
-                song.album.songs = None
         return NArtistModel(**data)
 
 
@@ -60,21 +66,6 @@ class NeteasePlaylistSchema(Schema):
 
     @post_load
     def create_model(self, data):
-        if data.get('songs') is None:
-            data.pop('songs')
-        else:
-            # 这里 Artist 和 Album 的 picUrl 链接不对，
-            # 这个链接指向的是一个网易云默认的灰色图片，
-            # 我们将其设置为 None
-            #
-            # 另外，song.album.songs 这里会返回空列表，设置为 None
-            for song in data['songs']:
-                if song.artists:
-                    for artist in song.artists:
-                        artist.cover = None
-                if song.album:
-                    song.album.cover = None
-                    song.album.songs = None
         if data.get('desc') is None:
             data['desc'] = ''
         return NPlaylistModel(**data)
