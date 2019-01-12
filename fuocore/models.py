@@ -32,6 +32,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _get_artists_name(artists):
+    return ','.join((artist.name for artist in artists))
+
+
 class ModelType(IntEnum):
     dummy = 0
 
@@ -323,6 +327,10 @@ class AlbumModel(BaseModel):
     def __str__(self):
         return 'fuo://{}/albums/{}'.format(self.source, self.identifier)
 
+    @property
+    def artists_name(self):
+        return _get_artists_name(self.artists or [])
+
 
 class LyricModel(BaseModel):
     """Lyric Model
@@ -355,7 +363,7 @@ class SongModel(BaseModel):
 
     @property
     def artists_name(self):
-        return ','.join((artist.name for artist in self.artists or []))
+        return _get_artists_name(self.artists or [])
 
     @property
     def album_name(self):
